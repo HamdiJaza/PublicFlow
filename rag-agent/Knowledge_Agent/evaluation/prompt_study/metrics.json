@@ -1,0 +1,22 @@
+{
+  "attempts": 10,
+  "complete": true,
+  "per_version_denominator": 5,
+  "metrics": {
+    "v3_structured": {
+      "valid_json_and_schema": 5,
+      "answerability_agreement": 4,
+      "no_invented_deadline": 5,
+      "required_number_present": 4,
+      "all_constraints": 4
+    },
+    "v4_grounded": {
+      "valid_json_and_schema": 5,
+      "answerability_agreement": 3,
+      "no_invented_deadline": 5,
+      "required_number_present": 3,
+      "all_constraints": 3
+    }
+  },
+  "scope": "Five dependent development cases with fixed source contexts. Numeric checks and schema checks require separate qualitative review. No retrieval is executed."
+}

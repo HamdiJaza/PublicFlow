@@ -1,0 +1,71 @@
+{
+  "name": "Knowledge Agent - municipal retrieval and source-based answer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "municipal-knowledge",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "receive-knowledge-question",
+      "name": "Receive knowledge question",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "webhookId": "c57dfd67-ce19-4660-b97a-bf25e37d144e"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8020/knowledge",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ category: ($json.body ?? $json).category, description: ($json.body ?? $json).description, department: ($json.body ?? $json).department ?? null, prompt_version: 'v4_grounded' }) }}",
+        "options": {
+          "timeout": 420000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "call-knowledge-api",
+      "name": "Call Knowledge API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [280, 0],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.body ?? { detail: 'The Knowledge API request failed before a JSON response was received. Start the API on port 8020 and check the HTTP node error.' } }}",
+        "options": {
+          "responseCode": "={{ Number.isInteger($json.statusCode) ? $json.statusCode : 502 }}"
+        }
+      },
+      "id": "return-knowledge-response",
+      "name": "Return Knowledge response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [560, 0]
+    }
+  ],
+  "connections": {
+    "Receive knowledge question": {
+      "main": [[{"node": "Call Knowledge API", "type": "main", "index": 0}]]
+    },
+    "Call Knowledge API": {
+      "main": [[{"node": "Return Knowledge response", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {"executionOrder": "v1"},
+  "active": false,
+  "pinData": {},
+  "tags": []
+}

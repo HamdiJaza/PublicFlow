@@ -1,0 +1,367 @@
+
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signalement Municipal — Espace citoyen</title>
+<style>
+:root{
+  --ink:#142d28;--muted:#687b75;--green:#176b53;--green2:#21856a;
+  --mint:#e8f5ef;--paper:#f6f8f5;--line:#e0e9e3;--white:#fff;
+  --orange:#b86b18;--red:#b83d46;--shadow:0 18px 45px rgba(26,65,49,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit}
+.shell{min-height:100vh}
+.topbar{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,5vw,76px);gap:18px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:-.03em}
+.logo{width:42px;height:42px;border-radius:14px;background:var(--green);display:grid;place-items:center;color:#fff;box-shadow:0 8px 18px #176b5326}
+.logo svg{width:24px;height:24px}
+.brand small{display:block;font-weight:500;letter-spacing:0;color:var(--muted);font-size:11px;margin-top:2px}
+.status-pill{display:flex;align-items:center;gap:8px;border:1px solid #dcebe2;background:#f4fbf6;color:var(--green);padding:9px 13px;border-radius:999px;font-size:12px;font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;background:#30a879;box-shadow:0 0 0 4px #30a8791c}
+main{max-width:1160px;margin:0 auto;padding:44px 24px 72px}
+.hero{display:grid;grid-template-columns:1.4fr .6fr;gap:28px;align-items:center;margin-bottom:30px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--green);background:var(--mint);padding:7px 11px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+h1{font-size:clamp(34px,5vw,54px);line-height:1.04;letter-spacing:-.055em;margin:18px 0 14px;max-width:720px}
+h1 span{color:var(--green2)}
+.lead{color:var(--muted);font-size:16px;line-height:1.75;max-width:650px;margin:0}
+.hero-art{background:linear-gradient(145deg,#dff1e6,#f4f8ec);border:1px solid #d8e9dd;border-radius:28px;padding:25px;min-height:190px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.hero-art:before,.hero-art:after{content:"";position:absolute;border-radius:50%;border:1px solid #b7d8c5}
+.hero-art:before{width:230px;height:230px;right:-60px;top:-95px}
+.hero-art:after{width:155px;height:155px;left:-60px;bottom:-80px}
+.city-icon{width:100%;max-width:260px;position:relative;z-index:1}
+.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:24px;align-items:start}
+.panel{background:var(--white);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.panel-head{padding:23px 25px 18px;border-bottom:1px solid #edf1ed}
+.panel-head h2{margin:0;font-size:18px;letter-spacing:-.025em}
+.panel-head p{margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.55}
+.panel-body{padding:24px 25px}
+.field-label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;font-weight:750;margin-bottom:10px}
+.optional{font-size:11px;font-weight:600;color:#82918b}
+textarea{display:block;width:100%;min-height:130px;resize:vertical;border:1px solid #dce6df;border-radius:14px;padding:14px 15px;color:var(--ink);outline:none;background:#fcfdfb;transition:.2s}
+textarea:focus,input:focus{border-color:#55a887;box-shadow:0 0 0 4px #21856a14}
+textarea::placeholder{color:#9aa8a1}
+.hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+.upload-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:23px}
+.upload-card{position:relative;min-height:135px;border:1px dashed #cbdcd1;border-radius:15px;padding:15px 12px;background:#fbfdfb;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;transition:.2s}
+.upload-card:hover,.upload-card.drag{border-color:var(--green2);background:#f1faf4}
+.upload-card input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.upload-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:var(--mint);color:var(--green)}
+.upload-icon svg{width:19px;height:19px}
+.upload-title{font-size:12px;font-weight:800;margin-top:12px}
+.upload-desc{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4;word-break:break-word}
+.actions{display:flex;align-items:center;gap:12px;margin-top:24px}
+.primary{border:0;border-radius:13px;padding:14px 19px;background:var(--green);color:#fff;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 16px #176b5326;transition:.2s}
+.primary:hover{background:#105740;transform:translateY(-1px)}
+.primary:disabled{opacity:.65;cursor:wait;transform:none}
+.secondary{border:1px solid var(--line);background:#fff;border-radius:13px;padding:13px 16px;color:var(--muted);font-weight:700;cursor:pointer}
+.secure{font-size:11px;color:var(--muted);line-height:1.5;margin-top:15px;display:flex;gap:8px;align-items:flex-start}
+.secure svg{width:16px;min-width:16px;color:var(--green)}
+.side-stack{display:grid;gap:18px}
+.info-card{padding:22px 23px}
+.info-title{font-size:14px;font-weight:800;display:flex;align-items:center;gap:10px}
+.info-title .mini-icon{width:34px;height:34px;border-radius:11px;background:var(--mint);color:var(--green);display:grid;place-items:center}
+.info-title svg{width:18px;height:18px}
+.steps{display:grid;gap:18px;margin-top:21px}
+.step{display:grid;grid-template-columns:30px 1fr;gap:11px}
+.step-no{width:29px;height:29px;border-radius:10px;background:#edf6f0;color:var(--green);display:grid;place-items:center;font-size:12px;font-weight:850}
+.step b{font-size:12px;display:block;margin:2px 0 5px}
+.step p{margin:0;font-size:11px;line-height:1.55;color:var(--muted)}
+.legend{display:grid;gap:12px;margin-top:17px}
+.legend-row{display:flex;align-items:center;gap:10px;font-size:12px;color:#52645c}
+.badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:850;white-space:nowrap;background:#edf1ef;color:#5b6c64}
+.badge.confirm{background:#e4f5eb;color:#18724f}.badge.insufficient{background:#fff3dd;color:#965c0b}.badge.offtopic{background:#fce9e9;color:#a53740}.badge.contradict{background:#fbe5e5;color:#a52d3b}
+.result-wrap{margin-top:25px;display:none}
+.result-wrap.visible{display:block}
+.result-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;padding:23px 25px;border-bottom:1px solid var(--line)}
+.result-head h2{margin:0;font-size:19px}
+.result-head p{margin:7px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
+.result-body{padding:22px 25px}
+.result-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:21px}
+.metric{padding:15px;border:1px solid var(--line);border-radius:14px;background:#fcfdfb}
+.metric small{display:block;color:var(--muted);font-size:10px;font-weight:700;margin-bottom:7px}
+.metric strong{font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+.media-list{display:grid;gap:10px}
+.media-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border:1px solid var(--line);padding:14px;border-radius:13px}
+.media-row h3{margin:0 0 5px;font-size:12px}
+.media-row p{margin:0;color:var(--muted);font-size:11px;line-height:1.6}
+.alert{border-radius:13px;padding:14px 15px;font-size:12px;line-height:1.6;margin-bottom:16px}
+.alert.warning{background:#fff5e4;color:#80500f;border:1px solid #f4e0ba}
+.alert.error{background:#fff0f0;color:#963740;border:1px solid #f0d0d2}
+.alert.success{background:#eaf7ef;color:#176647;border:1px solid #cde9d7}
+.warnings{margin:18px 0 0;padding-left:18px;color:#7a5a27;font-size:11px;line-height:1.7}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f9f7;border:1px solid var(--line);padding:13px;border-radius:12px;font-size:11px;color:#40564b}
+details{margin-top:18px}summary{font-size:12px;font-weight:800;cursor:pointer;color:var(--green)}
+.loading{display:none;align-items:center;gap:9px;color:var(--muted);font-size:12px;margin-top:14px}
+.loading.show{display:flex}.spinner{width:15px;height:15px;border:2px solid #d7e6dc;border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.footer{text-align:center;color:#8b9992;font-size:11px;padding:24px}
+@media(max-width:850px){.hero{grid-template-columns:1fr}.hero-art{display:none}.layout{grid-template-columns:1fr}.side-stack{grid-template-columns:1fr 1fr}}
+@media(max-width:580px){.topbar{height:66px;padding:0 17px}.status-pill{font-size:0;padding:10px}.status-pill .dot{margin:0}main{padding:30px 14px 45px}.panel-head,.panel-body,.result-head,.result-body{padding:19px}.upload-grid{grid-template-columns:1fr}.upload-card{min-height:94px;display:grid;grid-template-columns:38px 1fr;align-items:center;gap:0 10px;padding:12px}.upload-icon{grid-row:span 2}.upload-title{margin:0}.upload-desc{margin-top:4px}.side-stack{grid-template-columns:1fr}.actions{flex-direction:column;align-items:stretch}.primary,.secondary{width:100%}.result-summary{grid-template-columns:1fr}.media-row{flex-direction:column}.hero{margin-bottom:22px}h1{font-size:38px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6M8 10h.01M16 10h.01"/></svg>
+    </div>
+    <div>Signalement<span style="color:#21856a">+</span><small>ESPACE CITOYEN · VILLE PLUS SÛRE</small></div>
+  </div>
+  <div class="status-pill"><span class="dot"></span> Analyse intelligente disponible</div>
+</header>
+
+<main>
+  <section class="hero">
+    <div>
+      <div class="eyebrow"><span>✦</span> Votre ville, votre voix</div>
+      <h1>Ensemble, améliorons <span>notre cadre de vie.</span></h1>
+      <p class="lead">Signalez un problème dans votre quartier en quelques instants. Notre système analyse votre description et vos médias pour aider à orienter le signalement vers le bon service.</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg class="city-icon" viewBox="0 0 300 190" fill="none">
+        <path d="M20 160H280" stroke="#8EBCA1" stroke-width="2" stroke-linecap="round"/>
+        <path d="M35 160V86H91V160M45 98H57V111H45zM68 98H80V111H68zM45 122H57V135H45zM68 122H80V135H68z" fill="#A7D3B7" stroke="#5C9B78" stroke-width="1.5"/>
+        <path d="M102 160V55H163V160M114 69H128V84H114zM139 69H153V84H139zM114 96H128V111H114zM139 96H153V111H139zM114 123H128V138H114zM139 123H153V138H139z" fill="#C0E3CB" stroke="#5C9B78" stroke-width="1.5"/>
+        <path d="M176 160V101H225V160M187 113H199V126H187zM205 113H217V126H205zM187 136H199V149H187zM205 136H217V149H205z" fill="#A7D3B7" stroke="#5C9B78" stroke-width="1.5"/>
+        <path d="M245 160V123H270V160" fill="#C0E3CB" stroke="#5C9B78" stroke-width="1.5"/>
+        <circle cx="248" cy="42" r="17" fill="#F9D98B"/>
+        <path d="M22 160L50 147L75 160M226 160L250 148L278 160" stroke="#5C9B78" stroke-width="2"/>
+        <path d="M24 42l4 8 9 1-7 6 2 9-8-5-8 5 2-9-7-6 9-1z" fill="#fff" opacity=".8"/>
+      </svg>
+    </div>
+  </section>
+
+  <div class="layout">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Créer un signalement</h2>
+        <p>Décrivez le problème et ajoutez les éléments dont vous disposez.</p>
+      </div>
+      <div class="panel-body">
+        <form id="reportForm">
+          <label class="field-label" for="texte">Que se passe-t-il ? <span class="optional">Description</span></label>
+          <textarea id="texte" name="texte" placeholder="Ex. : Un nid-de-poule important se trouve devant l'école, rue de la Liberté…" maxlength="5000"></textarea>
+          <div class="hint">Précisez si possible le lieu et la nature du problème. Évitez d'inclure des données personnelles inutiles.</div>
+
+          <div class="field-label" style="margin-top:24px">Ajouter des médias <span class="optional">Facultatif</span></div>
+          <div class="upload-grid">
+            <label class="upload-card" for="image">
+              <input id="image" name="image" type="file" accept="image/*">
+              <span class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></svg></span>
+              <span><span class="upload-title">Photo</span><span class="upload-desc" id="imageName">JPG, PNG, WEBP</span></span>
+            </label>
+            <label class="upload-card" for="audio">
+              <input id="audio" name="audio" type="file" accept="audio/*">
+              <span class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg></span>
+              <span><span class="upload-title">Message audio</span><span class="upload-desc" id="audioName">MP3, WAV, M4A</span></span>
+            </label>
+            <label class="upload-card" for="video">
+              <input id="video" name="video" type="file" accept="video/*">
+              <span class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="13" height="14" rx="3"/><path d="m16 10 5-3v10l-5-3z"/></svg></span>
+              <span><span class="upload-title">Vidéo</span><span class="upload-desc" id="videoName">MP4, MOV, WEBM</span></span>
+            </label>
+          </div>
+          <div class="actions">
+            <button class="primary" id="submitBtn" type="submit">
+              Analyser le signalement <span aria-hidden="true">→</span>
+            </button>
+            <button class="secondary" id="resetBtn" type="reset">Effacer</button>
+          </div>
+          <div class="loading" id="loading"><span class="spinner"></span> Analyse du contenu en cours, cela peut prendre un moment…</div>
+          <div class="secure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="m9 12 2 2 4-4"/></svg><span>Les médias sont transmis à l'API pour analyse. Cette démonstration ne remplace pas la vérification par un agent municipal.</span></div>
+        </form>
+      </div>
+    </section>
+
+    <aside class="side-stack">
+      <section class="panel info-card">
+        <div class="info-title"><span class="mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 14.8 8.7 21 9.6l-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/></svg></span> Comment ça marche ?</div>
+        <div class="steps">
+          <div class="step"><span class="step-no">1</span><div><b>Décrivez le problème</b><p>Expliquez ce que vous avez observé et où cela se trouve.</p></div></div>
+          <div class="step"><span class="step-no">2</span><div><b>Ajoutez des preuves</b><p>Une photo, un audio ou une vidéo peut apporter du contexte.</p></div></div>
+          <div class="step"><span class="step-no">3</span><div><b>Consultez l'analyse</b><p>L'IA évalue la pertinence et indique ce que les médias permettent réellement de vérifier.</p></div></div>
+        </div>
+      </section>
+      <section class="panel info-card">
+        <div class="info-title"><span class="mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></span> Statut des médias</div>
+        <div class="legend">
+          <div class="legend-row"><span class="badge confirm">CONFIRMÉ</span> Le média soutient le problème.</div>
+          <div class="legend-row"><span class="badge insufficient">INSUFFISANT</span> Impossible de vérifier avec ce média.</div>
+          <div class="legend-row"><span class="badge offtopic">HORS SUJET</span> Le média ne correspond pas au signalement.</div>
+          <div class="legend-row"><span class="badge contradict">CONTRADICTOIRE</span> Des éléments pertinents s'opposent au signalement.</div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <section class="panel result-wrap" id="resultWrap" aria-live="polite">
+    <div class="result-head">
+      <div><h2>Résultat de l'analyse</h2><p>Voici le résultat retourné par le système de traitement.</p></div>
+      <span class="badge" id="globalBadge">Analyse terminée</span>
+    </div>
+    <div class="result-body" id="resultBody"></div>
+  </section>
+</main>
+<div class="footer">Municipalité Automatisée · Prototype de traitement intelligent des signalements municipaux</div>
+</div>
+
+<script>
+const form = document.getElementById('reportForm');
+const submitBtn = document.getElementById('submitBtn');
+const loading = document.getElementById('loading');
+const resultWrap = document.getElementById('resultWrap');
+const resultBody = document.getElementById('resultBody');
+
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function badgeClass(status){
+  if(status === 'CONFIRME') return 'confirm';
+  if(status === 'INSUFFISANT') return 'insufficient';
+  if(status === 'HORS_SUJET') return 'offtopic';
+  if(status === 'CONTRADICTOIRE') return 'contradict';
+  return '';
+}
+function labelStatus(status){
+  return ({
+    'CONFIRME':'CONFIRMÉ',
+    'INSUFFISANT':'INSUFFISANT',
+    'HORS_SUJET':'HORS SUJET',
+    'CONTRADICTOIRE':'CONTRADICTOIRE'
+  })[status] || status || 'NON ÉVALUÉ';
+}
+function fileName(inputId, outputId, defaultText){
+  const input = document.getElementById(inputId);
+  const output = document.getElementById(outputId);
+  input.addEventListener('change', () => {
+    output.textContent = input.files[0] ? input.files[0].name : defaultText;
+  });
+}
+fileName('image','imageName','JPG, PNG, WEBP');
+fileName('audio','audioName','MP3, WAV, M4A');
+fileName('video','videoName','MP4, MOV, WEBM');
+
+form.addEventListener('reset', () => {
+  setTimeout(() => {
+    document.getElementById('imageName').textContent = 'JPG, PNG, WEBP';
+    document.getElementById('audioName').textContent = 'MP3, WAV, M4A';
+    document.getElementById('videoName').textContent = 'MP4, MOV, WEBM';
+    resultWrap.classList.remove('visible');
+  }, 0);
+});
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const text = document.getElementById('texte').value.trim();
+  const image = document.getElementById('image').files[0];
+  const audio = document.getElementById('audio').files[0];
+  const video = document.getElementById('video').files[0];
+
+  if(!text && !image && !audio && !video){
+    alert('Ajoutez une description ou au moins un média avant de continuer.');
+    return;
+  }
+
+  const data = new FormData();
+  data.append('texte', text);
+  if(image) data.append('image', image);
+  if(audio) data.append('audio', audio);
+  if(video) data.append('video', video);
+
+  submitBtn.disabled = true;
+  loading.classList.add('show');
+  submitBtn.innerHTML = 'Analyse en cours…';
+  resultWrap.classList.remove('visible');
+
+  try{
+    const response = await fetch('/analyser', {method:'POST', body:data});
+    const result = await response.json();
+    if(!response.ok){
+      throw new Error(result.detail || 'Une erreur est survenue.');
+    }
+    renderResult(result);
+    resultWrap.classList.add('visible');
+    resultWrap.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(err){
+    resultWrap.classList.add('visible');
+    document.getElementById('globalBadge').textContent = 'Erreur';
+    document.getElementById('globalBadge').className = 'badge offtopic';
+    resultBody.innerHTML = '<div class="alert error">'+esc(err.message || 'Impossible de joindre l’API.')+'</div>';
+  }finally{
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = 'Analyser le signalement <span aria-hidden="true">→</span>';
+    loading.classList.remove('show');
+  }
+});
+
+function renderResult(r){
+  const validation = r.validation_multimodale || {};
+  const pertinent = r.pertinence_municipale || 'INCERTAINE';
+  const human = Boolean(r.validation_humaine_requise);
+  const globalBadge = document.getElementById('globalBadge');
+  globalBadge.textContent = human ? 'Vérification humaine requise' : pertinent;
+  globalBadge.className = 'badge ' + (human ? 'insufficient' : (pertinent === 'PERTINENTE' ? 'confirm' : ''));
+  const alertClass = human ? 'warning' : (pertinent === 'PERTINENTE' ? 'success' : 'warning');
+  let html = '<div class="alert '+alertClass+'"><strong>'+
+    (human ? 'Une vérification humaine est recommandée.' : 'Analyse terminée.')+
+    '</strong><br>'+esc(validation.motif || 'Consultez les détails ci-dessous.')+'</div>';
+
+  html += '<div class="result-summary">';
+  html += '<div class="metric"><small>PERTINENCE MUNICIPALE</small><strong>'+esc(pertinent)+'</strong></div>';
+  html += '<div class="metric"><small>COHÉRENCE MULTIMODALE</small><strong>'+esc(validation.coherence_multimodale || 'Non évaluée')+'</strong></div>';
+  html += '<div class="metric"><small>CATÉGORIE</small><strong>'+esc((r.classification_citoyen || {}).categorie || 'Non déterminée')+'</strong></div>';
+  html += '</div>';
+
+  const evals = validation.evaluations_medias || [];
+  const imageEvals = (r.descriptions_images_video || []).map((frame, i) => ({
+    id_media:'image_video_'+(i+1),
+    statut:frame.statut || 'INSUFFISANT',
+    justification:frame.justification_statut || frame.description || frame.erreur || ''
+  }));
+  const all = [
+    {id_media:'image_independante',statut:r.statut_image,justification:r.description_image || ''},
+    {id_media:'audio_independant',statut:r.statut_audio_independant,justification:r.transcription_audio || ''},
+    {id_media:'audio_video',statut:r.statut_audio_video,justification:r.transcription_video || ''}
+  ].filter(x => x.statut);
+  const merged = [...all, ...imageEvals];
+  const label = id => ({
+    image_independante:'Photo envoyée',
+    audio_independant:'Audio envoyé',
+    audio_video:'Audio de la vidéo'
+  })[id] || id.replace('image_video_','Image vidéo ');
+
+  if(merged.length){
+    html += '<h3 style="font-size:14px;margin:0 0 12px">Évaluation de chaque média</h3><div class="media-list">';
+    merged.forEach(m => {
+      html += '<div class="media-row"><div><h3>'+esc(label(m.id_media))+'</h3><p>'+esc(m.justification || 'Aucune justification disponible.')+'</p></div><span class="badge '+badgeClass(m.statut)+'">'+esc(labelStatus(m.statut))+'</span></div>';
+    });
+    html += '</div>';
+  }
+
+  const warnings = r.avertissements || [];
+  if(warnings.length){
+    html += '<ul class="warnings">'+warnings.map(w=>'<li>'+esc(w)+'</li>').join('')+'</ul>';
+  }
+
+  if(r.cleaned_text){
+    html += '<details><summary>Voir le texte nettoyé</summary><pre>'+esc(r.cleaned_text)+'</pre></details>';
+  }
+  if(validation.elements_confirmes && validation.elements_confirmes.length){
+    html += '<details><summary>Éléments qui soutiennent le signalement</summary><ul>'+validation.elements_confirmes.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>';
+  }
+  if(validation.elements_incoherents && validation.elements_incoherents.length){
+    html += '<details><summary>Éléments hors sujet ou incohérents</summary><ul>'+validation.elements_incoherents.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>';
+  }
+  html += '<details><summary>Réponse technique complète (JSON)</summary><pre>'+esc(JSON.stringify(r,null,2))+'</pre></details>';
+  resultBody.innerHTML = html;
+}
+</script>
+</body>
+</html>

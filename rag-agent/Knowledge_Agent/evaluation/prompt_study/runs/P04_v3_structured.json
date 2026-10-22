@@ -1,0 +1,67 @@
+{
+  "case_id": "P04",
+  "prompt_version": "v3_structured",
+  "request": {
+    "category": "WATER_LEAK",
+    "department": null,
+    "description": "كيف أتحقق من وجود تسرب باستعمال عداد الماء؟",
+    "strategy": null,
+    "prompt_version": "v4_grounded"
+  },
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "reference": {
+    "case_id": "P04",
+    "category": "WATER_LEAK",
+    "description": "كيف أتحقق من وجود تسرب باستعمال عداد الماء؟",
+    "documents": [
+      "DOC-WATER-02"
+    ],
+    "answer_found": true,
+    "required_digits": [
+      "30"
+    ]
+  },
+  "prompt_sha256": "f2affd02e0c7bd21992148ffb0d8d566f942e978540df6ae120a4f02e103ce5b",
+  "started_at": "2026-10-18T00:11:44.889582+00:00",
+  "raw_response": {
+    "model": "qwen2.5:3b",
+    "created_at": "2026-10-18T00:11:50.0981073Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"procedure\": \"1. قم بتسجيل القراءة الأولية للعداد.\\n2. اترك العداد بدون استخدام مياه لمدة 30 دقيقة.\\n3. قم بتسجيل القراءة الثانية.\\n4. إذا تغيرت القراءة، فهذا يشير إلى وجود تسرب.\\n5. قم بفحص و修理 التسرب.\",\n  \"deadline\": null,\n  \"answer_found\": true\n}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 5204065500,
+    "load_duration": 7127700,
+    "prompt_eval_count": 935,
+    "prompt_eval_duration": 794406000,
+    "eval_count": 98,
+    "eval_duration": 4339879000
+  },
+  "generation_request": {
+    "model": "qwen2.5:3b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are a strict municipal assistant for the Commune de Tunis.\nYou extract procedural answers from official documents and return ONLY valid JSON.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT SCHEMA (strict):\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{\n  \"procedure\": \"<string with numbered steps, or null if unknown>\",\n  \"deadline\": \"<string if explicitly stated in context, or null>\",\n  \"answer_found\": <true | false>\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHARD RULES:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Output ONLY the JSON object. No explanation before or after.\n- \"deadline\" must be null unless the context explicitly states processing time or deadline.\n- \"answer_found\" is false if context is insufficient or score is low.\n- Never fabricate steps, phone numbers, or office addresses.\n- Quote exact numbers (hotlines, article numbers) verbatim from context.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFEW-SHOT EXAMPLES:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nExample 1 — Good answer with deadline:\nContext chunk: \"Signalement via Espace Citoyen → délai de traitement 72h ouvrables.\"\nQuestion: \"Comment signaler une route abîmée?\"\nOutput:\n{\n  \"procedure\": \"1. Rendez-vous sur le portail Espace Citoyen (commune-tunis.gov.tn).\\n2. Créez un compte ou connectez-vous.\\n3. Soumettez votre signalement avec photos et localisation.\\n4. Suivez l'avancement de votre dossier en ligne.\",\n  \"deadline\": \"72 heures ouvrables\",\n  \"answer_found\": true\n}\n\nExample 2 — No deadline in context:\nContext chunk: \"Contacter la STEG au numéro 1300 pour toute panne d'éclairage public.\"\nQuestion: \"L'éclairage de ma rue est en panne depuis 3 jours.\"\nOutput:\n{\n  \"procedure\": \"1. Appelez la STEG au 1300 (disponible 24h/24).\\n2. Signalez l'adresse exacte de la panne.\\n3. Un technicien sera envoyé.\",\n  \"deadline\": null,\n  \"answer_found\": true\n}\n\nExample 3 — Insufficient context:\nContext chunk: \"La commune gère les espaces verts et la propreté urbaine.\"\nQuestion: \"Comment obtenir un permis de construire?\"\nOutput:\n{\n  \"procedure\": null,\n  \"deadline\": null,\n  \"answer_found\": false\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCONTEXT (top-3 retrieved chunks):\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[DOC-WATER-02#source] SONEDE — FAQ de détection des fuites\nSource: https://www.sonede.com.tn/espace-client/faq/\n# SONEDE — Détection d'une fuite\n\n## Vérification de l'index\nLa FAQ propose une première relève de l'index du compteur, une période d'environ 30 minutes sans utilisation d'eau, puis une seconde relève. Si les index diffèrent, la FAQ indique la présence d'une fuite et recommande de la rechercher et de la réparer sans tarder.\n\n## Limite\nLes 30 minutes correspondent à une durée de vérification. Ce n'est pas un délai d'intervention ou de réparation garanti par la SONEDE. Cette rubrique ne donne pas de procédure de signalement d'eaux usées à l'ONAS.\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCITIZEN REQUEST:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCategory: WATER_LEAK\nDepartment: Non précisé\nDescription: كيف أتحقق من وجود تسرب باستعمال عداد الماء؟\n\nRespond with ONLY the JSON object:\n"
+      }
+    ],
+    "stream": false,
+    "options": {
+      "temperature": 0,
+      "seed": 42,
+      "num_ctx": 8192,
+      "num_predict": 512
+    },
+    "keep_alive": "2m",
+    "format": "json"
+  },
+  "answer": {
+    "procedure": "1. قم بتسجيل القراءة الأولية للعداد.\n2. اترك العداد بدون استخدام مياه لمدة 30 دقيقة.\n3. قم بتسجيل القراءة الثانية.\n4. إذا تغيرت القراءة، فهذا يشير إلى وجود تسرب.\n5. قم بفحص و修理 التسرب.",
+    "deadline": null,
+    "answer_found": true
+  },
+  "status": "completed",
+  "elapsed_seconds": 5.219
+}

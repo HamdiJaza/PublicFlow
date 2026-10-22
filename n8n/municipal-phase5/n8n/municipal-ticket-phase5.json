@@ -1,0 +1,654 @@
+{
+  "name": "Municipal Ticket - HTTP Intake + Vision + Knowledge (PHASE 5 DEMO)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "municipal-ticket-phase5",
+        "responseMode": "responseNode",
+        "options": {
+          "responseData": "firstEntryJson"
+        }
+      },
+      "id": "citizen-webhook",
+      "name": "Citizen Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Only JSON + a trusted media reference in v1. Never accept arbitrary remote URLs.\nconst web = $input.first().json;\nconst body = web.body && typeof web.body === 'object' && !Array.isArray(web.body) ? web.body : {};\nconst errors = [];\nconst report_id = typeof body.report_id === 'string' ? body.report_id.trim() : '';\nconst description = typeof body.description === 'string' ? body.description.trim() : '';\nconst media_ref = typeof body.media_ref === 'string' ? body.media_ref.trim() : '';\nif (!/^[A-Za-z0-9_-]{3,64}$/.test(report_id)) errors.push('INVALID_REPORT_ID');\nif (description.length < 5 || description.length > 3000) errors.push('INVALID_DESCRIPTION');\nif (!media_ref) errors.push('MISSING_MEDIA_REF');\nelse if (media_ref.length > 512 || media_ref.includes('..') || !/^(mock:\\/\\/[a-z0-9_-]+|uploads\\/[A-Za-z0-9_./-]+)$/.test(media_ref)) errors.push('UNSAFE_MEDIA_REF');\nlet location = null;\nif (body.location !== undefined && body.location !== null) {\n  const loc = body.location;\n  if (typeof loc !== 'object' || Array.isArray(loc)) errors.push('INVALID_LOCATION');\n  else {\n    const lat = loc.latitude === undefined || loc.latitude === null ? null : loc.latitude;\n    const lon = loc.longitude === undefined || loc.longitude === null ? null : loc.longitude;\n    const address = typeof loc.address === 'string' ? loc.address.trim() : null;\n    if ((lat !== null && (typeof lat !== 'number' || !Number.isFinite(lat) || Math.abs(lat) > 90)) ||\n        (lon !== null && (typeof lon !== 'number' || !Number.isFinite(lon) || Math.abs(lon) > 180)) ||\n        (address !== null && address.length > 300)) errors.push('INVALID_LOCATION');\n    else location = {latitude:lat,longitude:lon,address:address || null};\n  }\n}\nconst decision = errors.length ? 'REJECT' : 'PASS';\nreturn [{json:{\n  report_id: report_id || null,\n  // For the first prototype, this is set by the workflow OWNER, not by the caller.\n  demo_mode:true,\n  input: {description,media_ref,location},\n  decision,errors, review_reasons:[],\n  versions:{orchestrator:'member1-v4'},\n  started_at: new Date().toISOString(),\n  trace:[{at:new Date().toISOString(),stage:'INPUT_CHECK',decision,reason_codes:[...errors]}]\n}}];"
+      },
+      "id": "input-check",
+      "name": "Input Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        230,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-input-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "input-pass?",
+      "name": "Input PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        470,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://municipal-intake-stub:8001/intake",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ report_id: $json.report_id, description: $json.input.description, media_ref: $json.input.media_ref, location: $json.input.location }) }}",
+        "options": {
+          "timeout": 5000
+        }
+      },
+      "id": "http-intake",
+      "name": "HTTP Intake",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        690,
+        100
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "notes": "Stateless, read-only Intake transformation. Max 3 tries total (2 retries) at 1-second spacing. Never auto-pass on error.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const x = $input.first().json;\nconst r = x.intake;\nconst problems=[];\nif (!r || typeof r!=='object') problems.push('INTAKE_ENDPOINT_FAILED_OR_INVALID');\nelse {\n  if (r.report_id !== x.report_id) problems.push('INTAKE_REPORT_ID_MISMATCH');\n  if (r.media_ref !== x.input.media_ref) problems.push('INTAKE_MEDIA_REF_MISMATCH');\n  if (r.input_type !== 'IMAGE_TEXT' || typeof r.cleaned_description !== 'string' || !r.cleaned_description.trim()) problems.push('INTAKE_MISSING_FIELDS');\n  if (!Array.isArray(r.errors)) problems.push('INTAKE_ERRORS_INVALID');\n  const fixture = x.demo_mode===true && x.input.media_ref.startsWith('mock://') &&\n    r.is_mock===true && r.media_validation==='MOCK_FIXTURE' && r.validity==='MOCK_VALID' &&\n    Array.isArray(r.errors) && r.errors.length===0;\n  const real = x.input.media_ref.startsWith('uploads/') && r.is_mock!==true &&\n    r.media_validation==='VERIFIED' && r.validity==='VALID' &&\n    r.privacy_status==='ANONYMIZED' && r.image_anonymized===true &&\n    typeof r.anonymized_media_ref==='string' && /^safe\\/[A-Za-z0-9_./-]+$/.test(r.anonymized_media_ref) &&\n    !r.anonymized_media_ref.includes('..') &&\n    Array.isArray(r.errors) && r.errors.length===0;\n  if (!fixture && !real) problems.push('INTAKE_MEDIA_OR_PRIVACY_NOT_VERIFIED');\n}\nx.decision=problems.length?'REVIEW':'PASS';\nx.review_reasons.push(...problems);\nx.trace.push({at:new Date().toISOString(),stage:'GATE_1_INTAKE',decision:x.decision,reason_codes:problems});\nreturn [{json:x}];"
+      },
+      "id": "gate-1---intake",
+      "name": "Gate 1 - Intake",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "intake-pass?",
+      "name": "Intake PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1400,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const x = $input.first().json;\nconst v = x.vision;\nconst problems = [];\nconst accepted = ['ROAD_DAMAGE','STREET_LIGHTING','WASTE','WATER_LEAK'];\nif (!v || typeof v !== 'object') {\n  problems.push('VISION_ENDPOINT_FAILED_OR_INVALID');\n} else {\n  if (v.report_id !== x.report_id) problems.push('VISION_REPORT_ID_MISMATCH');\n  if (!accepted.includes(v.category)) problems.push('UNKNOWN_CATEGORY');\n  if (!['LOW','MEDIUM','HIGH'].includes(v.severity)) problems.push('UNKNOWN_SEVERITY');\n  if (v.text_image_consistent !== true) problems.push('IMAGE_TEXT_MISMATCH_OR_UNCLEAR');\n  if (v.uncertainty !== false) problems.push('VISION_UNCERTAIN');\n  if (!Array.isArray(v.evidence) || v.evidence.length === 0 ||\n      !v.evidence.every(e => typeof e === 'string' && e.trim().length > 0))\n    problems.push('VISION_MISSING_EVIDENCE');\n  if (typeof v.description !== 'string' || !v.description.trim()) problems.push('VISION_MISSING_DESCRIPTION');\n  if (typeof v.agent_version !== 'string' || !v.agent_version.trim()) problems.push('VISION_VERSION_MISSING');\n  if (v.confidence !== null && v.confidence !== undefined &&\n      (typeof v.confidence !== 'number' || !Number.isFinite(v.confidence) || v.confidence < 0 || v.confidence > 1))\n    problems.push('VISION_INVALID_CONFIDENCE');\n  const fixture = x.input.media_ref.startsWith('mock://');\n  if (fixture && v.is_mock !== true) problems.push('VISION_FIXTURE_PROVENANCE_INVALID');\n  if (!fixture && v.is_mock === true) problems.push('VISION_MOCK_CANNOT_VALIDATE_REAL_MEDIA');\n  // No confidence threshold is treated as correctness evidence; human review handles uncertainty.\n}\nx.decision = problems.length ? 'REVIEW' : 'PASS';\nx.review_reasons.push(...problems);\nx.trace.push({at:new Date().toISOString(),stage:'GATE_2_VISION',decision:x.decision,reason_codes:problems});\nreturn [{json:x}];"
+      },
+      "id": "gate-2---vision",
+      "name": "Gate 2 - Vision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2130,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-vision-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "vision-pass?",
+      "name": "Vision PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2350,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Rules control the department: no LLM is permitted to choose it.\nconst x=$input.first().json;\nconst departments={\n  ROAD_DAMAGE:'ROADS_DEPARTMENT',\n  STREET_LIGHTING:'PUBLIC_LIGHTING_DEPARTMENT',\n  WASTE:'SANITATION_DEPARTMENT',\n  WATER_LEAK:'WATER_SERVICES_DEPARTMENT'\n};\nx.department=departments[x.vision.category]||null;\nif(!x.department){x.decision='REVIEW';x.review_reasons.push('NO_DEPARTMENT_RULE');}\nx.trace.push({at:new Date().toISOString(),stage:'DEPARTMENT_ROUTING',decision:x.decision,reason_codes:x.department?[]:['NO_DEPARTMENT_RULE']});\nreturn [{json:x}];"
+      },
+      "id": "department-rules",
+      "name": "Department Rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2580,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const x = $input.first().json;\nconst k = x.knowledge;\nconst issues = [];\nif (!k || typeof k !== 'object' || Array.isArray(k)) {\n  issues.push('KNOWLEDGE_ENDPOINT_FAILED_OR_INVALID');\n} else {\n  if (k.report_id !== x.report_id) issues.push('KNOWLEDGE_REPORT_ID_MISMATCH');\n  if (k.category !== x.vision.category) issues.push('KNOWLEDGE_CATEGORY_MISMATCH');\n  if (k.department !== x.department) issues.push('KNOWLEDGE_DEPARTMENT_MISMATCH');\n  if (typeof k.procedure !== 'string' || !k.procedure.trim()) issues.push('MISSING_PROCEDURE');\n  if (typeof k.agent_version !== 'string' || !k.agent_version.trim()) issues.push('KNOWLEDGE_VERSION_MISSING');\n  if (!Array.isArray(k.sources) || k.sources.length === 0) {\n    issues.push('MISSING_SOURCE');\n  } else {\n    for (const s of k.sources) {\n      if (!s || typeof s !== 'object' || Array.isArray(s) ||\n          typeof s.document_title !== 'string' || !s.document_title.trim() ||\n          typeof s.chunk_id !== 'string' || !s.chunk_id.trim()) {\n        issues.push('INVALID_SOURCE_METADATA');break;\n      }\n      if (s.search_score !== null && s.search_score !== undefined &&\n          (typeof s.search_score !== 'number' || !Number.isFinite(s.search_score) || s.search_score < 0 || s.search_score > 1)) {\n        issues.push('INVALID_SEARCH_SCORE');break;\n      }\n      if (s.source_url !== null && s.source_url !== undefined &&\n          (typeof s.source_url !== 'string' || !/^https:\\/\\//.test(s.source_url))) {\n        issues.push('INVALID_SOURCE_URL');break;\n      }\n    }\n  }\n  if (x.demo_mode === true) {\n    // Local test fixtures only; never trust model-supplied official-policy claims here.\n    if (k.is_mock !== true || !Array.isArray(k.sources) ||\n        !k.sources.every(s => s && s.is_mock === true && s.is_official === false && s.source_url === null)) {\n      issues.push('INVALID_DEMO_SOURCE');\n    }\n    if (k.deadline !== null) issues.push('DEMO_DEADLINE_MUST_BE_NULL');\n  } else {\n    // Real mode requires a separate allowlist and actual source verification.\n    issues.push('OFFICIAL_SOURCE_VERIFICATION_NOT_IMPLEMENTED');\n  }\n}\nx.decision=issues.length?'REVIEW':'PASS';\nx.review_reasons.push(...issues);\nx.trace.push({at:new Date().toISOString(),stage:'GATE_3_KNOWLEDGE',decision:x.decision,reason_codes:issues});\nreturn [{json:x}];"
+      },
+      "id": "gate-3---sources",
+      "name": "Gate 3 - Sources",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3290,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-sources-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "sources-pass?",
+      "name": "Sources PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3510,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const x=$input.first().json;\nx.ticket={\n  ticket_id:'DEMO-TKT-'+x.report_id,\n  report_id:x.report_id,status:'TICKET_CREATED',\n  category:x.vision.category,severity:x.vision.severity,\n  priority:x.vision.severity==='HIGH'?'HIGH':(x.vision.severity==='LOW'?'LOW':'NORMAL'),\n  department:x.department,\n  location:x.intake.location,\n  anonymized_media_ref:null, // face blurring NOT implemented here\n  procedure:x.knowledge.procedure,\n  sources:x.knowledge.sources,\n  deadline:x.knowledge.deadline,\n  persisted:false,storage_status:'MOCK_ONLY',is_mock:true\n};\nx.trace.push({at:new Date().toISOString(),stage:'TICKET_CREATION',decision:'PASS',reason_codes:['DEMO_TICKET_NOT_SAVED']});\nreturn [{json:x}];"
+      },
+      "id": "mock-ticket-creation",
+      "name": "Mock Ticket Creation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3740,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const x=$input.first().json;\nconst decision=['PASS','REVIEW','REJECT'].includes(x.decision)?x.decision:'REVIEW';\nconst http_status=decision==='REJECT'?422:(decision==='REVIEW'?202:200);\nreturn [{json:{\n  report_id:x.report_id||null,decision,\n  ticket:x.ticket||null,\n  review_reasons:x.review_reasons||[],errors:x.errors||[],\n  // Never conflate mock outputs with real analysis or database persistence.\n  demo_mode:!!x.demo_mode,agents_are_mock:true,\n  notice:'Demo only: Intake/Vision/Knowledge results are fixture-based; no actual image inference, verified municipal procedure or saved ticket.',\n  versions:x.versions||{},trace:x.trace||[],audit:x.audit||null,http_status\n}}];"
+      },
+      "id": "format-api-response",
+      "name": "Format API Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4210,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": "={{ $json.http_status }}"
+        }
+      },
+      "id": "respond-to-citizen",
+      "name": "Respond to Citizen",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        4440,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Restore original workflow state after HTTP Request replaces its incoming JSON.\n// This project handles one report per webhook execution.\nconst x = $('Input Check').first().json;\nconst received = $input.first().json;\nconst isResponse = received && typeof received==='object' && !Array.isArray(received) && !received.error &&\n  typeof received.report_id==='string' && typeof received.cleaned_description==='string';\nif (isResponse) {\n  x.intake=received;\n  x.versions.intake=typeof received.agent_version==='string' ? received.agent_version : 'unknown';\n  x.trace.push({at:new Date().toISOString(),stage:'INTAKE',decision:received.is_mock===true?'MOCK':'RECEIVED',reason_codes:[]});\n} else {\n  x.intake=null;\n  x.versions.intake='unavailable';\n  x.trace.push({at:new Date().toISOString(),stage:'INTAKE',decision:'REVIEW',reason_codes:['INTAKE_ENDPOINT_FAILED_OR_INVALID']});\n}\nreturn [{json:x}];"
+      },
+      "id": "attach-intake",
+      "name": "Attach Intake Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        930,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://municipal-vision-stub:8002/vision",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ report_id: $json.report_id, media_ref: $json.intake.anonymized_media_ref || $json.intake.media_ref, cleaned_description: $json.intake.cleaned_description, location: $json.intake.location }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "http-vision",
+      "name": "HTTP Vision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1630,
+        -80
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput",
+      "notes": "Stateless classification only; max 3 tries total. Use the anonymized image reference from Intake when present.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n HTTP Request replaces item JSON. Restore only this execution's report state.\n// The workflow handles one report per webhook execution.\nconst x = $('Gate 1 - Intake').first().json;\nconst r = $input.first().json;\nconst validObject = r && typeof r === 'object' && !Array.isArray(r) && !r.error &&\n  typeof r.report_id === 'string' && typeof r.category === 'string';\nif (validObject) {\n  x.vision = r;\n  x.versions.vision = typeof r.agent_version === 'string' ? r.agent_version : 'unknown';\n  x.trace.push({at:new Date().toISOString(),stage:'VISION_HTTP',decision:r.is_mock === true ? 'MOCK' : 'RECEIVED',reason_codes:[]});\n} else {\n  x.vision = null;\n  x.versions.vision = 'unavailable';\n  x.trace.push({at:new Date().toISOString(),stage:'VISION_HTTP',decision:'REVIEW',reason_codes:['VISION_ENDPOINT_FAILED_OR_INVALID']});\n}\nreturn [{json:x}];"
+      },
+      "id": "attach-vision",
+      "name": "Attach Vision Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1880,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// A small metadata-only audit for the demo. This is not persistent database logging.\nconst x=$input.first().json;\nconst safeReasons = arr => Array.isArray(arr) ? arr.filter(s=>typeof s==='string').slice(0,20) : [];\nconst stages = Array.isArray(x.trace) ? x.trace.map(e=>({\n  at:typeof e.at==='string'?e.at:null,\n  stage:typeof e.stage==='string'?e.stage:'UNKNOWN',\n  decision:typeof e.decision==='string'?e.decision:'UNKNOWN',\n  reason_codes:safeReasons(e.reason_codes)\n})) : [];\nx.audit={\n  report_id:x.report_id || null,\n  decided_at:new Date().toISOString(),\n  outcome:x.decision,\n  stages,\n  agent_versions:x.versions || {},\n  storage:'N8N_EXECUTION_DATA_ONLY_NOT_A_TICKET_DB'\n};\nreturn [{json:x}];"
+      },
+      "id": "audit-summary",
+      "name": "Audit Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3980,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://municipal-knowledge-stub:8003/knowledge",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ report_id: $json.report_id, category: $json.vision.category, department: $json.department, description: $json.intake.cleaned_description, municipality: null }) }}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "http-knowledge",
+      "name": "HTTP Knowledge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2810,
+        -260
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// HTTP responses replace the incoming item. Restore only the current execution state.\nconst x = $('Department Rules').first().json;\nconst r = $input.first().json;\nconst usable = r && typeof r === 'object' && !Array.isArray(r) && !r.error &&\n    typeof r.report_id === 'string' && typeof r.procedure === 'string' && Array.isArray(r.sources);\nif (usable) {\n  x.knowledge = r;\n  x.versions.knowledge = typeof r.agent_version === 'string' && r.agent_version.trim() ? r.agent_version : 'unknown';\n  x.trace.push({at:new Date().toISOString(),stage:'KNOWLEDGE_HTTP',decision:r.is_mock === true ? 'MOCK' : 'RECEIVED',reason_codes:[]});\n} else {\n  x.knowledge = null;\n  x.versions.knowledge = 'unavailable';\n  x.trace.push({at:new Date().toISOString(),stage:'KNOWLEDGE_HTTP',decision:'REVIEW',reason_codes:['KNOWLEDGE_ENDPOINT_FAILED_OR_INVALID']});\n}\nreturn [{json:x}];"
+      },
+      "id": "attach-knowledge",
+      "name": "Attach Knowledge Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3050,
+        -260
+      ]
+    }
+  ],
+  "connections": {
+    "Citizen Webhook": {
+      "main": [
+        [
+          {
+            "node": "Input Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Check": {
+      "main": [
+        [
+          {
+            "node": "Input PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input PASS?": {
+      "main": [
+        [
+          {
+            "node": "HTTP Intake",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate 1 - Intake": {
+      "main": [
+        [
+          {
+            "node": "Intake PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intake PASS?": {
+      "main": [
+        [
+          {
+            "node": "HTTP Vision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate 2 - Vision": {
+      "main": [
+        [
+          {
+            "node": "Vision PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vision PASS?": {
+      "main": [
+        [
+          {
+            "node": "Department Rules",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Department Rules": {
+      "main": [
+        [
+          {
+            "node": "HTTP Knowledge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate 3 - Sources": {
+      "main": [
+        [
+          {
+            "node": "Sources PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sources PASS?": {
+      "main": [
+        [
+          {
+            "node": "Mock Ticket Creation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Ticket Creation": {
+      "main": [
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format API Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Citizen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Intake": {
+      "main": [
+        [
+          {
+            "node": "Attach Intake Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Intake Response": {
+      "main": [
+        [
+          {
+            "node": "Gate 1 - Intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Vision": {
+      "main": [
+        [
+          {
+            "node": "Attach Vision Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Vision Response": {
+      "main": [
+        [
+          {
+            "node": "Gate 2 - Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit Summary": {
+      "main": [
+        [
+          {
+            "node": "Format API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Knowledge": {
+      "main": [
+        [
+          {
+            "node": "Attach Knowledge Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Knowledge Response": {
+      "main": [
+        [
+          {
+            "node": "Gate 3 - Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "tags": []
+}

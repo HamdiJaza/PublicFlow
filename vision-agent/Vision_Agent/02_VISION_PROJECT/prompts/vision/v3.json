@@ -1,0 +1,59 @@
+{
+  "prompt_id": "VISION-CLASSIFY",
+  "version": "v3",
+  "role": "Classify the main visible municipal issue using three real image/answer demonstrations.",
+  "techniques": ["few-shot multimodal prompting", "role prompting", "structured output", "fixed categories", "visual grounding", "uncertainty and location guardrails"],
+  "comment": "The system instructions are exactly v2. Only three user-image/assistant-answer pairs are added before the query. Comments and annotation metadata are not sent to the model. These targets are visual annotations, not model-run results or citizen descriptions.",
+  "system_prompt": "v2.txt",
+  "system_prompt_sha256": "7829a7e9723d443d9e7e3d88878c63ee96a5b6b73119a9e3e8c28d51dc917e55",
+  "minimum_context": 8192,
+  "annotation_status": "assistant_visual_review_pending_team_validation",
+  "reviewed_on": "2026-10-17",
+  "demonstrations": [
+    {
+      "image_id": "IMG-02",
+      "scene_group": "scene-02",
+      "image_sha256": "cb9b37d7b1cb7f1c32b8b122d60848afdc9842fdc8b57aa294989e7922a0d7da",
+      "comment": "Shows positive waste evidence and a relevant limit. The background streetlight is not evidence of a lighting incident. Severity and confidence remain null because neither has been validated.",
+      "answer": {
+        "category": "WASTE",
+        "severity": null,
+        "description": "Bags, cardboard boxes and loose rubbish are piled on the ground beside a waste container.",
+        "evidence": ["Black and light-coloured bags are piled on the ground.", "Cardboard boxes and loose packaging are scattered beside the pile."],
+        "text_image_consistent": null,
+        "confidence": null,
+        "uncertainty_reason": "The photograph does not show the full extent of the waste outside the frame."
+      }
+    },
+    {
+      "image_id": "IMG-06",
+      "scene_group": "scene-05",
+      "image_sha256": "1d48318d33720d8bc7ec411134dd6607a0712e75a76407b9f4fbebb69d539b6d",
+      "comment": "Shows direct pavement damage without guessing the circular cover's utility type, owner or cause of damage.",
+      "answer": {
+        "category": "ROAD_DAMAGE",
+        "severity": null,
+        "description": "The paving beside a circular cover is broken and uneven, with gaps exposing the ground beneath.",
+        "evidence": ["Broken paving edges and separated slabs surround the cover.", "Open gaps beside the slabs expose soil and debris."],
+        "text_image_consistent": null,
+        "confidence": null,
+        "uncertainty_reason": "The photograph provides no reliable scale for measuring the depth of the gaps."
+      }
+    },
+    {
+      "image_id": "IMG-10",
+      "scene_group": "scene-08",
+      "image_sha256": "38d59a5275529a00e3cea75c6b591e676a047c5ef4b49875d11414969237e540",
+      "comment": "Demonstrates abstention when the intended incident and the function of the wall-mounted assembly are unclear. Null does not assert that the scene is safe or that no issue exists.",
+      "answer": {
+        "category": null,
+        "severity": null,
+        "description": "A vertical metal assembly is attached to a building facade, with cables extending overhead.",
+        "evidence": ["A metal assembly runs vertically along the facade.", "Several cables extend from its upper end across the sky."],
+        "text_image_consistent": null,
+        "confidence": null,
+        "uncertainty_reason": "The photograph does not establish the function of this assembly or a fault in a public streetlight."
+      }
+    }
+  ]
+}

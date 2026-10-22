@@ -1,0 +1,70 @@
+{
+  "origin": "Authored development test inputs from the supplied project; not collected citizen reports.",
+  "cases": [
+    {
+      "id": "TC-01-ROAD-FR",
+      "name": "Road Damage (French) — Pothole report",
+      "payload": {
+        "category": "ROAD_DAMAGE",
+        "department": "Direction Générale des Bâtiments et de la Voirie",
+        "description": "Il y a un grand trou dans la chaussée sur l'avenue Habib Bourguiba, comment le signaler?",
+        "strategy": "structure",
+        "prompt_version": "v3_structured"
+      },
+      "expect_found": true,
+      "expect_deadline": true
+    },
+    {
+      "id": "TC-02-LIGHT-DERJA",
+      "name": "Street Lighting (Arabic/Derja) — Broken street lamppost",
+      "payload": {
+        "category": "STREET_LIGHTING",
+        "department": "Direction Générale des Bâtiments et de la Voirie",
+        "description": "فوانيس الشارع طافية والنهج مظلم تماما في الليل شكون نكلم؟",
+        "strategy": "structure",
+        "prompt_version": "v3_structured"
+      },
+      "expect_found": true,
+      "expect_deadline": false
+    },
+    {
+      "id": "TC-03-WASTE-AR",
+      "name": "Waste Management (Arabic) — Construction debris dumping",
+      "payload": {
+        "category": "WASTE",
+        "department": "Direction de la Propreté et de la Protection de l'Environnement",
+        "description": "أين يمكن إلقاء فضلات البناء والهدم دون ارتكاب مخالفة بلدية؟",
+        "strategy": "structure",
+        "prompt_version": "v3_structured"
+      },
+      "expect_found": true,
+      "expect_deadline": false
+    },
+    {
+      "id": "TC-04-WATER-FR",
+      "name": "Water Leak (French) — Burst drinking water pipe",
+      "payload": {
+        "category": "WATER_LEAK",
+        "department": "SONEDE / Service des Eaux",
+        "description": "Une fuite d'eau potable importante sur le trottoir inonde la rue. Quel numéro d'urgence contacter?",
+        "strategy": "structure",
+        "prompt_version": "v3_structured"
+      },
+      "expect_found": true,
+      "expect_deadline": false
+    },
+    {
+      "id": "TC-05-OUT-OF-SCOPE",
+      "name": "Negative Control — Passport / Identity Card renewal",
+      "payload": {
+        "category": "NONE",
+        "department": "Ministère de l'Intérieur",
+        "description": "Comment renouveler mon passeport tunisien expiré?",
+        "strategy": "structure",
+        "prompt_version": "v3_structured"
+      },
+      "expect_found": false,
+      "expect_deadline": false
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+Prototype visual severity rubric:
+- LOW: small local damage or scattered litter, with passage visibly clear.
+- MEDIUM: a waste pile, or broken/uneven walking or road surface beyond small local damage.
+- HIGH: a clearly visible immediate hazard, such as an uncovered opening in the travel path. Do not infer live electricity, water depth or hidden danger.
+- null: the category is NONE or null, or the photograph does not support a severity assessment.
+Apply this rubric to the query photograph. Describe the visible condition that supports the level. This is a prototype assessment of the photograph, not an official municipal priority or a measurement of risk.

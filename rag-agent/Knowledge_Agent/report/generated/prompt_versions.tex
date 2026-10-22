@@ -1,0 +1,11 @@
+{\small
+\begin{tabularx}{\linewidth}{|L{14mm}|L{49mm}|Y|L{23mm}|}\hline
+\textbf{Version} & \textbf{Techniques used} & \textbf{Change and observed result} & \textbf{Schema; checks}\\\hline
+v1 & Zero-shot role, context, language/refusal instructions. & Plain-answer baseline; no saved run. & Not tested\\\hline
+v2 & Zero-shot role; stronger context-only guardrails. & Adds explicit refusal/null rules; no saved run. & Not tested\\\hline
+v3 & Role instruction; few-shot; JSON instructions; guardrails. & Unsupported demonstration details found by inspection; language contamination observed. & 5/5; 4/5\\\hline
+v4 & Source-backed few-shot; role; JSON; guardrails. & Replaces unsupported examples; contact refusal and English copying remain. & 5/5; 3/5\\\hline
+v5 & Zero-shot decision rules; JSON; contact/procedure distinction. & Contact recovers; injected phone and deadline are copied. & 5/5; 4/5\\\hline
+v6 & System/user separation; zero-shot; JSON data; language rule. & Quoted null and overrefusal; role separation alone fails. & 2/5; 1/5\\\hline
+v7 & System role; source-backed few-shot; JSON-null examples. & Contact recovers; Arabic refusal and invented integer deadline persist. & 4/5; 3/5\\\hline
+\end{tabularx}}

@@ -1,0 +1,541 @@
+{
+  "mode": "historical_score_replay",
+  "input_sha256": "127c375bf2a854a68409204c7a027d8ad85bf50cf9326146cb2a82d7dfee7dd0",
+  "scope": "Original 12-document corpus and SentenceTransformers BGE-M3 scores supplied in the archive. No fresh retrieval, no Ollama embedding measurement, no generation test. Scores were saved to four decimals.",
+  "created_at": "2026-10-18T00:22:21.859274+00:00",
+  "score_threshold": 0.4,
+  "metrics": {
+    "fixed": {
+      "positive_queries": 9,
+      "negative_queries": 1,
+      "positive_queries_with_no_context": 1,
+      "negatives_blocked_by_score": 0,
+      "raw": {
+        "hit_at_1": 0.8888888888888888,
+        "hit_at_k": 1.0,
+        "mrr": 0.9259259259259258
+      },
+      "retained": {
+        "hit_at_1": 0.7777777777777778,
+        "hit_at_k": 0.8888888888888888,
+        "mrr": 0.8148148148148149
+      }
+    },
+    "structure": {
+      "positive_queries": 9,
+      "negative_queries": 1,
+      "positive_queries_with_no_context": 0,
+      "negatives_blocked_by_score": 0,
+      "raw": {
+        "hit_at_1": 0.6666666666666666,
+        "hit_at_k": 1.0,
+        "mrr": 0.8333333333333334
+      },
+      "retained": {
+        "hit_at_1": 0.6666666666666666,
+        "hit_at_k": 1.0,
+        "mrr": 0.8333333333333334
+      }
+    }
+  },
+  "results": [
+    {
+      "strategy": "structure",
+      "query_id": "Q-ROAD-01",
+      "expected_doc": "DOC-ROAD-01",
+      "raw_rank": 2,
+      "retained_rank": 2,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-ROAD-03",
+          "score": 0.488
+        },
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.4812
+        },
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.4528
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-ROAD-02",
+      "expected_doc": "DOC-ROAD-03",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-ROAD-03",
+          "score": 0.5176
+        },
+        {
+          "doc_id": "DOC-ROAD-03",
+          "score": 0.4839
+        },
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.4566
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-LIGHT-01",
+      "expected_doc": "DOC-LIGHT-01",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 1,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-LIGHT-01",
+          "score": 0.4216
+        },
+        {
+          "doc_id": "DOC-LIGHT-01",
+          "score": 0.3503
+        },
+        {
+          "doc_id": "DOC-LIGHT-02",
+          "score": 0.3383
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-LIGHT-02",
+      "expected_doc": "DOC-LIGHT-02",
+      "raw_rank": 2,
+      "retained_rank": 2,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-LIGHT-01",
+          "score": 0.5526
+        },
+        {
+          "doc_id": "DOC-LIGHT-02",
+          "score": 0.4979
+        },
+        {
+          "doc_id": "DOC-LIGHT-02",
+          "score": 0.434
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-WATER-01",
+      "expected_doc": "DOC-WATER-01",
+      "raw_rank": 2,
+      "retained_rank": 2,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WATER-02",
+          "score": 0.51
+        },
+        {
+          "doc_id": "DOC-WATER-01",
+          "score": 0.5014
+        },
+        {
+          "doc_id": "DOC-WATER-03",
+          "score": 0.4836
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-WATER-02",
+      "expected_doc": "DOC-WATER-02",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WATER-02",
+          "score": 0.7492
+        },
+        {
+          "doc_id": "DOC-WATER-02",
+          "score": 0.6772
+        },
+        {
+          "doc_id": "DOC-WATER-02",
+          "score": 0.5872
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-WATER-03",
+      "expected_doc": "DOC-WATER-03",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WATER-03",
+          "score": 0.4459
+        },
+        {
+          "doc_id": "DOC-WATER-02",
+          "score": 0.4157
+        },
+        {
+          "doc_id": "DOC-WATER-03",
+          "score": 0.4072
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-WASTE-01",
+      "expected_doc": "DOC-WASTE-01",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WASTE-01",
+          "score": 0.5696
+        },
+        {
+          "doc_id": "DOC-WASTE-01",
+          "score": 0.4933
+        },
+        {
+          "doc_id": "DOC-WASTE-02",
+          "score": 0.4828
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-WASTE-02",
+      "expected_doc": "DOC-WASTE-02",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WASTE-02",
+          "score": 0.6336
+        },
+        {
+          "doc_id": "DOC-WASTE-01",
+          "score": 0.5056
+        },
+        {
+          "doc_id": "DOC-WASTE-01",
+          "score": 0.5055
+        }
+      ]
+    },
+    {
+      "strategy": "structure",
+      "query_id": "Q-NONE-01",
+      "expected_doc": "NO_ANSWER",
+      "raw_rank": 0,
+      "retained_rank": 0,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WATER-03",
+          "score": 0.4619
+        },
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.4617
+        },
+        {
+          "doc_id": "DOC-LIGHT-02",
+          "score": 0.4425
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-ROAD-01",
+      "expected_doc": "DOC-ROAD-01",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 2,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.4929
+        },
+        {
+          "doc_id": "DOC-ROAD-03",
+          "score": 0.4378
+        },
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.3642
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-ROAD-02",
+      "expected_doc": "DOC-ROAD-03",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 2,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-ROAD-03",
+          "score": 0.5274
+        },
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.4614
+        },
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.3873
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-LIGHT-01",
+      "expected_doc": "DOC-LIGHT-01",
+      "raw_rank": 1,
+      "retained_rank": 0,
+      "retained_count": 0,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-LIGHT-01",
+          "score": 0.3542
+        },
+        {
+          "doc_id": "DOC-LIGHT-02",
+          "score": 0.3133
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-LIGHT-02",
+      "expected_doc": "DOC-LIGHT-02",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 2,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-LIGHT-02",
+          "score": 0.443
+        },
+        {
+          "doc_id": "DOC-LIGHT-01",
+          "score": 0.4307
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-WATER-01",
+      "expected_doc": "DOC-WATER-01",
+      "raw_rank": 3,
+      "retained_rank": 3,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WATER-02",
+          "score": 0.5015
+        },
+        {
+          "doc_id": "DOC-WATER-03",
+          "score": 0.4697
+        },
+        {
+          "doc_id": "DOC-WATER-01",
+          "score": 0.4697
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-WATER-02",
+      "expected_doc": "DOC-WATER-02",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WATER-02",
+          "score": 0.757
+        },
+        {
+          "doc_id": "DOC-WATER-01",
+          "score": 0.5371
+        },
+        {
+          "doc_id": "DOC-WATER-03",
+          "score": 0.498
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-WATER-03",
+      "expected_doc": "DOC-WATER-03",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 1,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WATER-03",
+          "score": 0.4459
+        },
+        {
+          "doc_id": "DOC-WATER-02",
+          "score": 0.3998
+        },
+        {
+          "doc_id": "DOC-WATER-01",
+          "score": 0.3505
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-WASTE-01",
+      "expected_doc": "DOC-WASTE-01",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 2,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WASTE-01",
+          "score": 0.5098
+        },
+        {
+          "doc_id": "DOC-WASTE-02",
+          "score": 0.4748
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-WASTE-02",
+      "expected_doc": "DOC-WASTE-02",
+      "raw_rank": 1,
+      "retained_rank": 1,
+      "retained_count": 2,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-WASTE-02",
+          "score": 0.5558
+        },
+        {
+          "doc_id": "DOC-WASTE-01",
+          "score": 0.5117
+        }
+      ]
+    },
+    {
+      "strategy": "fixed",
+      "query_id": "Q-NONE-01",
+      "expected_doc": "NO_ANSWER",
+      "raw_rank": 0,
+      "retained_rank": 0,
+      "retained_count": 3,
+      "threshold": 0.4,
+      "negative_blocked_by_score": false,
+      "candidates": [
+        {
+          "doc_id": "DOC-ROAD-01",
+          "score": 0.4315
+        },
+        {
+          "doc_id": "DOC-WATER-03",
+          "score": 0.4138
+        },
+        {
+          "doc_id": "DOC-WATER-01",
+          "score": 0.4072
+        }
+      ]
+    }
+  ],
+  "comparison_cutoff_0.50": {
+    "fixed": {
+      "positive_queries": 9,
+      "negative_queries": 1,
+      "positive_queries_with_no_context": 4,
+      "negatives_blocked_by_score": 1,
+      "raw": {
+        "hit_at_1": 0.8888888888888888,
+        "hit_at_k": 1.0,
+        "mrr": 0.9259259259259258
+      },
+      "retained": {
+        "hit_at_1": 0.4444444444444444,
+        "hit_at_k": 0.4444444444444444,
+        "mrr": 0.4444444444444444
+      }
+    },
+    "structure": {
+      "positive_queries": 9,
+      "negative_queries": 1,
+      "positive_queries_with_no_context": 3,
+      "negatives_blocked_by_score": 1,
+      "raw": {
+        "hit_at_1": 0.6666666666666666,
+        "hit_at_k": 1.0,
+        "mrr": 0.8333333333333334
+      },
+      "retained": {
+        "hit_at_1": 0.4444444444444444,
+        "hit_at_k": 0.5555555555555556,
+        "mrr": 0.5
+      }
+    }
+  }
+}

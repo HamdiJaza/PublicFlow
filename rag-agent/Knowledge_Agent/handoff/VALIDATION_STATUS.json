@@ -1,0 +1,30 @@
+{
+  "recorded_date": "2026-10-18",
+  "offline_contract_tests": {
+    "passed": 5,
+    "total": 5
+  },
+  "ruff": "passed",
+  "powershell_syntax": {
+    "parsed_scripts": 3,
+    "errors": 0
+  },
+  "workflow_static_checks": {
+    "passed": 19,
+    "scope": "JSON structure, node settings, expression text and connections inspected. Expressions and the n8n engine were not executed."
+  },
+  "report": {
+    "file": "report/rag_report.pdf",
+    "pages": 4,
+    "author": "Knowledge Agent team"
+  },
+  "service_prompt": "v4_grounded",
+  "embedding_model": "bge-m3",
+  "generation_model": "qwen2.5:3b",
+  "corrected_index_built_here": false,
+  "live_corrected_retrieval_verified": false,
+  "successful_live_http_verified": false,
+  "n8n_engine_execution_verified": false,
+  "setup_check_observed": "Stopped correctly: the corrected index is not built.",
+  "recipient_action": "Run handoff/01_Setup_Knowledge.ps1 on the local PC, then start the API and run the real smoke checks."
+}

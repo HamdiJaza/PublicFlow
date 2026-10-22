@@ -1,0 +1,14 @@
+{
+  "recorded_at": "2026-10-18T00:27:52.980317+00:00",
+  "embedding_installed": false,
+  "generation_installed": true,
+  "missing_python_dependencies": [
+    "qdrant_client"
+  ],
+  "tokenizer_json_cached": false,
+  "last_cli_pull_result": "ollama pull bge-m3 exited 1: registry request failed through proxy 127.0.0.1:9, connection refused.",
+  "outside_sandbox_retry": "Automatic approval rejected escalation because sandbox_approval is disabled.",
+  "fresh_index_built": false,
+  "live_retrieval_measured": false,
+  "n8n_verified": false
+}

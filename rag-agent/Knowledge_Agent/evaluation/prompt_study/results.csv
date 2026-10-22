@@ -1,0 +1,11 @@
+case_id,prompt_version,valid_json_and_schema,answerability_agreement,no_invented_deadline,required_number_present,seconds,result_file,all_constraints
+P01,v3_structured,True,True,True,True,61.39,evaluation/prompt_study/runs/P01_v3_structured.json,True
+P01,v4_grounded,True,True,True,True,3.375,evaluation/prompt_study/runs/P01_v4_grounded.json,True
+P02,v3_structured,True,True,True,True,3.062,evaluation/prompt_study/runs/P02_v3_structured.json,True
+P02,v4_grounded,True,False,True,False,1.641,evaluation/prompt_study/runs/P02_v4_grounded.json,False
+P03,v3_structured,True,True,True,True,1.625,evaluation/prompt_study/runs/P03_v3_structured.json,True
+P03,v4_grounded,True,True,True,True,1.672,evaluation/prompt_study/runs/P03_v4_grounded.json,True
+P04,v3_structured,True,True,True,True,5.219,evaluation/prompt_study/runs/P04_v3_structured.json,True
+P04,v4_grounded,True,True,True,True,3.359,evaluation/prompt_study/runs/P04_v4_grounded.json,True
+P05,v3_structured,True,False,True,False,1.781,evaluation/prompt_study/runs/P05_v3_structured.json,False
+P05,v4_grounded,True,False,True,False,1.703,evaluation/prompt_study/runs/P05_v4_grounded.json,False

@@ -1,0 +1,26 @@
+{
+  "hashes": {
+    "evaluation/prompt_cases.json": "d8f5aaf36784cc92c612865addb5caa1883437c5f3d1728888f5af8fde7e32c2",
+    "rag/sources.csv": "0fe5339e07d58a6f22122446ddc73d7d0a25c0106adbc966d4f56465cffc43b6",
+    "prompts/knowledge/v6_roles.txt": "a1dfbc2506e2fbecb3f49b6bbbd3de15aca64668009066937aef3f2adb157569",
+    "api/generation.py": "214e409fe84dbf7f48effdbfbf1b2acb02e29c15d61b24893ef2ca4dd8ebf064",
+    "api/schema.py": "95cfcd5b41b68dfc6c73f3f7022bef69445881b64346305949a80776202eb8a8",
+    "evaluation/prompt_experiment.py": "6ccf83ca96e0815dcc5631822a051c6cf3241de786e89c1ab5d0bf80fd9085eb",
+    "rag/corpus/DOC-LIGHT-02.md": "69fee7590734b4ea4d9c22c302e68048b83d68e355d48839ff79b81ba5c891ef",
+    "rag/corpus/DOC-ROAD-01.md": "5dccf1398c2e6d3caf074aee96ae75178a6e746477ff2f8f9661ea05208ad788",
+    "rag/corpus/DOC-ROAD-02.md": "1c04504bedf38ff47f52860e1b62416240f65107934e7985be1332c637434a5b",
+    "rag/corpus/DOC-WATER-02.md": "038a2e972ebd778b2bfb835dc8453a3ff23967cdfcc24938e99ebda44eb3c363"
+  },
+  "provider": "ollama",
+  "model": "qwen2.5:3b",
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "options": {
+    "temperature": 0,
+    "seed": 42,
+    "num_ctx": 8192,
+    "num_predict": 512
+  },
+  "format": "json",
+  "order": "Alternate first version by case; one attempt per condition; no retries.",
+  "context_policy": "Full reviewed document summaries, shared between both prompts; no embedding/retrieval call."
+}

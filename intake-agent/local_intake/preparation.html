@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="fr"><meta charset="utf-8"><title>Préparation du signalement</title>
+<body><h1>Préparer un signalement</h1>
+<p>Le texte et les médias sont préparés ici. L'analyse visuelle et la confirmation appartiennent à Vision.</p>
+<form id="report"><label>Description <textarea name="texte"></textarea></label>
+<label>Image <input name="image" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<label>Audio <input name="audio" type="file" accept="audio/*"></label>
+<label>Vidéo <input name="video" type="file" accept="video/*"></label>
+<button>Préparer</button></form><pre id="result" aria-live="polite"></pre>
+<script>
+document.getElementById('report').addEventListener('submit', async event => {
+  event.preventDefault();
+  const button=event.target.querySelector('button');button.disabled=true;
+  try {
+    const response=await fetch('/analyser',{method:'POST',body:new FormData(event.target)});
+    document.getElementById('result').textContent=JSON.stringify(await response.json(),null,2);
+  } catch {document.getElementById('result').textContent='Impossible de joindre le service.';}
+  finally {button.disabled=false;}
+});
+</script></body></html>

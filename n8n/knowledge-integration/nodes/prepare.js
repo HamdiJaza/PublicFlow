@@ -1,0 +1,11 @@
+const x=$input.first().json,reasons=[];
+if(x.policy.gate_1?.decision!=='PASS'||x.policy.gate_2?.decision!=='PASS')reasons.push('KNOWLEDGE_UPSTREAM_NOT_VALIDATED');
+if(!['ROAD_DAMAGE','STREET_LIGHTING','WASTE','WATER_LEAK'].includes(x.vision?.category))reasons.push('KNOWLEDGE_CATEGORY_NOT_VALIDATED');
+if(typeof x.department!=='string'||!x.department.trim())reasons.push('KNOWLEDGE_DEPARTMENT_MISSING');
+const description=x.intake_native?.cleaned_text;
+if(typeof description!=='string'||!description.trim()||description.length>3000)reasons.push('KNOWLEDGE_DESCRIPTION_INVALID');
+x.knowledge_request={category:x.vision?.category,department:x.department,description,strategy:'structure',prompt_version:'v4_grounded'};
+x.decision=reasons.length?'REVIEW':'PASS';x.review_reasons.push(...reasons);
+if(reasons.length)x.policy.gate_3={decision:'REVIEW',reason_codes:reasons};
+x.trace.push({at:new Date().toISOString(),stage:'KNOWLEDGE_REQUEST_MAPPING',decision:x.decision,reason_codes:reasons});
+return [{json:x}];

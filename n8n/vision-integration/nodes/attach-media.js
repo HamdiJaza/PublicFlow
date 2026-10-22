@@ -1,0 +1,16 @@
+const x=JSON.parse(JSON.stringify($('Select Frame 1').first().json));
+const received=$input.first(), r=received.json, reasons=[];
+const headers=r.headers||{}, media=x.current_media||x.intake_native.media[0];
+const status=Number.isInteger(r.statusCode)?r.statusCode:null;
+const digest=headers['x-content-sha256'];
+if(status!==200||!received.binary?.verified_image) reasons.push('VERIFIED_MEDIA_TRANSFER_FAILED');
+if(digest!==media.sha256||headers['x-media-verification']!=='receipt-and-hash-checked') reasons.push('VERIFIED_MEDIA_HASH_UNCONFIRMED');
+if(received.binary?.verified_image?.mimeType!=='image/png') reasons.push('VERIFIED_MEDIA_FORMAT_INVALID');
+if(typeof x.intake_native.cleaned_text!=='string'||x.intake_native.cleaned_text.length>2000) reasons.push('VISION_DESCRIPTION_TOO_LONG');
+x.media_transfer={status_code:status,sha256:digest||null,verified:reasons.length===0};
+x.decision=reasons.length?'REVIEW':'PASS';x.review_reasons.push(...reasons);
+if(reasons.length)x.policy.gate_2={decision:'REVIEW',reason_codes:reasons,checks:{scope:'Required visual media transfer',...x.visual_assessment}};
+x.trace.push({at:new Date().toISOString(),stage:'VERIFIED_MEDIA_TRANSFER',media_id:media.id||null,decision:x.decision,reason_codes:reasons});
+const result={json:x};
+if(!reasons.length)result.binary={image:received.binary.verified_image};
+return [result];

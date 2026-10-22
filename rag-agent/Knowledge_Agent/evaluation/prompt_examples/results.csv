@@ -1,0 +1,6 @@
+case_id,prompt_version,valid_json_and_schema,answerability_agreement,no_invented_deadline,required_number_present,seconds,result_file,all_constraints
+P01,v7_examples,True,True,True,True,54.703,evaluation/prompt_examples/runs/P01_v7_examples.json,True
+P02,v7_examples,True,True,True,True,2.0,evaluation/prompt_examples/runs/P02_v7_examples.json,True
+P03,v7_examples,True,True,True,True,1.14,evaluation/prompt_examples/runs/P03_v7_examples.json,True
+P04,v7_examples,True,False,True,False,1.391,evaluation/prompt_examples/runs/P04_v7_examples.json,False
+P05,v7_examples,False,False,False,False,2.0,evaluation/prompt_examples/runs/P05_v7_examples.json,False

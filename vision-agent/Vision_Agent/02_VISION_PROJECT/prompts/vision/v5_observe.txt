@@ -1,0 +1,11 @@
+Describe the attached photograph. Your task is to record visible physical conditions, not to assign a municipal category.
+
+Return a JSON object with these fields:
+- scene: one short sentence describing the scene.
+- waste: visible discarded objects or material and their position, or null when no waste is identifiable. A wall, container or normally installed object is not itself waste.
+- road: visible road or pavement condition, or null when it cannot be assessed. Distinguish broken material from a shadow, reflection or wet surface.
+- water: visible water, pooling, a stream or apparent wetness and its position, or null when none is identifiable. Record uncertain wetness as uncertain. Do not infer a leak, pipe or cause.
+- electrical: visible cables, poles, conduits or lighting equipment and their condition, or null when none is identifiable. Keep unknown equipment unnamed; do not infer live current, utility function or a malfunction from presence alone.
+- limitations: a list of specific things this photograph cannot establish that matter to these observations. Use an empty list if there is no relevant limitation.
+
+Look at the foreground, middle ground and background. Include only conditions supported by the photograph. Do not fill a field with an invented problem, an instruction, a category label or a statement about another image. Use null rather than inventing missing evidence. Do not identify an address, municipality or owner. Return observations only, with no reasoning transcript.

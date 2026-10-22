@@ -1,0 +1,53 @@
+name: municipalite-auto
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n@sha256:526daa38b68e923cc00c5280d18b4da5d489f115a73bdbf3b8e452b184197a9a
+    container_name: ${MUNICIPAL_N8N_CONTAINER:-municipalite-auto-n8n}
+    ports:
+      - "127.0.0.1:${MUNICIPAL_N8N_PORT:-5679}:5678"
+    environment:
+      GENERIC_TIMEZONE: Africa/Tunis
+      TZ: Africa/Tunis
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_TEMPLATES_ENABLED: "false"
+      N8N_SECURE_COOKIE: "false"
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    labels:
+      municipal.package.root: ${MUNICIPAL_PACKAGE_ROOT:?Launch using Start_MunicipaliteAuto.cmd}
+    restart: "no"
+  postgres:
+    image: postgres@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193
+    container_name: ${MUNICIPAL_POSTGRES_CONTAINER:-municipalite-auto-postgres}
+    environment:
+      POSTGRES_USER: municipal_admin
+      POSTGRES_DB: municipal_tickets
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    secrets:
+      - postgres-password
+    ports:
+      - "127.0.0.1:${MUNICIPAL_POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - ticket_data:/var/lib/postgresql/data
+    mem_limit: 256m
+    command: ["postgres", "-c", "shared_buffers=32MB", "-c", "max_connections=20"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U municipal_admin -d municipal_tickets"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    labels:
+      municipal.package.root: ${MUNICIPAL_PACKAGE_ROOT:?Launch using Start_MunicipaliteAuto.cmd}
+    restart: "no"
+volumes:
+  n8n_data:
+    labels:
+      municipal.package.root: ${MUNICIPAL_PACKAGE_ROOT}
+  ticket_data:
+    labels:
+      municipal.package.root: ${MUNICIPAL_PACKAGE_ROOT}
+secrets:
+  postgres-password:
+    file: ../.runtime/persistence/admin-password.txt

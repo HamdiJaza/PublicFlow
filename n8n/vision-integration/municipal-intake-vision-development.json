@@ -1,0 +1,1893 @@
+{
+  "name": "Municipal - Intake + Vision - DEVELOPMENT ONLY",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "municipal-intake-vision",
+        "responseMode": "responseNode",
+        "options": {
+          "responseData": "firstEntryJson"
+        }
+      },
+      "id": "citizen-webhook",
+      "name": "Citizen Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "disabled": false,
+      "webhookId": "municipal-intake-vision-development"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Citizen contract only; Intake keeps its native texte/image/audio/video API.\nconst item=$input.first(), b=item.json.body, errors=[];\nconst object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);\nconst body=object(b)?b:{};\nconst report_id=typeof body.report_id==='string'?body.report_id.trim():'';\nconst description=typeof body.description==='string'?body.description:'';\nif(!/^[A-Za-z0-9_-]{3,64}$/.test(report_id))errors.push('INVALID_REPORT_ID');\nif((body.description!==undefined&&typeof body.description!=='string')||description.length>3000)errors.push('INVALID_DESCRIPTION');\nif(Object.keys(body).some(k=>!['report_id','description','location'].includes(k)))errors.push('UNSUPPORTED_FORM_FIELD');\nlet location=null;\nif(body.location!==undefined&&body.location!==''){\n  try{\n    location=typeof body.location==='string'?JSON.parse(body.location):body.location;\n    if(location!==null){\n      if(!object(location)||Object.keys(location).some(k=>!['address','latitude','longitude'].includes(k)))throw Error();\n      for(const [key,limit] of [['latitude',90],['longitude',180]]){\n        const v=location[key];if(v!==undefined&&v!==null&&(typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>limit))throw Error();\n      }\n      if(location.address!==undefined&&location.address!==null&&(typeof location.address!=='string'||location.address.length>300))throw Error();\n    }\n  }catch{errors.push('INVALID_LOCATION');location=null;}\n}\nconst files={...(item.binary||{})};\n// Preserve the previous single-image alias, but never infer audio/video from it.\nconst keys=Object.keys(files);\nif(keys.length===1&&!['image','audio','video'].includes(keys[0])&&['image/jpeg','image/png','image/webp'].includes(files[keys[0]]?.mimeType)){\n  files.image=files[keys[0]];delete files[keys[0]];\n}\nif(Object.keys(files).some(k=>!['image','audio','video'].includes(k)))errors.push('UNSUPPORTED_OR_DUPLICATE_MEDIA_FIELD');\nconst image=Boolean(files.image),audio=Boolean(files.audio),video=Boolean(files.video);\nif((video&&(image||audio))||(!video&&!image))errors.push('UNSUPPORTED_MEDIA_COMBINATION');\nif(image&&!audio&&description.trim().length<5)errors.push('DESCRIPTION_OR_AUDIO_REQUIRED');\nconst mime={image:['image/jpeg','image/png','image/webp'],\n  audio:['audio/wav','audio/x-wav','audio/wave','audio/mpeg','audio/mp3','audio/mp4','audio/x-m4a','audio/ogg','audio/webm','audio/flac','audio/x-flac'],\n  video:['video/mp4','video/webm','video/quicktime','video/x-msvideo','video/x-matroska']};\nfor(const kind of ['image','audio','video'])if(files[kind]&&!mime[kind].includes(files[kind].mimeType))errors.push('UNSUPPORTED_'+kind.toUpperCase()+'_TYPE');\nconst mode=video?'video':audio?'image_audio':'image_text';\nconst decision=errors.length?'REJECT':'PASS';\nconst x={report_id:report_id||null,original:{description,location},submission:{mode,has_audio:audio,has_video:video},decision,\n  errors:[...new Set(errors)],review_reasons:[],policy:{gate_1:{decision:'NOT_RUN',reason_codes:[]}},\n  integration:{\"trusted_safe_root\": \"C:/Municipal/MunicipaliteAuto/.runtime/intake/safe\", \"privacy_invariant\": \"checked_yunet_output_v1\", \"yunet_model_sha256\": \"8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4\", \"local_source_sha256\": \"858b81f63bc4f1e17ca80b970185cb668e46be0e4317ef1735df7bc87ba56836\"},\n  components:{intake:{execution:'not_called',inference:'not_verified'},vision:{execution:'not_called'},knowledge:{execution:'not_called'},persistence:{execution:'not_called'}},\n  trace:[{at:new Date().toISOString(),stage:'INPUT_CHECK',decision,reason_codes:[...new Set(errors)]}]};\nreturn [{json:x,...(!errors.length?{binary:files}:{})}];\n"
+      },
+      "id": "input-check",
+      "name": "Input Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        270,
+        0
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-input-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "input-pass?",
+      "name": "Input PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        540,
+        0
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8012/analyser",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "image"
+            },
+            {
+              "parameterType": "formData",
+              "name": "texte",
+              "value": "={{ $json.original.description }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-intake",
+      "name": "HTTP Intake",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1350,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": false,
+      "notes": "Stateless, read-only Intake transformation. Max 3 tries total (2 retries) at 1-second spacing. Never auto-pass on error.",
+      "notesInFlow": true,
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Preparation evidence only; never classify the incident in Intake/Gate 1.\nconst x=$input.first().json,r=x.intake_native,http=x.intake_http||{},reasons=[];\nconst object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);\nconst meaningful=v=>typeof v==='string'&&v.trim().length>0;\nconst strings=v=>Array.isArray(v)&&v.every(s=>typeof s==='string');\nconst hash=v=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);\nconst video=x.submission?.mode==='video',audio=x.submission?.has_audio===true;\nlet decision='REVIEW';\nif(http.transport_error)reasons.push(http.transport_error==='TIMEOUT'?'INTAKE_TIMEOUT':'INTAKE_UNAVAILABLE');\nelse if([400,413,415,422].includes(http.status_code)){decision='REJECT';reasons.push('INTAKE_INPUT_REJECTED');}\nelse if(http.status_code!==200)reasons.push('INTAKE_HTTP_FAILED');\nelse if(!object(r))reasons.push('INTAKE_INVALID_JSON');\nelse{\n  const fields=['schema_version','language','cleaned_text','text_quality','transcription_audio','transcription_video','media','preparation_status','processing_errors','avertissements'];\n  if(r.schema_version!=='intake-preparation-v1'||fields.some(k=>!(k in r))||Object.keys(r).some(k=>!fields.includes(k))||\n    !['READY','REVIEW'].includes(r.preparation_status)||!strings(r.processing_errors)||!strings(r.avertissements)||\n    typeof r.transcription_audio!=='string'||typeof r.transcription_video!=='string'||!['CLEAR','VAGUE','EMPTY'].includes(r.text_quality))reasons.push('INTAKE_PREPARATION_SCHEMA_INVALID');\n  if(r.preparation_status!=='READY'||!strings(r.processing_errors)||r.processing_errors.length)reasons.push('INTAKE_PREPARATION_INCOMPLETE');\n  if(r.text_quality!=='CLEAR'||!meaningful(r.cleaned_text)||!['fr','en','ar','mixed'].includes(r.language))reasons.push('INTAKE_TEXT_INCOMPLETE');\n  if(audio&&!meaningful(r.transcription_audio))reasons.push('INTAKE_AUDIO_TRANSCRIPT_REQUIRED');\n  if((!audio&&r.transcription_audio!=='')||(!video&&r.transcription_video!==''))reasons.push('INTAKE_UNEXPECTED_TRANSCRIPT');\n  if(strings(r.avertissements)&&r.avertissements.some(w=>!/^Données masquées \\(\\d+ email\\(s\\), \\d+ téléphone\\(s\\)\\)\\.$/.test(w)))reasons.push('INTAKE_PROCESSING_WARNING');\n  const root=(x.integration.trusted_safe_root||'').replace(/\\\\/g,'/').replace(/\\/$/,'');\n  const expected=video?3:1,media=r.media;\n  if(!Array.isArray(media)||media.length!==expected)reasons.push('INTAKE_PREPARED_MEDIA_REQUIRED');\n  if(Array.isArray(media)){\n    const paths=new Set();let requestDirectory=null;\n    for(const [index,m] of media.entries()){\n      const p=object(m)&&m.face_processing;\n      const path=object(m)&&typeof m.path==='string'?m.path.replace(/\\\\/g,'/'):'';\n      if(!object(m)||m.id!==(video?'image_video_'+(index+1):'image_independante')||m.source!==(video?'video':'image'))reasons.push('INTAKE_PREPARED_MEDIA_REQUIRED');\n      if(x.integration.privacy_invariant!=='checked_yunet_output_v1'||!root||!path.startsWith(root+'/')||\n        !/^[a-f0-9]{32}\\/image_[a-f0-9]{32}\\.png$/.test(path.slice(root.length+1))||\n        !object(p)||p.detector!=='YuNet'||p.detector_completed!==true||p.write_and_decode_verified!==true||\n        !Number.isInteger(p.faces_detected)||p.faces_detected<0||!hash(m.sha256)||p.sha256!==m.sha256||\n        !hash(p.model_sha256)||!hash(x.integration.yunet_model_sha256)||p.model_sha256!==x.integration.yunet_model_sha256)reasons.push('PRIVACY_PROCESSING_UNVERIFIED');\n      const directory=path.slice(root.length+1).split('/')[0];\n      if(paths.has(path)||(requestDirectory!==null&&directory!==requestDirectory))reasons.push('INTAKE_MEDIA_ASSOCIATION_INVALID');\n      paths.add(path);requestDirectory=directory;\n    }\n  }\n  // A silent video may have no transcript. Intake must still provide usable text.\n  if(!reasons.length)decision='PASS';\n}\nconst unique=[...new Set(reasons)];\nx.policy.gate_1={decision,reason_codes:unique,checks:{scope:'Text, speech and required visual preparation only',\n  privacy_scope:'Checked local face-processing evidence; not complete PII anonymization',native_response_preserved:object(r)}};\nx.decision=decision;\nif(decision==='REJECT')x.errors.push(...unique);else x.review_reasons.push(...unique);\nx.trace.push({at:new Date().toISOString(),stage:'GATE_1_PREPARATION',decision,reason_codes:unique});\nconst provenance=x.components.intake.service_reported_provenance;\nconst extraReasons=[];\nif(x.components.intake.provenance_status==='invalid')extraReasons.push('INTAKE_PROVENANCE_INVALID');\nif(provenance?.text_provider==='nvidia'){\n  if(provenance.normalization!=='French')extraReasons.push('INTAKE_NORMALIZATION_MISMATCH');\n  if(!provenance.calls.some(c=>c.stage==='text'&&c.status==='SUCCESS'))extraReasons.push('INTAKE_TEXT_INFERENCE_UNCONFIRMED');\n  if(provenance.calls.some(c=>c.inference_mode==='TEST_DOUBLE'))extraReasons.push('INTAKE_TEST_DOUBLE_NOT_REAL_INFERENCE');\n  if(x.submission&&provenance.transcription_provider==='nvidia'){\n    const expected=x.submission.has_audio===true||(x.submission.mode==='video'&&typeof r?.transcription_video==='string'&&r.transcription_video.trim())?1:0;\n    const speech=provenance.calls.filter(c=>c.stage==='transcription'&&c.status==='SUCCESS').length;\n    if(speech!==expected)extraReasons.push('INTAKE_SPEECH_INFERENCE_UNCONFIRMED');\n  }\n}\nif(extraReasons.length){\n  x.policy.gate_1.reason_codes.push(...extraReasons);x.review_reasons.push(...extraReasons);\n  if(x.decision!=='REJECT'){x.decision='REVIEW';x.policy.gate_1.decision='REVIEW';}\n  x.trace.push({at:new Date().toISOString(),stage:'INTAKE_PROVIDER_CHECK',decision:x.policy.gate_1.decision,reason_codes:extraReasons});\n}\nreturn [{json:x}];\n\n"
+      },
+      "id": "gate-1---intake",
+      "name": "Gate 1 - Intake",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1890,
+        0
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "intake-pass?",
+      "name": "Intake PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        0
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Native Vision schema; no invented uncertainty boolean, agent version or scores.\nconst x=$input.first().json, v=x.vision_native, http=x.vision_http||{}, problems=[];\nconst object=o=>o!==null&&typeof o==='object'&&!Array.isArray(o);\nconst meaningful=s=>typeof s==='string'&&s.trim().length>0;\nconst accepted=['ROAD_DAMAGE','STREET_LIGHTING','WASTE','WATER_LEAK'];\nconst fields=['category','severity','description','evidence','text_image_consistent','confidence','uncertainty_reason','report_id','run_id'];\nif(http.transport_error)problems.push(http.transport_error==='TIMEOUT'?'VISION_TIMEOUT':'VISION_UNAVAILABLE');\nelse if(http.status_code!==200)problems.push('VISION_HTTP_FAILED');\nelse if(!object(v))problems.push('VISION_INVALID_JSON');\nelse {\n  if(fields.some(k=>!(k in v))||Object.keys(v).some(k=>!fields.includes(k)))problems.push('VISION_SCHEMA_INVALID');\n  if(v.report_id!==x.report_id)problems.push('VISION_REPORT_ID_MISMATCH');\n  const digest=x.media_transfer?.sha256;\n  if(!meaningful(v.run_id)||typeof digest!=='string'||!v.run_id.endsWith('_UPLOAD-'+digest.slice(0,12)))problems.push('VISION_RUN_MEDIA_MISMATCH');\n  if(!accepted.includes(v.category))problems.push('VISION_CATEGORY_UNSUPPORTED_OR_UNCLEAR');\n  if(!['LOW','MEDIUM','HIGH'].includes(v.severity))problems.push('VISION_SEVERITY_UNCLEAR');\n  if(!meaningful(v.description)||v.description.length>600)problems.push('VISION_DESCRIPTION_INVALID');\n  if(!Array.isArray(v.evidence)||v.evidence.length===0||v.evidence.length>6||!v.evidence.every(meaningful))problems.push('VISION_EVIDENCE_MISSING');\n  if(v.text_image_consistent!==true)problems.push('IMAGE_TEXT_MISMATCH_OR_UNCLEAR');\n  if(v.uncertainty_reason!==null)problems.push('VISION_UNCERTAINTY_REQUIRES_REVIEW');\n  if(typeof v.confidence!=='number'||!Number.isFinite(v.confidence)||v.confidence<0||v.confidence>1)problems.push('VISION_CONFIDENCE_MISSING_OR_INVALID');\n  // No confidence cutoff: the model estimate is uncalibrated, not correctness evidence.\n  if(x.media_transfer?.verified!==true)problems.push('VISION_MEDIA_NOT_VERIFIED');\n}\nx.decision=problems.length?'REVIEW':'PASS';x.review_reasons.push(...problems);\nx.policy.gate_2={decision:x.decision,reason_codes:problems,checks:{scope:'Native visual evidence and text consistency',confidence_scope:'Uncalibrated model estimate; no numerical acceptance threshold',native_response_preserved:object(v)}};\nx.trace.push({at:new Date().toISOString(),stage:'GATE_2_VISION',media_id:x.current_media?.id||null,decision:x.decision,reason_codes:problems});\nreturn [{json:x}];\n"
+      },
+      "id": "gate-2---vision",
+      "name": "Gate 2 - Vision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1620,
+        600
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-vision-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "vision-pass?",
+      "name": "Vision PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        600
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// Rules control the department: no LLM is permitted to choose it.\nconst x=$input.first().json;\nconst departments={\n  ROAD_DAMAGE:'ROADS_DEPARTMENT',\n  STREET_LIGHTING:'PUBLIC_LIGHTING_DEPARTMENT',\n  WASTE:'SANITATION_DEPARTMENT',\n  WATER_LEAK:'WATER_SERVICES_DEPARTMENT'\n};\nx.department=departments[x.vision.category]||null;\nif(!x.department){x.decision='REVIEW';x.review_reasons.push('NO_DEPARTMENT_RULE');}\nx.trace.push({at:new Date().toISOString(),stage:'DEPARTMENT_ROUTING',decision:x.decision,reason_codes:x.department?[]:['NO_DEPARTMENT_RULE']});\nreturn [{json:x}];"
+      },
+      "id": "department-rules",
+      "name": "Department Rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        1500
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const x = $input.first().json;\nconst k = x.knowledge;\nconst issues = [];\nif (!k || typeof k !== 'object' || Array.isArray(k)) {\n  issues.push('KNOWLEDGE_ENDPOINT_FAILED_OR_INVALID');\n} else {\n  if (k.report_id !== x.report_id) issues.push('KNOWLEDGE_REPORT_ID_MISMATCH');\n  if (k.category !== x.vision.category) issues.push('KNOWLEDGE_CATEGORY_MISMATCH');\n  if (k.department !== x.department) issues.push('KNOWLEDGE_DEPARTMENT_MISMATCH');\n  if (typeof k.procedure !== 'string' || !k.procedure.trim()) issues.push('MISSING_PROCEDURE');\n  if (typeof k.agent_version !== 'string' || !k.agent_version.trim()) issues.push('KNOWLEDGE_VERSION_MISSING');\n  if (!Array.isArray(k.sources) || k.sources.length === 0) {\n    issues.push('MISSING_SOURCE');\n  } else {\n    for (const s of k.sources) {\n      if (!s || typeof s !== 'object' || Array.isArray(s) ||\n          typeof s.document_title !== 'string' || !s.document_title.trim() ||\n          typeof s.chunk_id !== 'string' || !s.chunk_id.trim()) {\n        issues.push('INVALID_SOURCE_METADATA');break;\n      }\n      if (s.search_score !== null && s.search_score !== undefined &&\n          (typeof s.search_score !== 'number' || !Number.isFinite(s.search_score) || s.search_score < 0 || s.search_score > 1)) {\n        issues.push('INVALID_SEARCH_SCORE');break;\n      }\n      if (s.source_url !== null && s.source_url !== undefined &&\n          (typeof s.source_url !== 'string' || !/^https:\\/\\//.test(s.source_url))) {\n        issues.push('INVALID_SOURCE_URL');break;\n      }\n    }\n  }\n  if (x.demo_mode === true) {\n    // Local test fixtures only; never trust model-supplied official-policy claims here.\n    if (k.is_mock !== true || !Array.isArray(k.sources) ||\n        !k.sources.every(s => s && s.is_mock === true && s.is_official === false && s.source_url === null)) {\n      issues.push('INVALID_DEMO_SOURCE');\n    }\n    if (k.deadline !== null) issues.push('DEMO_DEADLINE_MUST_BE_NULL');\n  } else {\n    // Real mode requires a separate allowlist and actual source verification.\n    issues.push('OFFICIAL_SOURCE_VERIFICATION_NOT_IMPLEMENTED');\n  }\n}\nx.decision=issues.length?'REVIEW':'PASS';\nx.review_reasons.push(...issues);\nx.trace.push({at:new Date().toISOString(),stage:'GATE_3_KNOWLEDGE',decision:x.decision,reason_codes:issues});\nreturn [{json:x}];"
+      },
+      "id": "gate-3---sources",
+      "name": "Gate 3 - Sources",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        2100
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-sources-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "sources-pass?",
+      "name": "Sources PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        270,
+        2100
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const x=$input.first().json;\nx.ticket={\n  ticket_id:'DEMO-TKT-'+x.report_id,\n  report_id:x.report_id,status:'TICKET_CREATED',\n  category:x.vision.category,severity:x.vision.severity,\n  priority:x.vision.severity==='HIGH'?'HIGH':(x.vision.severity==='LOW'?'LOW':'NORMAL'),\n  department:x.department,\n  location:x.intake.location,\n  anonymized_media_ref:null, // face blurring NOT implemented here\n  procedure:x.knowledge.procedure,\n  sources:x.knowledge.sources,\n  deadline:x.knowledge.deadline,\n  persisted:false,storage_status:'MOCK_ONLY',is_mock:true\n};\nx.trace.push({at:new Date().toISOString(),stage:'TICKET_CREATION',decision:'PASS',reason_codes:['DEMO_TICKET_NOT_SAVED']});\nreturn [{json:x}];"
+      },
+      "id": "mock-ticket-creation",
+      "name": "Mock Ticket Creation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        2100
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=$input.first().json;\nconst decision=x.decision==='REJECT'?'REJECT':'REVIEW';\nreturn [{json:{report_id:x.report_id,decision,ticket:null,policy:x.policy,\n  review_reasons:[...new Set(x.review_reasons||[])],errors:[...new Set(x.errors||[])],\n  components:x.components,trace:x.trace,audit:x.audit,\n  deployment:{orchestrator:'intake-vision-multimedia-v2',intake_source_sha256:x.integration.local_source_sha256},\n  visual_assessment:x.visual_assessment||null,routing:{department:x.department||null},persisted:false,review_queued:false,\n  notice:'Intake and Vision development integration. Knowledge and ticket storage were not called. REVIEW is not a persisted review queue entry.',\n  http_status:decision==='REJECT'?422:202}}];\n"
+      },
+      "id": "format-api-response",
+      "name": "Format API Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1350,
+        1500
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "respondWith": "firstIncomingItem",
+        "options": {
+          "responseCode": "={{ $json.http_status }}"
+        }
+      },
+      "id": "respond-to-citizen",
+      "name": "Respond to Citizen",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1620,
+        1500
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=JSON.parse(JSON.stringify($('Input Check').first().json));\nconst received=$input.first().json;\nconst status=Number.isInteger(received.statusCode)?received.statusCode:null;\nlet native=received.body;\nif(typeof native==='string'){try{native=JSON.parse(native);}catch{native=null;}}\nconst message=JSON.stringify(received.error||'');\nx.intake_http={status_code:status,body:native??null,\n  transport_error:status===null?(/timed?out|ETIMEDOUT|ESOCKETTIMEDOUT/i.test(message)?'TIMEOUT':'UNAVAILABLE'):null};\nx.intake_native=status===200&&native&&typeof native==='object'&&!Array.isArray(native)?native:null;\nx.components.intake={execution:status!==null?'responded':'unavailable',inference:'not_independently_verified',api:'POST /analyser'};\nconst header=received.headers?.['x-intake-provenance'];\nif(header!==undefined){\n  try{\n    const p=JSON.parse(header);\n    if(!['gemini','nvidia'].includes(p.text_provider)||!['gemini','nvidia'].includes(p.transcription_provider)||\n       !['French','preserve-input-language'].includes(p.normalization)||\n       !Number.isInteger(p.provider_call_attempts)||p.provider_call_attempts<0||\n       !Array.isArray(p.calls)||p.calls.length>3)throw new Error('invalid');\n    if(p.text_provider==='nvidia'&&p.transcription_provider==='nvidia'&&p.provider_call_attempts!==p.calls.length)throw new Error('invalid');\n    const calls=p.calls.map(c=>{\n      if(!['text','transcription'].includes(c.stage)||c.provider!=='nvidia'||\n         c.model!==(c.stage==='text'?'nvidia/nemotron-3.5-lightning-30b-a3b':'openai/whisper-large-v3')||\n         !['REAL_PROVIDER','TEST_DOUBLE'].includes(c.inference_mode)||!['SUCCESS','ERROR','ATTEMPTED'].includes(c.status))throw new Error('invalid');\n      return {stage:c.stage,provider:c.provider,model:c.model,inference_mode:c.inference_mode,status:c.status,\n        ...(c.stage==='text'?{prompt_version:typeof c.prompt_version==='string'?c.prompt_version:null}:{}),\n        ...(/^[a-f0-9]{64}$/.test(c.prompt_sha256||'')?{prompt_sha256:c.prompt_sha256}:{}),\n        ...(typeof c.elapsed_seconds==='number'&&Number.isFinite(c.elapsed_seconds)?{elapsed_seconds:c.elapsed_seconds}:{})};\n    });\n    x.components.intake.service_reported_provenance={text_provider:p.text_provider,transcription_provider:p.transcription_provider,\n      normalization:p.normalization,...(p.language_scope==='source-report'?{language_scope:p.language_scope}:{}),provider_call_attempts:p.provider_call_attempts,calls};\n    x.components.intake.provenance_status='service_reported';\n  }catch{x.components.intake.provenance_status='invalid';}\n}\nx.trace.push({at:new Date().toISOString(),stage:'INTAKE_HTTP',decision:status===200?'RECEIVED':'REVIEW',reason_codes:status===200?[]:[x.intake_http.transport_error==='TIMEOUT'?'INTAKE_TIMEOUT':'INTAKE_HTTP_FAILED']});\nreturn [{json:x}];\n"
+      },
+      "id": "attach-intake-response",
+      "name": "Attach Intake Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1620,
+        0
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8010/vision",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "image"
+            },
+            {
+              "parameterType": "formData",
+              "name": "report_id",
+              "value": "={{ $json.report_id }}"
+            },
+            {
+              "parameterType": "formData",
+              "name": "description",
+              "value": "={{ $json.intake_native.cleaned_text }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 2000000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-vision",
+      "name": "HTTP Vision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1080,
+        600
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "notes": "Stateless classification only; max 3 tries total. Use the anonymized image reference from Intake when present.",
+      "notesInFlow": true,
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=JSON.parse(JSON.stringify($('Attach Verified Media').first().json));\nconst received=$input.first().json;\nconst status=Number.isInteger(received.statusCode)?received.statusCode:null;\nlet body=received.body;\nif(typeof body==='string'){try{body=JSON.parse(body);}catch{body=null;}}\nconst message=JSON.stringify(received.error||'');\nx.vision_http={status_code:status,transport_error:status===null?(/timed?out|ETIMEDOUT|ESOCKETTIMEDOUT/i.test(message)?'TIMEOUT':'UNAVAILABLE'):null};\nx.vision_native=status===200&&body&&typeof body==='object'&&!Array.isArray(body)?body:null;\nx.vision=x.vision_native; // Existing deterministic department rules consume this native object.\nx.components.vision={execution:status!==null?'responded':'unavailable',inference:'not_independently_verified',api:'POST /vision',declared_model:'qwen2.5vl:3b',declared_prompt_version:'v11'};\nx.trace.push({at:new Date().toISOString(),stage:'VISION_HTTP',media_id:x.current_media?.id||null,decision:status===200?'RECEIVED':'REVIEW',reason_codes:status===200?[]:['VISION_HTTP_FAILED']});\nreturn [{json:x}];\n"
+      },
+      "id": "attach-vision-response",
+      "name": "Attach Vision Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1350,
+        600
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// A small metadata-only audit for the demo. This is not persistent database logging.\nconst x=$input.first().json;\nconst safeReasons = arr => Array.isArray(arr) ? arr.filter(s=>typeof s==='string').slice(0,20) : [];\nconst stages = Array.isArray(x.trace) ? x.trace.map(e=>({\n  at:typeof e.at==='string'?e.at:null,\n  stage:typeof e.stage==='string'?e.stage:'UNKNOWN',\n  decision:typeof e.decision==='string'?e.decision:'UNKNOWN',\n  reason_codes:safeReasons(e.reason_codes)\n})) : [];\nx.audit={\n  report_id:x.report_id || null,\n  decided_at:new Date().toISOString(),\n  outcome:x.decision,\n  stages,\n  components:x.components || {},\n  storage:'N8N_EXECUTION_DATA_ONLY_NOT_A_TICKET_DB'\n};\nreturn [{json:x}];"
+      },
+      "id": "audit-summary",
+      "name": "Audit Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        1500
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://municipal-knowledge-stub:8003/knowledge",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ report_id: $json.report_id, category: $json.vision.category, department: $json.department, description: $json.intake.cleaned_description, municipality: null }) }}",
+        "options": {
+          "timeout": 8000
+        }
+      },
+      "id": "http-knowledge",
+      "name": "HTTP Knowledge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        810,
+        2100
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// HTTP responses replace the incoming item. Restore only the current execution state.\nconst x = $('Department Rules').first().json;\nconst r = $input.first().json;\nconst usable = r && typeof r === 'object' && !Array.isArray(r) && !r.error &&\n    typeof r.report_id === 'string' && typeof r.procedure === 'string' && Array.isArray(r.sources);\nif (usable) {\n  x.knowledge = r;\n  x.versions.knowledge = typeof r.agent_version === 'string' && r.agent_version.trim() ? r.agent_version : 'unknown';\n  x.trace.push({at:new Date().toISOString(),stage:'KNOWLEDGE_HTTP',decision:r.is_mock === true ? 'MOCK' : 'RECEIVED',reason_codes:[]});\n} else {\n  x.knowledge = null;\n  x.versions.knowledge = 'unavailable';\n  x.trace.push({at:new Date().toISOString(),stage:'KNOWLEDGE_HTTP',decision:'REVIEW',reason_codes:['KNOWLEDGE_ENDPOINT_FAILED_OR_INVALID']});\n}\nreturn [{json:x}];"
+      },
+      "id": "attach-knowledge",
+      "name": "Attach Knowledge Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        2100
+      ],
+      "disabled": true
+    },
+    {
+      "id": "intake-development-checkpoint",
+      "name": "Downstream unavailable",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        810,
+        1500
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=$input.first().json;\nx.decision='REVIEW';x.review_reasons.push('KNOWLEDGE_AND_PERSISTENCE_NOT_INTEGRATED');\nx.trace.push({at:new Date().toISOString(),stage:'DOWNSTREAM_CHECKPOINT',decision:'REVIEW',reason_codes:['KNOWLEDGE_AND_PERSISTENCE_NOT_INTEGRATED']});\nreturn [{json:x}];"
+      }
+    },
+    {
+      "id": "attach-verified-media",
+      "name": "Attach Verified Media",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        600
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=JSON.parse(JSON.stringify($('Select Frame 1').first().json));\nconst received=$input.first(), r=received.json, reasons=[];\nconst headers=r.headers||{}, media=x.current_media||x.intake_native.media[0];\nconst status=Number.isInteger(r.statusCode)?r.statusCode:null;\nconst digest=headers['x-content-sha256'];\nif(status!==200||!received.binary?.verified_image) reasons.push('VERIFIED_MEDIA_TRANSFER_FAILED');\nif(digest!==media.sha256||headers['x-media-verification']!=='receipt-and-hash-checked') reasons.push('VERIFIED_MEDIA_HASH_UNCONFIRMED');\nif(received.binary?.verified_image?.mimeType!=='image/png') reasons.push('VERIFIED_MEDIA_FORMAT_INVALID');\nif(typeof x.intake_native.cleaned_text!=='string'||x.intake_native.cleaned_text.length>2000) reasons.push('VISION_DESCRIPTION_TOO_LONG');\nx.media_transfer={status_code:status,sha256:digest||null,verified:reasons.length===0};\nx.decision=reasons.length?'REVIEW':'PASS';x.review_reasons.push(...reasons);\nif(reasons.length)x.policy.gate_2={decision:'REVIEW',reason_codes:reasons,checks:{scope:'Required visual media transfer',...x.visual_assessment}};\nx.trace.push({at:new Date().toISOString(),stage:'VERIFIED_MEDIA_TRANSFER',media_id:media.id||null,decision:x.decision,reason_codes:reasons});\nconst result={json:x};\nif(!reasons.length)result.binary={image:received.binary.verified_image};\nreturn [result];\n"
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "verified-media-pass",
+      "name": "Verified Media PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        810,
+        600
+      ],
+      "disabled": false
+    },
+    {
+      "id": "read-verified-media",
+      "name": "Read Verified Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        270,
+        600
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "municipalVerifiedMediaDev",
+          "name": "Municipal verified media (development)"
+        }
+      },
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8013/media/resolve",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {path: $json.current_media.path, sha256: $json.current_media.sha256} }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "file",
+              "outputPropertyName": "verified_image"
+            }
+          }
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.submission.mode === 'video' ? 'PASS' : 'OTHER' }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "video-submission?",
+      "name": "Video Submission?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        810,
+        0
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.submission.mode === 'image_audio' ? 'PASS' : 'OTHER' }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "audio-submission?",
+      "name": "Audio Submission?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1080,
+        0
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8012/analyser",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "image"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "audio",
+              "inputDataFieldName": "audio"
+            },
+            {
+              "parameterType": "formData",
+              "name": "texte",
+              "value": "={{ $json.original.description }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-intake-audio",
+      "name": "HTTP Intake Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        270,
+        300
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": false,
+      "notes": "Stateless, read-only Intake transformation. Max 3 tries total (2 retries) at 1-second spacing. Never auto-pass on error.",
+      "notesInFlow": true,
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8012/analyser",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "video",
+              "inputDataFieldName": "video"
+            },
+            {
+              "parameterType": "formData",
+              "name": "texte",
+              "value": "={{ $json.original.description }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 600000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-intake-video",
+      "name": "HTTP Intake Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        300
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": false,
+      "notes": "Stateless, read-only Intake transformation. Max 3 tries total (2 retries) at 1-second spacing. Never auto-pass on error.",
+      "notesInFlow": true,
+      "disabled": false
+    },
+    {
+      "id": "aggregate-frames",
+      "name": "Aggregate Frames",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1500
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// No synthetic combined confidence or invented native response.\nconst x=$input.first().json, frames=x.vision_frames||[], reasons=[];\nconst expected=x.submission?.mode==='video'?3:1;\nif(frames.length!==expected||new Set(frames.map(f=>f.media_id)).size!==expected)reasons.push('VISION_FRAME_COVERAGE_INCOMPLETE');\nif(frames.some(f=>f.gate_2.decision!=='PASS'))reasons.push('VISION_FRAME_REQUIRES_REVIEW');\nif(new Set(frames.map(f=>f.native?.category)).size!==1)reasons.push('VISION_FRAME_CATEGORY_CONFLICT');\nif(new Set(frames.map(f=>f.native?.severity)).size!==1)reasons.push('VISION_FRAME_SEVERITY_CONFLICT');\nx.decision=reasons.length?'REVIEW':'PASS';\nx.review_reasons.push(...reasons);\nx.policy.gate_2={decision:x.decision,reason_codes:reasons,checks:{scope:'All required frames pass native Gate 2 and agree on category and severity',\n  confidence_scope:'No aggregated confidence; native per-frame estimates retained',...x.visual_assessment}};\n// Deterministic router consumes an actual response after unanimous agreement.\nif(!reasons.length)x.vision=JSON.parse(JSON.stringify(frames[0].native));\nx.trace.push({at:new Date().toISOString(),stage:'VISION_FRAME_AGREEMENT',decision:x.decision,reason_codes:reasons});\nreturn [{json:x}];\n"
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "all-frames-pass?",
+      "name": "All Frames PASS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        270,
+        1500
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.submission.mode === 'video' ? 'PASS' : 'OTHER' }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "more-frames?",
+      "name": "More Frames?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2430,
+        600
+      ],
+      "disabled": false
+    },
+    {
+      "id": "select-frame-1",
+      "name": "Select Frame 1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        600
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=$input.first().json;\nx.current_media=x.intake_native.media[0];\nx.vision_frames=x.vision_frames||[];\nx.visual_assessment={expected_frames:x.submission?.mode==='video'?3:1,attempted_frames:x.vision_frames.length,assessed_frames:x.vision_frames.filter(f=>f.http.status_code===200&&f.native!==null).length,coverage:'INCOMPLETE'};\nreturn [{json:x}];"
+      }
+    },
+    {
+      "id": "record-frame-1",
+      "name": "Record Frame 1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1890,
+        600
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=$input.first().json;\nconst copy=v=>JSON.parse(JSON.stringify(v));\nconst media=x.current_media||x.intake_native.media[0];\nx.vision_frames=x.vision_frames||[];\nx.vision_frames.push({media_id:media.id,sha256:media.sha256,http:copy(x.vision_http),\n  native:copy(x.vision_native),gate_2:copy(x.policy.gate_2),transfer:copy(x.media_transfer)});\nconst expected=x.submission?.mode==='video'?3:1;\nconst assessed=x.vision_frames.filter(f=>f.http.status_code===200&&f.native!==null).length;\nx.visual_assessment={expected_frames:expected,attempted_frames:x.vision_frames.length,assessed_frames:assessed,\n  coverage:assessed===expected?'COMPLETE':'INCOMPLETE'};\nx.policy.gate_2.checks={...x.policy.gate_2.checks,...x.visual_assessment};\nx.components.vision.requests_attempted=x.vision_frames.length;\nx.components.vision.native_responses_received=assessed;\nreturn [{json:x}];\n"
+      }
+    },
+    {
+      "id": "select-frame-2",
+      "name": "Select Frame 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        900
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=$input.first().json;\nx.current_media=x.intake_native.media[1];\nx.vision_frames=x.vision_frames||[];\nx.visual_assessment={expected_frames:x.submission?.mode==='video'?3:1,attempted_frames:x.vision_frames.length,assessed_frames:x.vision_frames.filter(f=>f.http.status_code===200&&f.native!==null).length,coverage:'INCOMPLETE'};\nreturn [{json:x}];"
+      }
+    },
+    {
+      "id": "read-verified-media-2",
+      "name": "Read Verified Media 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        270,
+        900
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "municipalVerifiedMediaDev",
+          "name": "Municipal verified media (development)"
+        }
+      },
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8013/media/resolve",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {path: $json.current_media.path, sha256: $json.current_media.sha256} }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "file",
+              "outputPropertyName": "verified_image"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "attach-verified-media-2",
+      "name": "Attach Verified Media 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        900
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=JSON.parse(JSON.stringify($('Select Frame 2').first().json));\nconst received=$input.first(), r=received.json, reasons=[];\nconst headers=r.headers||{}, media=x.current_media||x.intake_native.media[0];\nconst status=Number.isInteger(r.statusCode)?r.statusCode:null;\nconst digest=headers['x-content-sha256'];\nif(status!==200||!received.binary?.verified_image) reasons.push('VERIFIED_MEDIA_TRANSFER_FAILED');\nif(digest!==media.sha256||headers['x-media-verification']!=='receipt-and-hash-checked') reasons.push('VERIFIED_MEDIA_HASH_UNCONFIRMED');\nif(received.binary?.verified_image?.mimeType!=='image/png') reasons.push('VERIFIED_MEDIA_FORMAT_INVALID');\nif(typeof x.intake_native.cleaned_text!=='string'||x.intake_native.cleaned_text.length>2000) reasons.push('VISION_DESCRIPTION_TOO_LONG');\nx.media_transfer={status_code:status,sha256:digest||null,verified:reasons.length===0};\nx.decision=reasons.length?'REVIEW':'PASS';x.review_reasons.push(...reasons);\nif(reasons.length)x.policy.gate_2={decision:'REVIEW',reason_codes:reasons,checks:{scope:'Required visual media transfer',...x.visual_assessment}};\nx.trace.push({at:new Date().toISOString(),stage:'VERIFIED_MEDIA_TRANSFER',media_id:media.id||null,decision:x.decision,reason_codes:reasons});\nconst result={json:x};\nif(!reasons.length)result.binary={image:received.binary.verified_image};\nreturn [result];\n"
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "verified-media-pass?-2",
+      "name": "Verified Media PASS? 2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        810,
+        900
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8010/vision",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "image"
+            },
+            {
+              "parameterType": "formData",
+              "name": "report_id",
+              "value": "={{ $json.report_id }}"
+            },
+            {
+              "parameterType": "formData",
+              "name": "description",
+              "value": "={{ $json.intake_native.cleaned_text }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 2000000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-vision-2",
+      "name": "HTTP Vision 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1080,
+        900
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "notes": "Stateless classification only; max 3 tries total. Use the anonymized image reference from Intake when present.",
+      "notesInFlow": true,
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=JSON.parse(JSON.stringify($('Attach Verified Media 2').first().json));\nconst received=$input.first().json;\nconst status=Number.isInteger(received.statusCode)?received.statusCode:null;\nlet body=received.body;\nif(typeof body==='string'){try{body=JSON.parse(body);}catch{body=null;}}\nconst message=JSON.stringify(received.error||'');\nx.vision_http={status_code:status,transport_error:status===null?(/timed?out|ETIMEDOUT|ESOCKETTIMEDOUT/i.test(message)?'TIMEOUT':'UNAVAILABLE'):null};\nx.vision_native=status===200&&body&&typeof body==='object'&&!Array.isArray(body)?body:null;\nx.vision=x.vision_native; // Existing deterministic department rules consume this native object.\nx.components.vision={execution:status!==null?'responded':'unavailable',inference:'not_independently_verified',api:'POST /vision',declared_model:'qwen2.5vl:3b',declared_prompt_version:'v11'};\nx.trace.push({at:new Date().toISOString(),stage:'VISION_HTTP',media_id:x.current_media?.id||null,decision:status===200?'RECEIVED':'REVIEW',reason_codes:status===200?[]:['VISION_HTTP_FAILED']});\nreturn [{json:x}];\n"
+      },
+      "id": "attach-vision-response-2",
+      "name": "Attach Vision Response 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1350,
+        900
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Native Vision schema; no invented uncertainty boolean, agent version or scores.\nconst x=$input.first().json, v=x.vision_native, http=x.vision_http||{}, problems=[];\nconst object=o=>o!==null&&typeof o==='object'&&!Array.isArray(o);\nconst meaningful=s=>typeof s==='string'&&s.trim().length>0;\nconst accepted=['ROAD_DAMAGE','STREET_LIGHTING','WASTE','WATER_LEAK'];\nconst fields=['category','severity','description','evidence','text_image_consistent','confidence','uncertainty_reason','report_id','run_id'];\nif(http.transport_error)problems.push(http.transport_error==='TIMEOUT'?'VISION_TIMEOUT':'VISION_UNAVAILABLE');\nelse if(http.status_code!==200)problems.push('VISION_HTTP_FAILED');\nelse if(!object(v))problems.push('VISION_INVALID_JSON');\nelse {\n  if(fields.some(k=>!(k in v))||Object.keys(v).some(k=>!fields.includes(k)))problems.push('VISION_SCHEMA_INVALID');\n  if(v.report_id!==x.report_id)problems.push('VISION_REPORT_ID_MISMATCH');\n  const digest=x.media_transfer?.sha256;\n  if(!meaningful(v.run_id)||typeof digest!=='string'||!v.run_id.endsWith('_UPLOAD-'+digest.slice(0,12)))problems.push('VISION_RUN_MEDIA_MISMATCH');\n  if(!accepted.includes(v.category))problems.push('VISION_CATEGORY_UNSUPPORTED_OR_UNCLEAR');\n  if(!['LOW','MEDIUM','HIGH'].includes(v.severity))problems.push('VISION_SEVERITY_UNCLEAR');\n  if(!meaningful(v.description)||v.description.length>600)problems.push('VISION_DESCRIPTION_INVALID');\n  if(!Array.isArray(v.evidence)||v.evidence.length===0||v.evidence.length>6||!v.evidence.every(meaningful))problems.push('VISION_EVIDENCE_MISSING');\n  if(v.text_image_consistent!==true)problems.push('IMAGE_TEXT_MISMATCH_OR_UNCLEAR');\n  if(v.uncertainty_reason!==null)problems.push('VISION_UNCERTAINTY_REQUIRES_REVIEW');\n  if(typeof v.confidence!=='number'||!Number.isFinite(v.confidence)||v.confidence<0||v.confidence>1)problems.push('VISION_CONFIDENCE_MISSING_OR_INVALID');\n  // No confidence cutoff: the model estimate is uncalibrated, not correctness evidence.\n  if(x.media_transfer?.verified!==true)problems.push('VISION_MEDIA_NOT_VERIFIED');\n}\nx.decision=problems.length?'REVIEW':'PASS';x.review_reasons.push(...problems);\nx.policy.gate_2={decision:x.decision,reason_codes:problems,checks:{scope:'Native visual evidence and text consistency',confidence_scope:'Uncalibrated model estimate; no numerical acceptance threshold',native_response_preserved:object(v)}};\nx.trace.push({at:new Date().toISOString(),stage:'GATE_2_VISION',media_id:x.current_media?.id||null,decision:x.decision,reason_codes:problems});\nreturn [{json:x}];\n"
+      },
+      "id": "gate-2---vision-2",
+      "name": "Gate 2 - Vision 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1620,
+        900
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-vision-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "vision-pass?-2",
+      "name": "Vision PASS? 2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        900
+      ],
+      "disabled": false
+    },
+    {
+      "id": "record-frame-2",
+      "name": "Record Frame 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1890,
+        900
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=$input.first().json;\nconst copy=v=>JSON.parse(JSON.stringify(v));\nconst media=x.current_media||x.intake_native.media[0];\nx.vision_frames=x.vision_frames||[];\nx.vision_frames.push({media_id:media.id,sha256:media.sha256,http:copy(x.vision_http),\n  native:copy(x.vision_native),gate_2:copy(x.policy.gate_2),transfer:copy(x.media_transfer)});\nconst expected=x.submission?.mode==='video'?3:1;\nconst assessed=x.vision_frames.filter(f=>f.http.status_code===200&&f.native!==null).length;\nx.visual_assessment={expected_frames:expected,attempted_frames:x.vision_frames.length,assessed_frames:assessed,\n  coverage:assessed===expected?'COMPLETE':'INCOMPLETE'};\nx.policy.gate_2.checks={...x.policy.gate_2.checks,...x.visual_assessment};\nx.components.vision.requests_attempted=x.vision_frames.length;\nx.components.vision.native_responses_received=assessed;\nreturn [{json:x}];\n"
+      }
+    },
+    {
+      "id": "select-frame-3",
+      "name": "Select Frame 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=$input.first().json;\nx.current_media=x.intake_native.media[2];\nx.vision_frames=x.vision_frames||[];\nx.visual_assessment={expected_frames:x.submission?.mode==='video'?3:1,attempted_frames:x.vision_frames.length,assessed_frames:x.vision_frames.filter(f=>f.http.status_code===200&&f.native!==null).length,coverage:'INCOMPLETE'};\nreturn [{json:x}];"
+      }
+    },
+    {
+      "id": "read-verified-media-3",
+      "name": "Read Verified Media 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        270,
+        1200
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "municipalVerifiedMediaDev",
+          "name": "Municipal verified media (development)"
+        }
+      },
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8013/media/resolve",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {path: $json.current_media.path, sha256: $json.current_media.sha256} }}",
+        "options": {
+          "timeout": 15000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "file",
+              "outputPropertyName": "verified_image"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "attach-verified-media-3",
+      "name": "Attach Verified Media 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        540,
+        1200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=JSON.parse(JSON.stringify($('Select Frame 3').first().json));\nconst received=$input.first(), r=received.json, reasons=[];\nconst headers=r.headers||{}, media=x.current_media||x.intake_native.media[0];\nconst status=Number.isInteger(r.statusCode)?r.statusCode:null;\nconst digest=headers['x-content-sha256'];\nif(status!==200||!received.binary?.verified_image) reasons.push('VERIFIED_MEDIA_TRANSFER_FAILED');\nif(digest!==media.sha256||headers['x-media-verification']!=='receipt-and-hash-checked') reasons.push('VERIFIED_MEDIA_HASH_UNCONFIRMED');\nif(received.binary?.verified_image?.mimeType!=='image/png') reasons.push('VERIFIED_MEDIA_FORMAT_INVALID');\nif(typeof x.intake_native.cleaned_text!=='string'||x.intake_native.cleaned_text.length>2000) reasons.push('VISION_DESCRIPTION_TOO_LONG');\nx.media_transfer={status_code:status,sha256:digest||null,verified:reasons.length===0};\nx.decision=reasons.length?'REVIEW':'PASS';x.review_reasons.push(...reasons);\nif(reasons.length)x.policy.gate_2={decision:'REVIEW',reason_codes:reasons,checks:{scope:'Required visual media transfer',...x.visual_assessment}};\nx.trace.push({at:new Date().toISOString(),stage:'VERIFIED_MEDIA_TRANSFER',media_id:media.id||null,decision:x.decision,reason_codes:reasons});\nconst result={json:x};\nif(!reasons.length)result.binary={image:received.binary.verified_image};\nreturn [result];\n"
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-intake-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "verified-media-pass?-3",
+      "name": "Verified Media PASS? 3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        810,
+        1200
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8010/vision",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "image"
+            },
+            {
+              "parameterType": "formData",
+              "name": "report_id",
+              "value": "={{ $json.report_id }}"
+            },
+            {
+              "parameterType": "formData",
+              "name": "description",
+              "value": "={{ $json.intake_native.cleaned_text }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 2000000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "http-vision-3",
+      "name": "HTTP Vision 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1080,
+        1200
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "notes": "Stateless classification only; max 3 tries total. Use the anonymized image reference from Intake when present.",
+      "notesInFlow": true,
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=JSON.parse(JSON.stringify($('Attach Verified Media 3').first().json));\nconst received=$input.first().json;\nconst status=Number.isInteger(received.statusCode)?received.statusCode:null;\nlet body=received.body;\nif(typeof body==='string'){try{body=JSON.parse(body);}catch{body=null;}}\nconst message=JSON.stringify(received.error||'');\nx.vision_http={status_code:status,transport_error:status===null?(/timed?out|ETIMEDOUT|ESOCKETTIMEDOUT/i.test(message)?'TIMEOUT':'UNAVAILABLE'):null};\nx.vision_native=status===200&&body&&typeof body==='object'&&!Array.isArray(body)?body:null;\nx.vision=x.vision_native; // Existing deterministic department rules consume this native object.\nx.components.vision={execution:status!==null?'responded':'unavailable',inference:'not_independently_verified',api:'POST /vision',declared_model:'qwen2.5vl:3b',declared_prompt_version:'v11'};\nx.trace.push({at:new Date().toISOString(),stage:'VISION_HTTP',media_id:x.current_media?.id||null,decision:status===200?'RECEIVED':'REVIEW',reason_codes:status===200?[]:['VISION_HTTP_FAILED']});\nreturn [{json:x}];\n"
+      },
+      "id": "attach-vision-response-3",
+      "name": "Attach Vision Response 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1350,
+        1200
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Native Vision schema; no invented uncertainty boolean, agent version or scores.\nconst x=$input.first().json, v=x.vision_native, http=x.vision_http||{}, problems=[];\nconst object=o=>o!==null&&typeof o==='object'&&!Array.isArray(o);\nconst meaningful=s=>typeof s==='string'&&s.trim().length>0;\nconst accepted=['ROAD_DAMAGE','STREET_LIGHTING','WASTE','WATER_LEAK'];\nconst fields=['category','severity','description','evidence','text_image_consistent','confidence','uncertainty_reason','report_id','run_id'];\nif(http.transport_error)problems.push(http.transport_error==='TIMEOUT'?'VISION_TIMEOUT':'VISION_UNAVAILABLE');\nelse if(http.status_code!==200)problems.push('VISION_HTTP_FAILED');\nelse if(!object(v))problems.push('VISION_INVALID_JSON');\nelse {\n  if(fields.some(k=>!(k in v))||Object.keys(v).some(k=>!fields.includes(k)))problems.push('VISION_SCHEMA_INVALID');\n  if(v.report_id!==x.report_id)problems.push('VISION_REPORT_ID_MISMATCH');\n  const digest=x.media_transfer?.sha256;\n  if(!meaningful(v.run_id)||typeof digest!=='string'||!v.run_id.endsWith('_UPLOAD-'+digest.slice(0,12)))problems.push('VISION_RUN_MEDIA_MISMATCH');\n  if(!accepted.includes(v.category))problems.push('VISION_CATEGORY_UNSUPPORTED_OR_UNCLEAR');\n  if(!['LOW','MEDIUM','HIGH'].includes(v.severity))problems.push('VISION_SEVERITY_UNCLEAR');\n  if(!meaningful(v.description)||v.description.length>600)problems.push('VISION_DESCRIPTION_INVALID');\n  if(!Array.isArray(v.evidence)||v.evidence.length===0||v.evidence.length>6||!v.evidence.every(meaningful))problems.push('VISION_EVIDENCE_MISSING');\n  if(v.text_image_consistent!==true)problems.push('IMAGE_TEXT_MISMATCH_OR_UNCLEAR');\n  if(v.uncertainty_reason!==null)problems.push('VISION_UNCERTAINTY_REQUIRES_REVIEW');\n  if(typeof v.confidence!=='number'||!Number.isFinite(v.confidence)||v.confidence<0||v.confidence>1)problems.push('VISION_CONFIDENCE_MISSING_OR_INVALID');\n  // No confidence cutoff: the model estimate is uncalibrated, not correctness evidence.\n  if(x.media_transfer?.verified!==true)problems.push('VISION_MEDIA_NOT_VERIFIED');\n}\nx.decision=problems.length?'REVIEW':'PASS';x.review_reasons.push(...problems);\nx.policy.gate_2={decision:x.decision,reason_codes:problems,checks:{scope:'Native visual evidence and text consistency',confidence_scope:'Uncalibrated model estimate; no numerical acceptance threshold',native_response_preserved:object(v)}};\nx.trace.push({at:new Date().toISOString(),stage:'GATE_2_VISION',media_id:x.current_media?.id||null,decision:x.decision,reason_codes:problems});\nreturn [{json:x}];\n"
+      },
+      "id": "gate-2---vision-3",
+      "name": "Gate 2 - Vision 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1620,
+        1200
+      ],
+      "disabled": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "decision-vision-pass?",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "PASS",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "vision-pass?-3",
+      "name": "Vision PASS? 3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        1200
+      ],
+      "disabled": false
+    },
+    {
+      "id": "record-frame-3",
+      "name": "Record Frame 3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1890,
+        1200
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const x=$input.first().json;\nconst copy=v=>JSON.parse(JSON.stringify(v));\nconst media=x.current_media||x.intake_native.media[0];\nx.vision_frames=x.vision_frames||[];\nx.vision_frames.push({media_id:media.id,sha256:media.sha256,http:copy(x.vision_http),\n  native:copy(x.vision_native),gate_2:copy(x.policy.gate_2),transfer:copy(x.media_transfer)});\nconst expected=x.submission?.mode==='video'?3:1;\nconst assessed=x.vision_frames.filter(f=>f.http.status_code===200&&f.native!==null).length;\nx.visual_assessment={expected_frames:expected,attempted_frames:x.vision_frames.length,assessed_frames:assessed,\n  coverage:assessed===expected?'COMPLETE':'INCOMPLETE'};\nx.policy.gate_2.checks={...x.policy.gate_2.checks,...x.visual_assessment};\nx.components.vision.requests_attempted=x.vision_frames.length;\nx.components.vision.native_responses_received=assessed;\nreturn [{json:x}];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Citizen Webhook": {
+      "main": [
+        [
+          {
+            "node": "Input Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input Check": {
+      "main": [
+        [
+          {
+            "node": "Input PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input PASS?": {
+      "main": [
+        [
+          {
+            "node": "Video Submission?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Intake": {
+      "main": [
+        [
+          {
+            "node": "Attach Intake Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Intake Response": {
+      "main": [
+        [
+          {
+            "node": "Gate 1 - Intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate 1 - Intake": {
+      "main": [
+        [
+          {
+            "node": "Intake PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intake PASS?": {
+      "main": [
+        [
+          {
+            "node": "Select Frame 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Downstream unavailable": {
+      "main": [
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audit Summary": {
+      "main": [
+        [
+          {
+            "node": "Format API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format API Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Citizen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Verified Media": {
+      "main": [
+        [
+          {
+            "node": "Attach Verified Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Verified Media": {
+      "main": [
+        [
+          {
+            "node": "Verified Media PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified Media PASS?": {
+      "main": [
+        [
+          {
+            "node": "HTTP Vision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Vision": {
+      "main": [
+        [
+          {
+            "node": "Attach Vision Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Vision Response": {
+      "main": [
+        [
+          {
+            "node": "Gate 2 - Vision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate 2 - Vision": {
+      "main": [
+        [
+          {
+            "node": "Record Frame 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vision PASS?": {
+      "main": [
+        [
+          {
+            "node": "More Frames?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Department Rules": {
+      "main": [
+        [
+          {
+            "node": "Downstream unavailable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Submission?": {
+      "main": [
+        [
+          {
+            "node": "HTTP Intake Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audio Submission?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Audio Submission?": {
+      "main": [
+        [
+          {
+            "node": "HTTP Intake Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Intake Audio": {
+      "main": [
+        [
+          {
+            "node": "Attach Intake Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Intake Video": {
+      "main": [
+        [
+          {
+            "node": "Attach Intake Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Frame 1": {
+      "main": [
+        [
+          {
+            "node": "Read Verified Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Frame 1": {
+      "main": [
+        [
+          {
+            "node": "Vision PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Frame 2": {
+      "main": [
+        [
+          {
+            "node": "Read Verified Media 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Verified Media 2": {
+      "main": [
+        [
+          {
+            "node": "Attach Verified Media 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Verified Media 2": {
+      "main": [
+        [
+          {
+            "node": "Verified Media PASS? 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified Media PASS? 2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Vision 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Vision 2": {
+      "main": [
+        [
+          {
+            "node": "Attach Vision Response 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Vision Response 2": {
+      "main": [
+        [
+          {
+            "node": "Gate 2 - Vision 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate 2 - Vision 2": {
+      "main": [
+        [
+          {
+            "node": "Record Frame 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Frame 2": {
+      "main": [
+        [
+          {
+            "node": "Vision PASS? 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vision PASS? 2": {
+      "main": [
+        [
+          {
+            "node": "Select Frame 3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Frame 3": {
+      "main": [
+        [
+          {
+            "node": "Read Verified Media 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Verified Media 3": {
+      "main": [
+        [
+          {
+            "node": "Attach Verified Media 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Verified Media 3": {
+      "main": [
+        [
+          {
+            "node": "Verified Media PASS? 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified Media PASS? 3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Vision 3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Vision 3": {
+      "main": [
+        [
+          {
+            "node": "Attach Vision Response 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Vision Response 3": {
+      "main": [
+        [
+          {
+            "node": "Gate 2 - Vision 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate 2 - Vision 3": {
+      "main": [
+        [
+          {
+            "node": "Record Frame 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Frame 3": {
+      "main": [
+        [
+          {
+            "node": "Vision PASS? 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vision PASS? 3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Frames",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "More Frames?": {
+      "main": [
+        [
+          {
+            "node": "Select Frame 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate Frames",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Frames": {
+      "main": [
+        [
+          {
+            "node": "All Frames PASS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All Frames PASS?": {
+      "main": [
+        [
+          {
+            "node": "Department Rules",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Audit Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "executionTimeout": 6600,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false,
+    "timezone": "Africa/Tunis"
+  },
+  "pinData": {},
+  "tags": [],
+  "id": "municipalIntakeVisionDev",
+  "meta": {
+    "integration_source_sha256": "04ef815ee0403d715513c1ea06c16546d7c5f333fd3e9ae8147e1369a48b5c20",
+    "intake_contract": "intake-preparation-v1",
+    "multimedia_contract": "image-text | image-audio [+ text] | video [+ text]; native Intake unchanged",
+    "video_policy": "Three sequential frame checks; stop on REVIEW; unanimous category and severity; no combined confidence"
+  }
+}

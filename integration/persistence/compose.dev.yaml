@@ -1,0 +1,36 @@
+name: municipal-ticket-storage-development
+services:
+  postgres:
+    image: postgres:17-alpine
+    pull_policy: never
+    container_name: municipal-ticket-postgres-dev
+    environment:
+      POSTGRES_USER: municipal_admin
+      POSTGRES_DB: municipal_tickets
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    secrets:
+      - postgres-password
+    ports:
+      - "127.0.0.1:5434:5432"
+    volumes:
+      - ticket_data:/var/lib/postgresql/data
+    networks:
+      - n8n_development
+    mem_limit: 256m
+    command: ["postgres", "-c", "shared_buffers=32MB", "-c", "max_connections=20"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U municipal_admin -d municipal_tickets"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: "no"
+volumes:
+  ticket_data:
+    name: municipal_ticket_development_data
+networks:
+  n8n_development:
+    external: true
+    name: municipal-intake-development_default
+secrets:
+  postgres-password:
+    file: ../../.runtime/persistence/admin-password.txt

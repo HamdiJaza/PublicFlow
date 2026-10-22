@@ -1,0 +1,6 @@
+case_id,prompt_version,valid_json_and_schema,answerability_agreement,no_invented_deadline,required_number_present,seconds,result_file,all_constraints
+P01,v5_decision,True,True,True,True,52.125,evaluation/prompt_revision/runs/P01_v5_decision.json,True
+P02,v5_decision,True,True,True,True,1.828,evaluation/prompt_revision/runs/P02_v5_decision.json,True
+P03,v5_decision,True,True,True,True,1.375,evaluation/prompt_revision/runs/P03_v5_decision.json,True
+P04,v5_decision,True,True,True,True,4.532,evaluation/prompt_revision/runs/P04_v5_decision.json,True
+P05,v5_decision,True,True,False,False,1.687,evaluation/prompt_revision/runs/P05_v5_decision.json,False

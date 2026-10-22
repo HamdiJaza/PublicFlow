@@ -1,0 +1,75 @@
+{
+  "origin": "Authored development test inputs from the supplied project; not collected citizen reports.",
+  "cases": [
+    {
+      "query_id": "Q-ROAD-01",
+      "query": "Il y a un gros nid-de-poule profond sur la route devant l'école, comment le signaler ?",
+      "category": "ROAD_DAMAGE",
+      "expected_doc": "DOC-ROAD-01",
+      "language": "fr"
+    },
+    {
+      "query_id": "Q-ROAD-02",
+      "query": "La chaussée de la route nationale et du grand échangeur est affaissée, qui gère ?",
+      "category": "ROAD_DAMAGE",
+      "expected_doc": "DOC-ROAD-03",
+      "language": "fr"
+    },
+    {
+      "query_id": "Q-LIGHT-01",
+      "query": "فوانيس الشارع طافية والنهج مظلم تماما في الليل",
+      "category": "STREET_LIGHTING",
+      "expected_doc": "DOC-LIGHT-01",
+      "language": "ar"
+    },
+    {
+      "query_id": "Q-LIGHT-02",
+      "query": "Un câble électrique de lampadaire est tombé par terre sur la chaussée avec des étincelles",
+      "category": "STREET_LIGHTING",
+      "expected_doc": "DOC-LIGHT-02",
+      "language": "fr"
+    },
+    {
+      "query_id": "Q-WATER-01",
+      "query": "Une conduite d'eau potable a éclaté sur le trottoir et l'eau coule sous pression",
+      "category": "WATER_LEAK",
+      "expected_doc": "DOC-WATER-01",
+      "language": "fr"
+    },
+    {
+      "query_id": "Q-WATER-02",
+      "query": "Comment savoir si j'ai une fuite cachée chez moi avant ou après mon compteur ?",
+      "category": "WATER_LEAK",
+      "expected_doc": "DOC-WATER-02",
+      "language": "fr"
+    },
+    {
+      "query_id": "Q-WATER-03",
+      "query": "فما ريحة خايبة وماء مجاري وقناة التطهير فاضت في الكياس",
+      "category": "WATER_LEAK",
+      "expected_doc": "DOC-WATER-03",
+      "language": "ar/derja"
+    },
+    {
+      "query_id": "Q-WASTE-01",
+      "query": "Des gravats de chantier et des sacs d'ordures sont jetés sur le trottoir depuis une semaine",
+      "category": "WASTE",
+      "expected_doc": "DOC-WASTE-01",
+      "language": "fr"
+    },
+    {
+      "query_id": "Q-WASTE-02",
+      "query": "J'ai un vieux matelas et des meubles usagés volumineux à jeter, comment les faire ramasser ?",
+      "category": "WASTE",
+      "expected_doc": "DOC-WASTE-02",
+      "language": "fr"
+    },
+    {
+      "query_id": "Q-NONE-01",
+      "query": "Comment renouveler mon passeport ou obtenir un extrait de naissance ?",
+      "category": "NONE",
+      "expected_doc": "NO_ANSWER",
+      "language": "fr"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "attempts": 5,
+  "complete": true,
+  "per_version_denominator": 5,
+  "metrics": {
+    "v7_examples": {
+      "valid_json_and_schema": 4,
+      "answerability_agreement": 3,
+      "no_invented_deadline": 4,
+      "required_number_present": 3,
+      "all_constraints": 3
+    }
+  },
+  "scope": "Five dependent development cases with fixed source contexts. Numeric checks and schema checks require separate qualitative review. No retrieval is executed."
+}

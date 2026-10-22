@@ -1,0 +1,6 @@
+case_id,prompt_version,valid_json_and_schema,answerability_agreement,no_invented_deadline,required_number_present,seconds,result_file,all_constraints
+P01,v6_roles,False,False,False,False,53.938,evaluation/prompt_roles/runs/P01_v6_roles.json,False
+P02,v6_roles,False,False,False,False,1.64,evaluation/prompt_roles/runs/P02_v6_roles.json,False
+P03,v6_roles,True,True,True,True,1.469,evaluation/prompt_roles/runs/P03_v6_roles.json,True
+P04,v6_roles,True,True,False,True,5.359,evaluation/prompt_roles/runs/P04_v6_roles.json,False
+P05,v6_roles,False,False,False,False,1.672,evaluation/prompt_roles/runs/P05_v6_roles.json,False

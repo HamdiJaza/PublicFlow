@@ -1,0 +1,74 @@
+{
+  "prompt_id": "VISION-CLASSIFY",
+  "version": "v7",
+  "role": "Contrastive multimodal demonstrations for text/image agreement.",
+  "techniques": [
+    "multimodal few-shot prompting",
+    "contrastive examples",
+    "explicit comparison criteria",
+    "structured output",
+    "visual grounding",
+    "abstention guardrails"
+  ],
+  "comment": "The system prompt is exactly v6. Three authored caption/answer targets refer to the same real IMG-02 photograph. They are visual annotations, not citizen reports or model outputs. Query scenes are excluded from this demonstration scene.",
+  "system_prompt": "v6.txt",
+  "system_prompt_sha256": "efb2b94ecac52a4a370db99cba6849f6a179748d41d8d045424928e44aa5d5a6",
+  "minimum_context": 8192,
+  "annotation_status": "assistant_visual_review_not_independent_ground_truth",
+  "demonstrations": [
+    {
+      "image_id": "IMG-02",
+      "scene_group": "scene-02",
+      "image_sha256": "cb9b37d7b1cb7f1c32b8b122d60848afdc9842fdc8b57aa294989e7922a0d7da",
+      "description": "We need assistance.",
+      "answer": {
+        "category": "WASTE",
+        "severity": "MEDIUM",
+        "description": "Bags, cardboard boxes and loose rubbish are piled on the ground beside a waste container.",
+        "evidence": [
+          "Bags and cardboard boxes are piled beside a waste container.",
+          "Loose rubbish is scattered on the ground."
+        ],
+        "text_image_consistent": null,
+        "confidence": null,
+        "uncertainty_reason": "The submitted text requests assistance but makes no observable claim about this scene."
+      }
+    },
+    {
+      "image_id": "IMG-02",
+      "scene_group": "scene-02",
+      "image_sha256": "cb9b37d7b1cb7f1c32b8b122d60848afdc9842fdc8b57aa294989e7922a0d7da",
+      "description": "Bags and cardboard boxes are piled beside the container.",
+      "answer": {
+        "category": "WASTE",
+        "severity": "MEDIUM",
+        "description": "Bags, cardboard boxes and loose rubbish are piled on the ground beside a waste container.",
+        "evidence": [
+          "Bags and cardboard boxes are piled beside a waste container.",
+          "Loose rubbish is scattered on the ground."
+        ],
+        "text_image_consistent": true,
+        "confidence": null,
+        "uncertainty_reason": null
+      }
+    },
+    {
+      "image_id": "IMG-02",
+      "scene_group": "scene-02",
+      "image_sha256": "cb9b37d7b1cb7f1c32b8b122d60848afdc9842fdc8b57aa294989e7922a0d7da",
+      "description": "There is no rubbish on the ground beside the container.",
+      "answer": {
+        "category": "WASTE",
+        "severity": "MEDIUM",
+        "description": "Bags, cardboard boxes and loose rubbish are piled on the ground beside a waste container.",
+        "evidence": [
+          "Bags and cardboard boxes are piled beside a waste container.",
+          "Loose rubbish is scattered on the ground."
+        ],
+        "text_image_consistent": false,
+        "confidence": null,
+        "uncertainty_reason": null
+      }
+    }
+  ]
+}

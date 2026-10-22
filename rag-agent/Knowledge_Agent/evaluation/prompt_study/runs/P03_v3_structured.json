@@ -1,0 +1,65 @@
+{
+  "case_id": "P03",
+  "prompt_version": "v3_structured",
+  "request": {
+    "category": "NONE",
+    "department": null,
+    "description": "Comment renouveler mon passeport tunisien expiré ?",
+    "strategy": null,
+    "prompt_version": "v4_grounded"
+  },
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "reference": {
+    "case_id": "P03",
+    "category": "NONE",
+    "description": "Comment renouveler mon passeport tunisien expiré ?",
+    "documents": [
+      "DOC-ROAD-02"
+    ],
+    "answer_found": false,
+    "required_digits": []
+  },
+  "prompt_sha256": "9d34d4214195a13175cad5d2889b4af6698d744b9da698e5bff1fa18be93c05e",
+  "started_at": "2026-10-18T00:11:38.226643+00:00",
+  "raw_response": {
+    "model": "qwen2.5:3b",
+    "created_at": "2026-10-18T00:11:39.8406674Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"procedure\": null,\n  \"deadline\": null,\n  \"answer_found\": false\n}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 1611002600,
+    "load_duration": 6645700,
+    "prompt_eval_count": 892,
+    "prompt_eval_duration": 647883000,
+    "eval_count": 22,
+    "eval_duration": 939477000
+  },
+  "generation_request": {
+    "model": "qwen2.5:3b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are a strict municipal assistant for the Commune de Tunis.\nYou extract procedural answers from official documents and return ONLY valid JSON.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT SCHEMA (strict):\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{\n  \"procedure\": \"<string with numbered steps, or null if unknown>\",\n  \"deadline\": \"<string if explicitly stated in context, or null>\",\n  \"answer_found\": <true | false>\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHARD RULES:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Output ONLY the JSON object. No explanation before or after.\n- \"deadline\" must be null unless the context explicitly states processing time or deadline.\n- \"answer_found\" is false if context is insufficient or score is low.\n- Never fabricate steps, phone numbers, or office addresses.\n- Quote exact numbers (hotlines, article numbers) verbatim from context.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFEW-SHOT EXAMPLES:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nExample 1 — Good answer with deadline:\nContext chunk: \"Signalement via Espace Citoyen → délai de traitement 72h ouvrables.\"\nQuestion: \"Comment signaler une route abîmée?\"\nOutput:\n{\n  \"procedure\": \"1. Rendez-vous sur le portail Espace Citoyen (commune-tunis.gov.tn).\\n2. Créez un compte ou connectez-vous.\\n3. Soumettez votre signalement avec photos et localisation.\\n4. Suivez l'avancement de votre dossier en ligne.\",\n  \"deadline\": \"72 heures ouvrables\",\n  \"answer_found\": true\n}\n\nExample 2 — No deadline in context:\nContext chunk: \"Contacter la STEG au numéro 1300 pour toute panne d'éclairage public.\"\nQuestion: \"L'éclairage de ma rue est en panne depuis 3 jours.\"\nOutput:\n{\n  \"procedure\": \"1. Appelez la STEG au 1300 (disponible 24h/24).\\n2. Signalez l'adresse exacte de la panne.\\n3. Un technicien sera envoyé.\",\n  \"deadline\": null,\n  \"answer_found\": true\n}\n\nExample 3 — Insufficient context:\nContext chunk: \"La commune gère les espaces verts et la propreté urbaine.\"\nQuestion: \"Comment obtenir un permis de construire?\"\nOutput:\n{\n  \"procedure\": null,\n  \"deadline\": null,\n  \"answer_found\": false\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCONTEXT (top-3 retrieved chunks):\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[DOC-ROAD-02#source] Commune de Tunis — Annuaire des arrondissements\nSource: https://www.commune-tunis.gov.tn/arrondissements.aspx\n# Commune de Tunis — Arrondissements municipaux\n\n## Annuaire\nLa page officielle présente quinze arrondissements municipaux et un service central. L'annuaire publie des coordonnées par arrondissement.\n\n## Orientation\nConsulter la fiche de l'arrondissement concerné pour identifier ses coordonnées locales. Cette page ne décrit pas une procédure de dépannage de voirie et ne garantit pas un délai d'intervention.\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCITIZEN REQUEST:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCategory: NONE\nDepartment: Non précisé\nDescription: Comment renouveler mon passeport tunisien expiré ?\n\nRespond with ONLY the JSON object:\n"
+      }
+    ],
+    "stream": false,
+    "options": {
+      "temperature": 0,
+      "seed": 42,
+      "num_ctx": 8192,
+      "num_predict": 512
+    },
+    "keep_alive": "2m",
+    "format": "json"
+  },
+  "answer": {
+    "procedure": null,
+    "deadline": null,
+    "answer_found": false
+  },
+  "status": "completed",
+  "elapsed_seconds": 1.625
+}

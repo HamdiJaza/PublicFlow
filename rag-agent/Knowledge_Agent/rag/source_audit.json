@@ -1,0 +1,138 @@
+{
+  "review_date": "2026-10-18",
+  "method": "Check specific primary pages. Keep concise authored summaries of the supported scope; exclude unresolved legal/contact claims. Publication dates are left unknown unless established.",
+  "documents": [
+    {
+      "doc_id": "DOC-ROAD-01",
+      "title": "Commune de Tunis — Compte citoyen et suivi des réclamations",
+      "url": "https://www.commune-tunis.gov.tn/page-de-login.aspx",
+      "status": "reviewed_page",
+      "include_in_index": true,
+      "section": "Espace citoyen; Connexion; Créer un compte",
+      "last_update": "",
+      "removed_claims": "Unverified mandatory home address, upload/map steps, automatic case-number workflow and guaranteed repair rules.",
+      "content": "# Commune de Tunis — Compte citoyen et réclamations\n\n## Accès au compte\nLa page officielle propose la création d'un compte et la connexion par adresse e-mail et mot de passe. Le formulaire de création demande une adresse e-mail, un nom, un prénom, une CIN, un téléphone et un mot de passe. Un captcha et l'acceptation des conditions sont affichés.\n\n## Suivi des réclamations\nL'espace citoyen présente le suivi des réclamations et les notifications de leur avancement.\n\n## Limite de cette source\nCette page ne décrit pas un formulaire spécifique aux nids-de-poule et ne donne ni étapes de réparation ni délai garanti. Une demande de délai exact n'est pas résolue par ces informations.\n"
+    },
+    {
+      "doc_id": "DOC-ROAD-02",
+      "title": "Commune de Tunis — Annuaire des arrondissements",
+      "url": "https://www.commune-tunis.gov.tn/arrondissements.aspx",
+      "status": "reviewed_page",
+      "include_in_index": true,
+      "section": "Arrondissements Municipaux",
+      "last_update": "",
+      "removed_claims": "Unverified named road brigades and assertions about their dispatch process.",
+      "content": "# Commune de Tunis — Arrondissements municipaux\n\n## Annuaire\nLa page officielle présente quinze arrondissements municipaux et un service central. L'annuaire publie des coordonnées par arrondissement.\n\n## Orientation\nConsulter la fiche de l'arrondissement concerné pour identifier ses coordonnées locales. Cette page ne décrit pas une procédure de dépannage de voirie et ne garantit pas un délai d'intervention.\n"
+    },
+    {
+      "doc_id": "DOC-ROAD-03",
+      "title": "MEHAT — Administration du réseau routier classé",
+      "url": "https://www.mehat.gov.tn/fr/principaux-secteurs/ponts-et-chaussees/",
+      "status": "reviewed_page",
+      "include_in_index": true,
+      "section": "Ponts et Chaussées",
+      "last_update": "",
+      "removed_claims": "Unverified complaint-routing steps, exact regional contacts and repair commitments.",
+      "content": "# MEHAT — Réseau routier classé de l'État\n\n## Service identifié\nLe ministère indique que la Direction Générale des Ponts et Chaussées assure l'administration du réseau routier classé de l'État.\n\n## Limite\nCette identification concerne le réseau classé de l'État. Elle ne permet pas de classer une rue à partir d'une photographie. La page ne fournit pas de procédure détaillée de réclamation ni de délai de réparation.\n"
+    },
+    {
+      "doc_id": "DOC-LIGHT-01",
+      "title": "Commune de Tunis — Prestations d'éclairage public",
+      "url": "https://www.commune-tunis.gov.tn/demarches-formalite.aspx",
+      "status": "reviewed_page",
+      "include_in_index": true,
+      "section": "Routes > Éclairage public",
+      "last_update": "",
+      "removed_claims": "Unverified desk hotline, response deadline and detailed citizen booking workflow.",
+      "content": "# Commune de Tunis — Éclairage public\n\n## Prestations publiées\nLa rubrique Routes, Éclairage public, mentionne la maintenance du réseau à la demande des citoyens, le déplacement de poteaux et l'ajout de points d'éclairage.\n\n## Limite\nLa rubrique identifie ces prestations municipales, mais ne décrit pas les étapes d'une demande de réparation, ne donne pas de hotline de dépannage et ne garantit pas un délai. Ne pas inventer ces éléments pour compléter une réponse.\n"
+    },
+    {
+      "doc_id": "DOC-LIGHT-02",
+      "title": "STEG — Centre National des Services à Distance",
+      "url": "https://www.steg.com.tn/fr/centre-national-des-services-a-distance",
+      "status": "reviewed_page",
+      "include_in_index": true,
+      "section": "Les lignes Téléphoniques; Objectifs",
+      "last_update": "",
+      "removed_claims": "Unsupported CNSD email and a guaranteed technician dispatch after each call.",
+      "content": "# STEG — Services à distance\n\n## Appels d'urgence\nLa page du Centre National des Services à Distance donne le numéro vert 80 100 444 pour la prise en charge et le suivi des urgences, notamment les câbles à terre et les coupures touchant plusieurs clients. Elle annonce un service continu 24h/24 et 7j/7.\n\n## Autres demandes\nLe numéro 71 239 222 concerne les services personnalisés, renseignements et réclamations.\n\n## Limite\nCette source ne garantit aucun délai de réparation.\n"
+    },
+    {
+      "doc_id": "DOC-WASTE-01",
+      "title": "Commune de Tunis — Document historique de réglementation sanitaire",
+      "url": "https://www.commune-tunis.gov.tn/Images/Archives/1%D8%A7%D9%84%D9%82%D8%B1%D8%A7%D8%B1.pdf",
+      "status": "historical_current_validity_unverified",
+      "include_in_index": false,
+      "section": "Document historique; validité et articles applicables non établis",
+      "last_update": "",
+      "removed_claims": "The archived regulation is not presented as verified current law. Original text is retained outside the active index.",
+      "content": null
+    },
+    {
+      "doc_id": "DOC-WASTE-02",
+      "title": "Collectivités locales — Guide de collecte des déchets ménagers",
+      "url": "https://www.collectiviteslocales.gov.tn/wp-content/uploads/2021/06/DMA_Guide-dOptimisation-de-la-Collecte-des-Dechets-Menagers-et-Assimiles-en-Tunisie.pdf",
+      "status": "reviewed_guide_scope",
+      "include_in_index": true,
+      "section": "Coordination de la collecte des déchets verts et encombrants",
+      "last_update": "",
+      "removed_claims": "Unverified Tunis-specific pickup booking steps, free-pickup claims and collection deadlines.",
+      "content": "# Collecte des déchets et encombrants — Guide national\n\n## Portée\nLe guide publié sur le portail des collectivités locales traite de l'organisation de la collecte des déchets ménagers et assimilés en Tunisie. Il évoque la coordination de la prise en charge des déchets verts et des encombrants.\n\n## Limite\nIl s'agit d'un guide d'organisation destiné aux services concernés, pas d'un formulaire de réservation de collecte pour Tunis. Il ne fournit ici ni lieu de dépôt autorisé pour les gravats, ni numéro de réservation, ni délai garanti. Il ne permet pas de promettre le ramassage d'un matelas à une date donnée.\n"
+    },
+    {
+      "doc_id": "DOC-WATER-01",
+      "title": "SONEDE — Coordonnées officielles",
+      "url": "https://www.sonede.com.tn/nous-contacter/",
+      "status": "reviewed_page",
+      "include_in_index": true,
+      "section": "Numéro vert; coordonnées",
+      "last_update": "",
+      "removed_claims": "Unverified blanket free-repair policy, guaranteed availability and detailed emergency-dispatch steps.",
+      "content": "# SONEDE — Contacts\n\n## Contact\nLa page officielle de contact indique le numéro vert 80 100 319 et le téléphone central (+216) 71 887 000. Elle fournit des coordonnées pour joindre la SONEDE.\n\n## Limite\nUne demande concernant une fuite d'eau potable peut utiliser ce contact pour solliciter les services de la SONEDE. Cette page ne donne pas de délai garanti de réparation et ne démontre pas une prise en charge gratuite de toute réparation privée. Elle ne décrit pas la procédure de traitement d'un débordement d'eaux usées.\n"
+    },
+    {
+      "doc_id": "DOC-WATER-02",
+      "title": "SONEDE — FAQ de détection des fuites",
+      "url": "https://www.sonede.com.tn/espace-client/faq/",
+      "status": "reviewed_page",
+      "include_in_index": true,
+      "section": "Comment déceler la présence des fuites ?",
+      "last_update": "",
+      "removed_claims": "Unsupported blanket before/after-meter repair-cost claims and altered meter-test reimbursement wording.",
+      "content": "# SONEDE — Détection d'une fuite\n\n## Vérification de l'index\nLa FAQ propose une première relève de l'index du compteur, une période d'environ 30 minutes sans utilisation d'eau, puis une seconde relève. Si les index diffèrent, la FAQ indique la présence d'une fuite et recommande de la rechercher et de la réparer sans tarder.\n\n## Limite\nLes 30 minutes correspondent à une durée de vérification. Ce n'est pas un délai d'intervention ou de réparation garanti par la SONEDE. Cette rubrique ne donne pas de procédure de signalement d'eaux usées à l'ONAS.\n"
+    },
+    {
+      "doc_id": "DOC-WATER-03",
+      "title": "ONAS — Référence de contact à revalider",
+      "url": "http://www.onas.nat.tn/contact.php?code=56",
+      "status": "page_unavailable_not_revalidated",
+      "include_in_index": false,
+      "section": "Page indisponible lors de la vérification",
+      "last_update": "",
+      "removed_claims": "No current confirmation of the contact details or operational steps. Original text is retained outside the active index.",
+      "content": null
+    },
+    {
+      "doc_id": "DOC-TRANS-01",
+      "title": "Commune de Tunis — Portée de l'espace citoyen",
+      "url": "https://www.commune-tunis.gov.tn/page-de-login.aspx",
+      "status": "reviewed_page",
+      "include_in_index": true,
+      "section": "Espace citoyen",
+      "last_update": "",
+      "removed_claims": "The SICAD homepage did not substantiate a permanent 1807 desk or the supplied contact/address claims.",
+      "content": "# Commune de Tunis ? Orientation générale\n\n## Espace citoyen\nLe portail présente un compte citoyen, le suivi des réclamations et les notifications d’avancement.\n\n## Périmètre\nLes informations consultées concernent le compte municipal et le suivi des réclamations. Elles ne constituent pas un catalogue de procédures pour toutes les administrations.\n"
+    },
+    {
+      "doc_id": "DOC-LEGAL-01",
+      "title": "JORT — Référence juridique non revalidée",
+      "url": "",
+      "status": "primary_text_not_obtained",
+      "include_in_index": false,
+      "section": "JORT n° 118, 30 septembre 2026 : référence fournie, texte primaire non obtenu",
+      "last_update": "",
+      "removed_claims": "The claimed decree/article and repeal are not asserted as verified law. No invented direct URL is supplied.",
+      "content": null
+    }
+  ]
+}

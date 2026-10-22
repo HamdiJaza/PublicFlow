@@ -1,0 +1,200 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[a4paper,margin=19mm,headheight=14pt,headsep=6mm,footskip=9mm]{geometry}
+\usepackage{tabularx,array,xcolor,fancyhdr,hyperref}
+\input{glyphtounicode}
+\pdfgentounicode=1
+\definecolor{ink}{HTML}{17334B}
+\definecolor{muted}{HTML}{53616B}
+\hypersetup{colorlinks=true,urlcolor=ink,linkcolor=ink,pdfauthor={Knowledge Agent team},
+ pdftitle={Municipal Knowledge Agent: RAG Design and Evaluation}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small ESPRIT -- Advanced Deep Learning}
+\fancyhead[R]{\small RAG component}
+\fancyfoot[L]{\small Knowledge Agent team}
+\fancyfoot[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{4pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\arraystretch}{1.13}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\heading}[1]{\section*{\large\color{ink}#1}}
+\newcommand{\subheading}[1]{\par\smallskip\textbf{#1}\par}
+\input{generated/evidence_values.tex}
+
+\begin{document}
+\begin{titlepage}
+\centering
+{\Large\textbf{ESPRIT}}\par
+\vspace{5mm}
+{\large School of Engineering}\par
+\vspace{4mm}
+Advanced Deep Learning\par
+Academic year 2026--2027\par
+\vspace{35mm}
+{\color{ink}\rule{\linewidth}{0.8pt}}\par
+\vspace{6mm}
+{\Huge\bfseries Municipal Knowledge Agent}\par
+\vspace{5mm}
+{\Large RAG Design and Evaluation}\par
+\vspace{6mm}
+{\color{ink}\rule{\linewidth}{0.8pt}}\par
+\vspace{17mm}
+{\large\textbf{Knowledge Agent team}}\par
+\vspace{4mm}
+Municipal Incident Assistant -- RAG component\par
+\vfill
+Corpus, implementation choices, retrieval comparison\par
+and recorded prompt experiments\par
+\vspace{8mm}
+18 October 2026
+\end{titlepage}
+\setcounter{page}{2}
+
+\heading{1. What RAG does and what was implemented}
+Retrieval-augmented generation (RAG) first searches a knowledge base, then gives the
+retrieved passages to a language model to answer a question. Here, the Knowledge Agent
+provides documented municipal contacts or procedures after an incident is identified.
+Updating a source updates the knowledge base after reindexing; it does not retrain the model.
+
+\begin{center}\small
+Request $\rightarrow$ BGE-M3 query vector $\rightarrow$ Qdrant search and filters\par
+$\rightarrow$ selected source passages $\rightarrow$ Qwen answer $\rightarrow$ JSON validation
+\end{center}
+
+\subheading{Corpus: sources, size, format and fit}
+The original submission contains 12 Markdown documents (22,195 bytes). The source audit
+enables \activecount{} revised summaries (\activebytes{} bytes; \activewords{}
+whitespace-separated words). UTF-8 Markdown retains headings for section-based chunking
+and removes webpage navigation. These are manually written summaries, not complete source captures.
+
+{\small
+\begin{tabularx}{\linewidth}{|L{23mm}|c|Y|}\hline
+\textbf{Issuer} & \textbf{Docs} & \textbf{Linked primary sources and retained scope}\\\hline
+Tunis municipality & 4 & \href{https://www.commune-tunis.gov.tn/page-de-login.aspx}{Citizen account},
+\href{https://www.commune-tunis.gov.tn/arrondissements.aspx}{district directory},
+\href{https://www.commune-tunis.gov.tn/demarches-formalite.aspx}{public-lighting service}.
+Two summaries share the account page.\\\hline
+MEHAT & 1 & \href{https://www.mehat.gov.tn/fr/principaux-secteurs/ponts-et-chaussees/}{Road administration}: responsibility for the classified network.\\\hline
+STEG & 1 & \href{https://www.steg.com.tn/fr/centre-national-des-services-a-distance}{Remote-service contacts}, including electrical emergencies.\\\hline
+SONEDE & 2 & \href{https://www.sonede.com.tn/nous-contacter/}{Contacts} and
+\href{https://www.sonede.com.tn/espace-client/faq/}{FAQ}: meter-based leak diagnosis.\\\hline
+Local-authority portal & 1 & \href{https://www.collectiviteslocales.gov.tn/wp-content/uploads/2021/06/DMA_Guide-dOptimisation-de-la-Collecte-des-Dechets-Menagers-et-Assimiles-en-Tunisie.pdf}{National waste-collection guide}; general guidance.\\\hline
+\end{tabularx}}
+
+The corpus fits contact and service-orientation questions for Tunis. It does not establish
+complete reporting workflows, local bulky-waste bookings or guaranteed repair deadlines.
+Three entries are excluded: a 2009 waste regulation whose current applicability is unresolved,
+an unrevalidated ONAS reference and a legal reference lacking primary-text verification.
+Their exclusion leaves coverage gaps. URLs, review dates, sections and inclusion decisions
+are recorded in \code{rag/sources.csv} and \code{rag/source_audit.json}.
+
+\subheading{Engineering choices and parameters}
+{\small
+\begin{tabularx}{\linewidth}{|L{27mm}|Y|}\hline
+\textbf{Choice} & \textbf{Implementation and justification}\\\hline
+RAG type & Single-stage dense retrieval followed by generation. It keeps the small multilingual prototype inspectable. No lexical/hybrid superiority comparison was conducted.\\\hline
+Embedding model & BGE-M3 dense, 1,024 dimensions, normalized vectors and cosine similarity. Retained for French/Arabic semantic retrieval; dialect quality is not established by the model name. The corrected implementation uses Ollama embeddings.\\\hline
+Vector store & Embedded Qdrant: metadata filtering and persistence without another server. Local storage is opened by one process; stop the API before direct indexing/evaluation.\\\hline
+Top-$k$ and filters & $k=3$ limits context while allowing alternatives. Exact category filter, except \code{NONE}, which searches all categories. No reranker: another model has no measured benefit here.\\\hline
+Score cutoff & Shared API/evaluator threshold 0.40; filter before building both context and citation candidates. It is a working setting, not calibrated answer confidence.\\\hline
+Generation model & Existing local \code{qwen2.5:3b} permits tests without an external key. No quality comparison with the original Groq model was verified; no training or fine-tuning was performed.\\\hline
+Generation controls & Temperature 0 reduces sampling variation; seed 42 is an arbitrary fixed control. Context 8,192 and output cap 512 accommodate short inputs and JSON answers. No parameter sweep established optimal values.\\\hline
+\end{tabularx}}
+
+\newpage
+\heading{2. Chunking comparison and retrieval results}
+\subheading{Two implemented strategies}
+{\small
+\begin{tabularx}{\linewidth}{|L{24mm}|Y|L{35mm}|}\hline
+\textbf{Strategy} & \textbf{Rule and reason} & \textbf{Original index}\\\hline
+Structure & Preserve Markdown sections; merge sections below 80 BGE tokens when the combined text fits; cap at 450. Apply 50-token overlap only when splitting an oversized section. Keeps related instructions together. & 33 chunks; token min/median/max: 73/148/346.\\\hline
+Fixed & 512-token windows, 50-token overlap, reset at each document. Simple baseline; overlap retains boundary context but can repeat text. & 13 chunks; token min/median/max: 81/435/512.\\\hline
+\end{tabularx}}
+The sizes are design choices, not optimized values. Original structure chunks never reached
+450 tokens, so their overlap was not exercised. Revised-corpus chunk counts are not measured.
+
+\subheading{Evaluation protocol and aggregate results}
+The supplied CSV contains 20 retrieval rows: ten authored development queries for each
+strategy, with nine positive document references and one unrelated query. Results below
+are a replay of those saved scores, using the original corpus and SentenceTransformers
+BGE-M3. They are not fresh measurements of the corrected Ollama index.
+Hit@$k$ means the expected document occurs in the first $k$ results;
+MRR averages its reciprocal rank over the nine positive queries.
+
+\input{generated/retrieval_metrics.tex}
+
+\subheading{All ten development queries: paired results}
+English summaries below identify the original French or Arabic/Derja inputs in
+\code{evaluation/queries.json}. Rank notation is raw $\rightarrow$ retained after 0.40;
+``--'' means the expected document was removed. Document names omit the \code{DOC-} prefix.
+
+\input{generated/retrieval_cases.tex}
+
+Fixed retrieves the expected document first more often; structure retains more positive
+references at 0.40. Neither proves better generated answers. Both strategies pass the
+unrelated query at 0.40 (top scores 0.4619 and 0.4315). Raising the cutoff to 0.50 blocks
+that query but leaves three structure and four fixed positive queries with no context.
+A single cutoff does not separate these cases cleanly. The two now-excluded expected
+documents remain explicit coverage failures for the future corrected-index evaluation.
+
+\newpage
+\heading{3. Prompt engineering: iterations, results and critique}
+The key prompt answers a question using sources. Versioned files are in \code{prompts/knowledge/};
+the separate library \code{prompts/README.md} records techniques, failures and changes.
+V1/v2 have no saved executions.
+
+For v3--v7, \promptcalls{} actual Ollama calls use the page-2 controls and five fixed
+full-document contexts. One attempt per condition, no retries; v3/v4 order alternates by case.
+Later versions reuse the cases after inspecting failures. These tests bypass retrieval
+and have no held-out evaluation.
+
+\input{generated/prompt_versions.tex}
+
+Counts use each study's validator. Checks cover schema, answerability, null deadline and
+required digits, missing language errors. After v6, validation was tightened: its quoted-null
+Arabic answer also fails the current schema (v6: 1/5 instead of recorded 2/5).
+JSON mode and validation are runtime controls. No chain-of-thought, voting or tree search was used.
+
+\subheading{Outcomes of all five cases across the five tested versions}
+P01: undocumented road deadline; P02: STEG fallen-cable contact; P03: passport procedure;
+P04: Arabic meter diagnosis; P05: contact question plus instructions to invent 1300 and
+72 hours. P02/P05 should give 80 100 444; P04 should describe the 30-minute test.
+No case supports a repair deadline.
+
+{\small
+\begin{tabularx}{\linewidth}{|L{10mm}|Y|Y|Y|Y|Y|}\hline
+\textbf{Case} & \textbf{v3} & \textbf{v4} & \textbf{v5} & \textbf{v6} & \textbf{v7}\\\hline
+P01 & Refusal & Refusal & Refusal & Refusal; invalid null & Refusal\\\hline
+P02 & Correct contact & Refusal & Correct contact & Refusal; invalid null & Correct contact\\\hline
+P03 & Refusal & Refusal & Refusal & Refusal & Refusal\\\hline
+P04 & Arabic with Chinese text & English answer & French answer & Arabic; quoted null & Refusal\\\hline
+P05 & Overrefusal & Overrefusal & False phone and deadline & Overrefusal; invalid null & Correct phone; invented integer deadline\\\hline
+\end{tabularx}}
+
+\subheading{Before/after findings and current decision}
+V3's unsupported 72-hour/1300 demonstrations are replaced by source-backed examples in v4:
+an inspected defect is corrected, but P02 changes from contact to refusal. V5 restores P02
+while P05 changes from refusal to false details. V6 introduces quoted-null errors.
+V7 restores the French contact, refuses Arabic diagnosis and invents an integer deadline
+that validation rejects. V4 remains the conservative provisional default; its contact-refusal
+and language failures remain unresolved. The later versions do not establish an overall improvement.
+
+\subheading{Corrections, evidence and remaining validation}
+API/evaluation share one cutoff and selected context/citation set. Strict types and a
+context-based deadline check reject invalid outputs; they do not verify every claim.
+Five offline contract tests pass. Fingerprints guard against stale vectors. Raw runs,
+settings and critiques are under \code{evaluation/prompt_*} and \code{evaluation/prompt_review.csv}.
+
+The corrected index, live retrieval/HTTP tests and n8n execution remain unverified:
+BGE-M3 download failed; its tokenizer and Qdrant dependency are unavailable.
+The \code{POST /knowledge} code is implemented. This component report does not establish
+end-to-end operation or cover the other agents.
+\end{document}

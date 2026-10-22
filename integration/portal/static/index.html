@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Municipalité Automatisée · Envoyer un signalement</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/portal.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body><div class="shell">
+<header class="topbar"><div class="brand"><div class="logo" aria-hidden="true">MA</div><div>Municipalité Automatisée<small>ESPACE CITOYEN · DÉMONSTRATION LOCALE</small></div></div><a class="settings" href="/setup">Configuration</a></header>
+<main>
+  <section class="hero"><div><div class="eyebrow">Votre ville, votre voix</div><h1>Un signalement.<br><span>Un seul envoi.</span></h1><p class="lead">Ajoutez une photo ou une vidéo. Le système prépare les médias, analyse le problème et recherche les procédures municipales, selon les résultats des contrôles.</p></div><div class="hero-art"><div><strong>Déposer → Analyser → Orienter</strong><p>Le traitement démarre dès l’envoi.<br>Aucune étape à lancer à la main.</p></div></div></section>
+  <div id="readiness" class="alert warning" role="status">Vérification des services locaux…</div>
+  <div class="layout">
+    <section class="panel"><div class="panel-head"><h2>Créer un signalement</h2><p>Photo avec description ou audio, ou vidéo seule.</p></div><div class="panel-body">
+      <form id="reportForm"><fieldset id="fields">
+        <label class="field-label" for="description">Que se passe-t-il ?</label>
+        <textarea id="description" name="description" maxlength="3000" placeholder="Ex. : La chaussée est abîmée, avec des fissures et des morceaux de revêtement détachés."></textarea>
+        <p class="hint">Une description est nécessaire avec une photo sans audio.</p>
+        <label class="field-label address-label" for="address">Où se trouve le problème ? <span class="optional">Facultatif</span></label>
+        <input class="text-input" id="address" name="address" maxlength="300" placeholder="Rue, quartier, ville — si vous les connaissez">
+        <div class="upload-grid">
+          <label class="upload-card" for="image"><input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Ajouter une photo"><span class="upload-icon" aria-hidden="true">▧</span><span class="upload-title">Photo</span><span class="upload-desc" id="imageName">JPG, PNG, WEBP · 10 Mo max.</span></label>
+          <label class="upload-card" for="audio"><input id="audio" name="audio" type="file" accept="audio/*" aria-label="Ajouter un audio avec la photo"><span class="upload-icon" aria-hidden="true">♪</span><span class="upload-title">Audio + photo</span><span class="upload-desc" id="audioName">30 Mo · 2 min max.</span></label>
+          <label class="upload-card" for="video"><input id="video" name="video" type="file" accept="video/*" aria-label="Ajouter une vidéo"><span class="upload-icon" aria-hidden="true">▷</span><span class="upload-title">Vidéo</span><span class="upload-desc" id="videoName">50 Mo · 1 min max.</span></label>
+        </div>
+        <div id="preview" class="preview" hidden></div>
+        <p class="hint">Choisissez une photo (avec texte ou audio) OU une vidéo. Évitez les informations personnelles inutiles.</p>
+        <div class="actions"><button class="primary" id="submitBtn" type="submit">Envoyer le signalement →</button><button class="secondary" id="resetBtn" type="reset">Effacer</button></div>
+      </fieldset></form>
+      <div id="formError" class="alert error" role="alert" hidden></div>
+      <div id="loading" class="loading" role="status"><span class="spinner"></span><span id="loadingText">Traitement automatique en cours…</span></div>
+      <p class="secure">Le texte et, si présent, l’audio sont traités par NVIDIA. L’analyse visuelle et la recherche documentaire utilisent les modèles locaux.</p>
+    </div></section>
+    <aside class="side-stack">
+      <section class="panel info-card"><div class="info-title">Après votre envoi</div><div class="steps">
+        <div class="step"><span class="step-no">1</span><div><b>Préparer les médias</b><p>Intake normalise le signalement et prépare les images.</p></div></div>
+        <div class="step"><span class="step-no">2</span><div><b>Analyser le problème</b><p>Vision examine les preuves et les contrôles vérifient ses résultats.</p></div></div>
+        <div class="step"><span class="step-no">3</span><div><b>Rechercher les procédures</b><p>RAG recherche les sources correspondant au problème et au service identifiés.</p></div></div>
+        <div class="step"><span class="step-no">4</span><div><b>Enregistrer et suivre</b><p>Le signalement reçoit une référence de suivi après son enregistrement.</p></div></div>
+      </div><p class="hint">Une incertitude exploitable reste signalée pendant la suite du traitement. Les résultats inutilisables sont enregistrés pour vérification ; les étapes non exécutées sont indiquées.</p><a class="workflow-link" href="http://127.0.0.1:5679/workflow/municipalCompletionDev" target="_blank" rel="noopener">Ouvrir le workflow n8n ↗</a></section>
+      <section class="panel info-card"><div class="info-title">Un traitement automatique</div><p class="demo-note">Un seul envoi lance les étapes et l’enregistrement. Les incertitudes restent attachées au ticket pour la municipalité. La confirmation et la référence de suivi apparaissent lorsque l’enregistrement est réussi.</p></section>
+    </aside>
+  </div>
+  <section class="panel result-wrap" id="resultWrap" aria-live="polite"><div class="result-head"><div><h2 id="resultTitle">Traitement en cours</h2><p id="reference"></p></div><span id="globalBadge" class="badge">EN COURS</span></div><div class="result-body" id="resultBody"></div></section>
+</main><footer class="footer">Municipalité Automatisée · Prototype universitaire</footer></div></body></html>

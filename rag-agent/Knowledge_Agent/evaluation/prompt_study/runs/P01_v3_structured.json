@@ -1,0 +1,65 @@
+{
+  "case_id": "P01",
+  "prompt_version": "v3_structured",
+  "request": {
+    "category": "ROAD_DAMAGE",
+    "department": null,
+    "description": "Quel est le délai garanti pour réparer un nid-de-poule ?",
+    "strategy": null,
+    "prompt_version": "v4_grounded"
+  },
+  "model_digest": "357c53fb659c5076de1d65ccb0b397446227b71a42be9d1603d46168015c9e4b",
+  "reference": {
+    "case_id": "P01",
+    "category": "ROAD_DAMAGE",
+    "description": "Quel est le délai garanti pour réparer un nid-de-poule ?",
+    "documents": [
+      "DOC-ROAD-01"
+    ],
+    "answer_found": false,
+    "required_digits": []
+  },
+  "prompt_sha256": "7ed951234caebe97dc1ff314fea98a7cf086d472b870463cf982931ddfb97b0f",
+  "started_at": "2026-10-18T00:10:28.749183+00:00",
+  "raw_response": {
+    "model": "qwen2.5:3b",
+    "created_at": "2026-10-18T00:11:30.1284592Z",
+    "message": {
+      "role": "assistant",
+      "content": "{\n  \"procedure\": null,\n  \"deadline\": null,\n  \"answer_found\": false\n}"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 61374830300,
+    "load_duration": 50780685500,
+    "prompt_eval_count": 964,
+    "prompt_eval_duration": 9624617000,
+    "eval_count": 22,
+    "eval_duration": 946694000
+  },
+  "generation_request": {
+    "model": "qwen2.5:3b",
+    "messages": [
+      {
+        "role": "user",
+        "content": "You are a strict municipal assistant for the Commune de Tunis.\nYou extract procedural answers from official documents and return ONLY valid JSON.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nOUTPUT SCHEMA (strict):\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n{\n  \"procedure\": \"<string with numbered steps, or null if unknown>\",\n  \"deadline\": \"<string if explicitly stated in context, or null>\",\n  \"answer_found\": <true | false>\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nHARD RULES:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- Output ONLY the JSON object. No explanation before or after.\n- \"deadline\" must be null unless the context explicitly states processing time or deadline.\n- \"answer_found\" is false if context is insufficient or score is low.\n- Never fabricate steps, phone numbers, or office addresses.\n- Quote exact numbers (hotlines, article numbers) verbatim from context.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nFEW-SHOT EXAMPLES:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nExample 1 — Good answer with deadline:\nContext chunk: \"Signalement via Espace Citoyen → délai de traitement 72h ouvrables.\"\nQuestion: \"Comment signaler une route abîmée?\"\nOutput:\n{\n  \"procedure\": \"1. Rendez-vous sur le portail Espace Citoyen (commune-tunis.gov.tn).\\n2. Créez un compte ou connectez-vous.\\n3. Soumettez votre signalement avec photos et localisation.\\n4. Suivez l'avancement de votre dossier en ligne.\",\n  \"deadline\": \"72 heures ouvrables\",\n  \"answer_found\": true\n}\n\nExample 2 — No deadline in context:\nContext chunk: \"Contacter la STEG au numéro 1300 pour toute panne d'éclairage public.\"\nQuestion: \"L'éclairage de ma rue est en panne depuis 3 jours.\"\nOutput:\n{\n  \"procedure\": \"1. Appelez la STEG au 1300 (disponible 24h/24).\\n2. Signalez l'adresse exacte de la panne.\\n3. Un technicien sera envoyé.\",\n  \"deadline\": null,\n  \"answer_found\": true\n}\n\nExample 3 — Insufficient context:\nContext chunk: \"La commune gère les espaces verts et la propreté urbaine.\"\nQuestion: \"Comment obtenir un permis de construire?\"\nOutput:\n{\n  \"procedure\": null,\n  \"deadline\": null,\n  \"answer_found\": false\n}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCONTEXT (top-3 retrieved chunks):\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[DOC-ROAD-01#source] Commune de Tunis — Compte citoyen et suivi des réclamations\nSource: https://www.commune-tunis.gov.tn/page-de-login.aspx\n# Commune de Tunis — Compte citoyen et réclamations\n\n## Accès au compte\nLa page officielle propose la création d'un compte et la connexion par adresse e-mail et mot de passe. Le formulaire de création demande une adresse e-mail, un nom, un prénom, une CIN, un téléphone et un mot de passe. Un captcha et l'acceptation des conditions sont affichés.\n\n## Suivi des réclamations\nL'espace citoyen présente le suivi des réclamations et les notifications de leur avancement.\n\n## Limite de cette source\nCette page ne décrit pas un formulaire spécifique aux nids-de-poule et ne donne ni étapes de réparation ni délai garanti. Une demande de délai exact n'est pas résolue par ces informations.\n\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCITIZEN REQUEST:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nCategory: ROAD_DAMAGE\nDepartment: Non précisé\nDescription: Quel est le délai garanti pour réparer un nid-de-poule ?\n\nRespond with ONLY the JSON object:\n"
+      }
+    ],
+    "stream": false,
+    "options": {
+      "temperature": 0,
+      "seed": 42,
+      "num_ctx": 8192,
+      "num_predict": 512
+    },
+    "keep_alive": "2m",
+    "format": "json"
+  },
+  "answer": {
+    "procedure": null,
+    "deadline": null,
+    "answer_found": false
+  },
+  "status": "completed",
+  "elapsed_seconds": 61.39
+}

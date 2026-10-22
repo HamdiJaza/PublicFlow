@@ -1,0 +1,19 @@
+# Local environments, credentials, uploads and inference/debug data
+.runtime/
+vendor/
+.venv/
+**/.venv/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+**/uploads_signalements/
+**/evaluation/vision/uploads/
+**/evaluation/vision/n8n_integration_runs/
+**/evaluation/vision/api_smoke/

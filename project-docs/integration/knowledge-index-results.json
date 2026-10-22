@@ -1,0 +1,85 @@
+{
+  "scope": "Actual local indexing/resource checks; not generation accuracy",
+  "embedding_model": "bge-m3:latest",
+  "embedding_digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+  "indexes": {
+    "structure": {
+      "created_at": "2026-10-21T22:11:26.071789+00:00",
+      "files": {
+        "rag/sources.csv": "0fe5339e07d58a6f22122446ddc73d7d0a25c0106adbc966d4f56465cffc43b6",
+        "rag/corpus/DOC-LEGAL-01.md": "1f54147b362a15cbf6a727b56c7a5e447605fdde60d9749d5b2096bc59907809",
+        "rag/corpus/DOC-LIGHT-01.md": "ec50dfdf7d05d4675768f053276197fda31950581c5b9118746d23ee65ce3fa6",
+        "rag/corpus/DOC-LIGHT-02.md": "69fee7590734b4ea4d9c22c302e68048b83d68e355d48839ff79b81ba5c891ef",
+        "rag/corpus/DOC-ROAD-01.md": "5dccf1398c2e6d3caf074aee96ae75178a6e746477ff2f8f9661ea05208ad788",
+        "rag/corpus/DOC-ROAD-02.md": "1c04504bedf38ff47f52860e1b62416240f65107934e7985be1332c637434a5b",
+        "rag/corpus/DOC-ROAD-03.md": "c646ce2139123574d38ccf42997a4cf1b9c63203934378e11a73c6c34c37f8e3",
+        "rag/corpus/DOC-TRANS-01.md": "fa09978da6d3c130755bece85f8a3ce110da14654667e4cbbc7afea7c512acf3",
+        "rag/corpus/DOC-WASTE-01.md": "a16a9267b953dc5fe636db596079b4ff2ffeb78e56c958bfafa696edc1a44582",
+        "rag/corpus/DOC-WASTE-02.md": "883e8b4cd9f4ab3cfe9afb4f74e5e0e7846cfbbffd7057cff6232af8d366e60d",
+        "rag/corpus/DOC-WATER-01.md": "e2db75f56b90bb64c5d19d53315de6e05ca5c45c19d02f33896fd3babee8a926",
+        "rag/corpus/DOC-WATER-02.md": "038a2e972ebd778b2bfb835dc8453a3ff23967cdfcc24938e99ebda44eb3c363",
+        "rag/corpus/DOC-WATER-03.md": "7d685836b72e8fc3caad76b1c3418241e01137aa40f89646828323e46aca1117"
+      },
+      "chunker_sha256": "24ad99246b66b9a84141e435ffad577a3cfec46139104fe14543a1abe41da28e",
+      "qdrant_path": "[PROJECT_RUNTIME_QDRANT]",
+      "embedding": {
+        "provider": "ollama",
+        "model": "bge-m3:latest",
+        "digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+        "dimension": 1024
+      },
+      "tokenizer": "BAAI/bge-m3",
+      "strategy": "structure",
+      "chunks": 12,
+      "documents": 9,
+      "min_tokens": 14,
+      "median_tokens": 92.0,
+      "max_tokens": 150,
+      "chunk_parameters": {
+        "structure_max": 450,
+        "structure_min": 80,
+        "fixed_size": 512,
+        "overlap_on_splits": 50
+      }
+    },
+    "fixed": {
+      "created_at": "2026-10-21T22:11:26.579863+00:00",
+      "files": {
+        "rag/sources.csv": "0fe5339e07d58a6f22122446ddc73d7d0a25c0106adbc966d4f56465cffc43b6",
+        "rag/corpus/DOC-LEGAL-01.md": "1f54147b362a15cbf6a727b56c7a5e447605fdde60d9749d5b2096bc59907809",
+        "rag/corpus/DOC-LIGHT-01.md": "ec50dfdf7d05d4675768f053276197fda31950581c5b9118746d23ee65ce3fa6",
+        "rag/corpus/DOC-LIGHT-02.md": "69fee7590734b4ea4d9c22c302e68048b83d68e355d48839ff79b81ba5c891ef",
+        "rag/corpus/DOC-ROAD-01.md": "5dccf1398c2e6d3caf074aee96ae75178a6e746477ff2f8f9661ea05208ad788",
+        "rag/corpus/DOC-ROAD-02.md": "1c04504bedf38ff47f52860e1b62416240f65107934e7985be1332c637434a5b",
+        "rag/corpus/DOC-ROAD-03.md": "c646ce2139123574d38ccf42997a4cf1b9c63203934378e11a73c6c34c37f8e3",
+        "rag/corpus/DOC-TRANS-01.md": "fa09978da6d3c130755bece85f8a3ce110da14654667e4cbbc7afea7c512acf3",
+        "rag/corpus/DOC-WASTE-01.md": "a16a9267b953dc5fe636db596079b4ff2ffeb78e56c958bfafa696edc1a44582",
+        "rag/corpus/DOC-WASTE-02.md": "883e8b4cd9f4ab3cfe9afb4f74e5e0e7846cfbbffd7057cff6232af8d366e60d",
+        "rag/corpus/DOC-WATER-01.md": "e2db75f56b90bb64c5d19d53315de6e05ca5c45c19d02f33896fd3babee8a926",
+        "rag/corpus/DOC-WATER-02.md": "038a2e972ebd778b2bfb835dc8453a3ff23967cdfcc24938e99ebda44eb3c363",
+        "rag/corpus/DOC-WATER-03.md": "7d685836b72e8fc3caad76b1c3418241e01137aa40f89646828323e46aca1117"
+      },
+      "chunker_sha256": "24ad99246b66b9a84141e435ffad577a3cfec46139104fe14543a1abe41da28e",
+      "qdrant_path": "[PROJECT_RUNTIME_QDRANT]",
+      "embedding": {
+        "provider": "ollama",
+        "model": "bge-m3:latest",
+        "digest": "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+        "dimension": 1024
+      },
+      "tokenizer": "BAAI/bge-m3",
+      "strategy": "fixed",
+      "chunks": 9,
+      "documents": 9,
+      "min_tokens": 74,
+      "median_tokens": 114,
+      "max_tokens": 166,
+      "chunk_parameters": {
+        "structure_max": 450,
+        "structure_min": 80,
+        "fixed_size": 512,
+        "overlap_on_splits": 50
+      }
+    }
+  }
+}
