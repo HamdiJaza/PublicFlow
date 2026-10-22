@@ -61,7 +61,7 @@ class BodyLimit:
         except ValueError:
             too_large = True
         if too_large:
-            return await JSONResponse({'detail': 'Envoi limité à 52 Mo.'}, 413)(scope, receive, send)
+            return await JSONResponse({'detail': 'Uploads are limited to 52 MB in total.'}, 413)(scope, receive, send)
         size = 0
 
         async def limited_receive():
@@ -69,7 +69,7 @@ class BodyLimit:
             message = await receive()
             size += len(message.get('body', b''))
             if size > MAX_BODY:
-                raise HTTPException(413, 'Envoi limité à 52 Mo.')
+                raise HTTPException(413, 'Uploads are limited to 52 MB in total.')
             return message
 
         await self.app(scope, limited_receive, send)
@@ -109,10 +109,10 @@ def create_app(runtime=None, transport=None, configure=None):
 
     def read(report_id):
         if not re.fullmatch(r'RPT-[a-f0-9]{32}', report_id):
-            raise HTTPException(404, 'Signalement introuvable.')
+            raise HTTPException(404, 'Report not found.')
         path = jobs / (report_id + '.json')
         if not path.is_file():
-            raise HTTPException(404, 'Signalement introuvable.')
+            raise HTTPException(404, 'Report not found.')
         return json.loads(path.read_text(encoding='utf-8'))
 
     @asynccontextmanager
@@ -122,7 +122,7 @@ def create_app(runtime=None, transport=None, configure=None):
             record = json.loads(path.read_text(encoding='utf-8'))
             if record.get('state') in ('queued', 'running'):
                 record.update(state='interrupted', finished_at=now(),
-                              error='Le portail a redémarré. Vérifiez l’exécution n8n avant de renvoyer.')
+                              error='The portal restarted while this report was being processed. Check the n8n execution before sending it again.')
                 save(record)
                 # Only this portal's generated upload files; never member originals.
                 for uploaded in jobs.glob(record['report_id'] + '-*.upload'):
@@ -143,9 +143,9 @@ def create_app(runtime=None, transport=None, configure=None):
         if request.method == 'POST':
             origin = request.headers.get('origin')
             if origin and origin not in ('http://127.0.0.1:8090', 'http://localhost:8090', 'http://testserver'):
-                return JSONResponse({'detail': 'Origine non autorisée.'}, 403)
+                return JSONResponse({'detail': 'Origin not allowed.'}, 403)
             if not secrets.compare_digest(request.headers.get('x-portal-token', ''), token):
-                return JSONResponse({'detail': 'Rechargez la page avant de réessayer.'}, 403)
+                return JSONResponse({'detail': 'Please reload the page and try again.'}, 403)
         response = await call_next(request)
         response.headers['Cache-Control'] = 'no-store'
         response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -189,27 +189,27 @@ def create_app(runtime=None, transport=None, configure=None):
                     return name, False
             statuses = dict(await asyncio.gather(*(check(k, v) for k, v in SERVICES.items())))
         return {'services': statuses, 'ready': all(statuses.values()), 'persistence': statuses['persistence'],
-                'note': 'Disponibilité seulement ; aucune inférence déclenchée.'}
+                'note': 'Availability only; no inference is triggered.'}
 
     @app.post('/api/setup/intake')
     async def setup_intake(request: Request):
         if admission.locked() or setup_lock.locked():
-            raise HTTPException(409, 'Un traitement est déjà en cours.')
+            raise HTTPException(409, 'A report is already being processed. Please wait for it to finish.')
         async with setup_lock:
             if len(await request.body()) > 4096:
-                raise HTTPException(400, 'Clé invalide.')
+                raise HTTPException(400, 'Invalid key.')
             try:
                 data = await request.json()
                 key = data.get('key')
             except (ValueError, AttributeError):
                 key = None
             if not isinstance(key, str) or not re.fullmatch(r'nvapi-[A-Za-z0-9_-]{20,200}', key):
-                raise HTTPException(400, 'Saisissez uniquement la clé NVIDIA.')
+                raise HTTPException(400, 'Enter only the NVIDIA API key (it starts with nvapi-).')
             ok = await asyncio.to_thread(configure, key)
             key = None
             if not ok:
-                raise HTTPException(503, 'Intake n’a pas démarré. Vérifiez la configuration locale ; la clé n’est pas affichée.')
-            return {'configured': True, 'message': 'Clé chiffrée pour ce compte Windows. Intake démarré ; aucun appel au modèle pendant la configuration.'}
+                raise HTTPException(503, 'Intake did not start. Check the local setup; the key is never displayed.')
+            return {'configured': True, 'message': 'Key encrypted for this Windows account. Intake started; no model was called during setup.'}
 
     async def dispatch(record, data, uploads):
         record.update(state='running', started_at=now())
@@ -232,12 +232,12 @@ def create_app(runtime=None, transport=None, configure=None):
                     raise ValueError('Unexpected n8n response')
                 record.update(state='completed', result=result, webhook_http_status=response.status_code)
         except asyncio.CancelledError:
-            record.update(state='interrupted', error='Le portail a été arrêté. Vérifiez n8n avant de renvoyer.')
+            record.update(state='interrupted', error='The portal was stopped during processing. Check n8n before sending the report again.')
             raise
         except (httpx.HTTPError, ValueError):
-            record.update(state='failed', error='Réponse n8n indisponible ou invalide. Vérifiez l’exécution avant de renvoyer ; aucun nouvel essai automatique.')
+            record.update(state='failed', error='The workflow engine did not return a valid result. Check the n8n execution before sending again; nothing is retried automatically.')
         except Exception:
-            record.update(state='failed', error='Le traitement local a échoué. Aucun ticket confirmé.')
+            record.update(state='failed', error='Local processing failed. No ticket was confirmed.')
         finally:
             record['finished_at'] = now()
             save(record)
@@ -252,11 +252,11 @@ def create_app(runtime=None, transport=None, configure=None):
         try:
             report_id = 'RPT-' + uuid.UUID(key).hex
         except ValueError:
-            raise HTTPException(400, 'Référence de soumission invalide.') from None
+            raise HTTPException(400, 'Invalid submission reference.') from None
         if (jobs / (report_id + '.json')).exists():
             return {'report_id': report_id, 'existing': True}
         if admission.locked() or setup_lock.locked():
-            raise HTTPException(409, 'Un signalement est déjà en cours sur ce poste. Attendez sa fin.')
+            raise HTTPException(409, 'Another report is already being processed on this computer. Please wait for it to finish.')
         await admission.acquire()
         uploads = []
         started = False
@@ -264,22 +264,22 @@ def create_app(runtime=None, transport=None, configure=None):
             async with request.form(max_files=3, max_fields=2, max_part_size=4096) as form:
                 pairs = list(form.multi_items())
                 if len({k for k, _ in pairs}) != len(pairs) or any(k not in ('description', 'address', *LIMITS) for k, _ in pairs):
-                    raise HTTPException(422, 'Champs inconnus ou en double.')
+                    raise HTTPException(422, 'Unknown or duplicate form fields.')
                 description, address = form.get('description', ''), form.get('address', '')
                 if not isinstance(description, str) or len(description) > 3000 or not isinstance(address, str) or len(address) > 300:
-                    raise HTTPException(422, 'Description ou adresse trop longue.')
+                    raise HTTPException(422, 'The description or address is too long.')
                 selected = {k: v for k, v in pairs if k in LIMITS}
                 if (('video' in selected and len(selected) != 1) or
                         ('video' not in selected and 'image' not in selected)):
-                    raise HTTPException(422, 'Ajoutez une photo avec texte/audio, ou une vidéo seule.')
+                    raise HTTPException(422, 'Add a photo with a description or voice note, or a single video.')
                 if 'image' in selected and 'audio' not in selected and len(description.strip()) < 5:
-                    raise HTTPException(422, 'Ajoutez une description à la photo (5 caractères minimum).')
+                    raise HTTPException(422, 'Add a description of at least 5 characters to the photo.')
                 media = []
                 for kind, upload in selected.items():
                     if not isinstance(upload, UploadFile) or upload.content_type not in MIMES[kind]:
-                        raise HTTPException(422, 'Format de média non pris en charge.')
+                        raise HTTPException(422, 'This media format is not supported.')
                     if not upload.size or upload.size > LIMITS[kind]:
-                        raise HTTPException(413, 'Fichier vide ou trop volumineux.')
+                        raise HTTPException(413, 'The file is empty or too large.')
                     path = jobs / (report_id + '-' + kind + '.upload')
                     # Generated basename: do not propagate a local path from the citizen's filename.
                     suffix = Path(upload.filename or '').suffix.lower()
@@ -316,19 +316,19 @@ def create_app(runtime=None, transport=None, configure=None):
     @app.get('/api/tickets/{tracking_id}')
     async def ticket(tracking_id: str):
         if not re.fullmatch(r'[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}', tracking_id):
-            raise HTTPException(404, 'Ticket introuvable.')
+            raise HTTPException(404, 'No ticket matches this tracking ID.')
         try:
             async with httpx.AsyncClient(timeout=10, trust_env=False, transport=transport) as client:
                 response = await client.get(TICKET_LOOKUP, params={'tracking_id': tracking_id})
             body = response.json()
             if response.status_code == 404 and body == {'ticket': None, 'error': None}:
-                raise HTTPException(404, 'Ticket introuvable.')
+                raise HTTPException(404, 'No ticket matches this tracking ID.')
             if (response.status_code != 200 or not isinstance(body.get('ticket'), dict)
                     or body['ticket'].get('tracking_id') != tracking_id or body['ticket'].get('persisted') is not True):
                 raise ValueError('Unconfirmed ticket lookup')
             return body
         except (httpx.HTTPError, ValueError, AttributeError):
-            raise HTTPException(503, 'Base de tickets indisponible.') from None
+            raise HTTPException(503, 'The ticket database is unavailable right now.') from None
 
     return app
 

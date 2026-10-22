@@ -1,46 +1,164 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Municipalité Automatisée · Envoyer un signalement</title>
-  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/portal.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Report a City Problem · Citizen Portal</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/citizen.css">
   <script src="/static/app.js" defer></script>
 </head>
-<body><div class="shell">
-<header class="topbar"><div class="brand"><div class="logo" aria-hidden="true">MA</div><div>Municipalité Automatisée<small>ESPACE CITOYEN · DÉMONSTRATION LOCALE</small></div></div><a class="settings" href="/setup">Configuration</a></header>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">
+    <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 25V13l8-6 8 6v12M13 25v-8h6v8"/></svg></span>
+    <span>Municipalité Automatisée<small>Citizen portal</small></span>
+  </a>
+  <div id="readiness" class="status-pill" role="status"><span class="dot" aria-hidden="true"></span><span id="readinessText">Checking services…</span></div>
+</header>
+
 <main>
-  <section class="hero"><div><div class="eyebrow">Votre ville, votre voix</div><h1>Un signalement.<br><span>Un seul envoi.</span></h1><p class="lead">Ajoutez une photo ou une vidéo. Le système prépare les médias, analyse le problème et recherche les procédures municipales, selon les résultats des contrôles.</p></div><div class="hero-art"><div><strong>Déposer → Analyser → Orienter</strong><p>Le traitement démarre dès l’envoi.<br>Aucune étape à lancer à la main.</p></div></div></section>
-  <div id="readiness" class="alert warning" role="status">Vérification des services locaux…</div>
-  <div class="layout">
-    <section class="panel"><div class="panel-head"><h2>Créer un signalement</h2><p>Photo avec description ou audio, ou vidéo seule.</p></div><div class="panel-body">
-      <form id="reportForm"><fieldset id="fields">
-        <label class="field-label" for="description">Que se passe-t-il ?</label>
-        <textarea id="description" name="description" maxlength="3000" placeholder="Ex. : La chaussée est abîmée, avec des fissures et des morceaux de revêtement détachés."></textarea>
-        <p class="hint">Une description est nécessaire avec une photo sans audio.</p>
-        <label class="field-label address-label" for="address">Où se trouve le problème ? <span class="optional">Facultatif</span></label>
-        <input class="text-input" id="address" name="address" maxlength="300" placeholder="Rue, quartier, ville — si vous les connaissez">
-        <div class="upload-grid">
-          <label class="upload-card" for="image"><input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Ajouter une photo"><span class="upload-icon" aria-hidden="true">▧</span><span class="upload-title">Photo</span><span class="upload-desc" id="imageName">JPG, PNG, WEBP · 10 Mo max.</span></label>
-          <label class="upload-card" for="audio"><input id="audio" name="audio" type="file" accept="audio/*" aria-label="Ajouter un audio avec la photo"><span class="upload-icon" aria-hidden="true">♪</span><span class="upload-title">Audio + photo</span><span class="upload-desc" id="audioName">30 Mo · 2 min max.</span></label>
-          <label class="upload-card" for="video"><input id="video" name="video" type="file" accept="video/*" aria-label="Ajouter une vidéo"><span class="upload-icon" aria-hidden="true">▷</span><span class="upload-title">Vidéo</span><span class="upload-desc" id="videoName">50 Mo · 1 min max.</span></label>
+  <section class="hero">
+    <div>
+      <h1>Report a problem <span>in your city.</span></h1>
+      <p class="lead">Potholes, damaged roads, broken streetlights, waste accumulation, damaged public infrastructure or water leaks. Send a photo or a short video and your report is analysed, routed to the right department and given a tracking ID.</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/></svg>Add a photo or video</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg>Describe what you see</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>Send once, then track</li>
+      </ul>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Portal sections">
+    <button class="tab" id="tabReport" type="button" role="tab" aria-selected="true" aria-controls="panelReport">New report</button>
+    <button class="tab" id="tabTrack" type="button" role="tab" aria-selected="false" aria-controls="panelTrack">Track a report</button>
+  </nav>
+
+  <!-- ===== New report ===== -->
+  <div id="panelReport" role="tabpanel" aria-labelledby="tabReport">
+    <div id="readinessAlert" class="alert warning readiness-alert" role="status" hidden></div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-body">
+          <form id="reportForm" novalidate>
+            <fieldset id="fields">
+
+              <div class="step">
+                <div class="step-head"><span class="step-no">1</span><div><h2>What is the problem?</h2><p>Tell us what you see. Please leave out names, phone numbers and other personal details.</p></div></div>
+                <div class="field">
+                  <label class="field-label" for="description">Description <span class="tag required" id="descriptionTag">Required with a photo, unless you add a voice note</span></label>
+                  <textarea id="description" name="description" maxlength="3000" placeholder="Example: The road surface is badly cracked with loose pieces of asphalt near the bus stop."></textarea>
+                  <div class="counter"><span id="descriptionCount">0</span> / 3000</div>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="address">Where is it? <span class="tag">Optional</span></label>
+                  <input class="text-input" id="address" name="address" maxlength="300" placeholder="Street, neighbourhood, landmark — if you know them">
+                  <p class="hint">The location is never guessed from your photo. Only what you type here is used.</p>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="step-head"><span class="step-no">2</span><div><h2>Add your evidence</h2><p>Choose one: a photo (with a description or a voice note) or a single video.</p></div></div>
+                <div class="segmented" role="radiogroup" aria-label="Evidence type">
+                  <label class="segment"><input type="radio" name="evidenceType" value="photo" id="typePhoto" checked><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.5"/></svg>Photo</span></label>
+                  <label class="segment"><input type="radio" name="evidenceType" value="video" id="typeVideo"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg>Video</span></label>
+                </div>
+
+                <div class="upload-grid" id="photoGroup">
+                  <label class="upload-card" for="image" id="imageCard">
+                    <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add a photo">
+                    <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-8 8"/></svg></span>
+                    <span><span class="upload-title">Photo <span class="tag required">Required</span></span><span class="upload-desc" id="imageName">JPG, PNG or WEBP · up to 10 MB</span></span>
+                  </label>
+                  <label class="upload-card" for="audio" id="audioCard">
+                    <input id="audio" name="audio" type="file" accept="audio/*" aria-label="Add a voice note">
+                    <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+                    <span><span class="upload-title">Voice note <span class="tag">Optional</span></span><span class="upload-desc" id="audioName">Replaces the written description · up to 2 min, 30 MB</span></span>
+                  </label>
+                </div>
+
+                <div class="upload-grid single" id="videoGroup" hidden>
+                  <label class="upload-card" for="video" id="videoCard">
+                    <input id="video" name="video" type="file" accept="video/*" aria-label="Add a video">
+                    <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg></span>
+                    <span><span class="upload-title">Video <span class="tag required">Required</span></span><span class="upload-desc" id="videoName">MP4, WEBM or MOV · up to 1 min, 50 MB</span></span>
+                  </label>
+                </div>
+
+                <div id="preview" class="preview" hidden></div>
+              </div>
+
+              <div class="step">
+                <div class="step-head"><span class="step-no">3</span><div><h2>Send your report</h2><p>Processing starts right away and usually takes a few minutes. Send only once.</p></div></div>
+                <div class="actions">
+                  <button class="primary" id="submitBtn" type="submit">Send report</button>
+                  <button class="secondary" id="resetBtn" type="reset">Clear form</button>
+                </div>
+              </div>
+
+            </fieldset>
+          </form>
+          <div id="formError" class="alert error" role="alert" hidden></div>
+          <div id="loading" class="loading" role="status"><span class="spinner" aria-hidden="true"></span><span id="loadingText">Processing your report…</span></div>
         </div>
-        <div id="preview" class="preview" hidden></div>
-        <p class="hint">Choisissez une photo (avec texte ou audio) OU une vidéo. Évitez les informations personnelles inutiles.</p>
-        <div class="actions"><button class="primary" id="submitBtn" type="submit">Envoyer le signalement →</button><button class="secondary" id="resetBtn" type="reset">Effacer</button></div>
-      </fieldset></form>
-      <div id="formError" class="alert error" role="alert" hidden></div>
-      <div id="loading" class="loading" role="status"><span class="spinner"></span><span id="loadingText">Traitement automatique en cours…</span></div>
-      <p class="secure">Le texte et, si présent, l’audio sont traités par NVIDIA. L’analyse visuelle et la recherche documentaire utilisent les modèles locaux.</p>
-    </div></section>
-    <aside class="side-stack">
-      <section class="panel info-card"><div class="info-title">Après votre envoi</div><div class="steps">
-        <div class="step"><span class="step-no">1</span><div><b>Préparer les médias</b><p>Intake normalise le signalement et prépare les images.</p></div></div>
-        <div class="step"><span class="step-no">2</span><div><b>Analyser le problème</b><p>Vision examine les preuves et les contrôles vérifient ses résultats.</p></div></div>
-        <div class="step"><span class="step-no">3</span><div><b>Rechercher les procédures</b><p>RAG recherche les sources correspondant au problème et au service identifiés.</p></div></div>
-        <div class="step"><span class="step-no">4</span><div><b>Enregistrer et suivre</b><p>Le signalement reçoit une référence de suivi après son enregistrement.</p></div></div>
-      </div><p class="hint">Une incertitude exploitable reste signalée pendant la suite du traitement. Les résultats inutilisables sont enregistrés pour vérification ; les étapes non exécutées sont indiquées.</p><a class="workflow-link" href="http://127.0.0.1:5679/workflow/municipalCompletionDev" target="_blank" rel="noopener">Ouvrir le workflow n8n ↗</a></section>
-      <section class="panel info-card"><div class="info-title">Un traitement automatique</div><p class="demo-note">Un seul envoi lance les étapes et l’enregistrement. Les incertitudes restent attachées au ticket pour la municipalité. La confirmation et la référence de suivi apparaissent lorsque l’enregistrement est réussi.</p></section>
-    </aside>
+      </section>
+
+      <aside class="side-stack">
+        <section class="panel info-card">
+          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>What happens next</h2>
+          <ol class="how">
+            <li><div><b>Your report is prepared</b><p>Text and voice notes are transcribed, photos are checked and faces are blurred.</p></div></li>
+            <li><div><b>The photo is analysed</b><p>The problem type and how serious it looks are identified and verified.</p></div></li>
+            <li><div><b>The right department is chosen</b><p>Your report is routed and matched with the municipal procedure that applies.</p></div></li>
+            <li><div><b>You get a tracking ID</b><p>The report is saved and you can follow its status at any time.</p></div></li>
+          </ol>
+        </section>
+        <section class="panel info-card">
+          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/></svg>Tips for a good report</h2>
+          <ul class="tips">
+            <li>Take the photo in daylight and close enough to show the damage clearly.</li>
+            <li>Keep people, licence plates and house numbers out of the frame when you can.</li>
+            <li>Mention the street or a nearby landmark so the team can find the spot.</li>
+            <li>If a report is unclear, it is not dropped: a municipal agent reviews it.</li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+
+    <section class="panel result-wrap" id="resultWrap" aria-live="polite">
+      <div class="result-head">
+        <div><h2 id="resultTitle">Processing your report</h2><p id="reference"></p></div>
+        <span id="globalBadge" class="badge processing">Processing</span>
+      </div>
+      <div class="result-body" id="resultBody"></div>
+    </section>
   </div>
-  <section class="panel result-wrap" id="resultWrap" aria-live="polite"><div class="result-head"><div><h2 id="resultTitle">Traitement en cours</h2><p id="reference"></p></div><span id="globalBadge" class="badge">EN COURS</span></div><div class="result-body" id="resultBody"></div></section>
-</main><footer class="footer">Municipalité Automatisée · Prototype universitaire</footer></div></body></html>
+
+  <!-- ===== Track a report ===== -->
+  <div id="panelTrack" role="tabpanel" aria-labelledby="tabTrack" hidden>
+    <section class="panel track-panel">
+      <div class="panel-body">
+        <h2>Track a report</h2>
+        <p class="hint">Enter the tracking ID you received when your report was saved. It looks like <code>3f2a1c4e-…</code> and contains 36 characters.</p>
+        <form id="trackForm" class="track-form" novalidate>
+          <label class="sr-only" for="trackId">Tracking ID</label>
+          <input class="text-input" id="trackId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" maxlength="36" autocomplete="off" spellcheck="false">
+          <button class="primary" id="trackBtn" type="submit">Check status</button>
+        </form>
+        <div id="trackError" class="alert error" role="alert" hidden></div>
+        <div id="trackResult" class="track-result" aria-live="polite"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <span>Municipalité Automatisée · University prototype · Runs locally on this computer</span>
+  <a href="/setup">System setup</a>
+</footer>
+</body>
+</html>

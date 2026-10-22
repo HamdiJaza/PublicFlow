@@ -1,3 +1,43 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Municipalité Automatisée · Configuration locale</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/portal.css"><script src="/static/setup.js" defer></script></head>
-<body><header class="topbar"><div class="brand">Municipalité Automatisée<small>CONFIGURATION LOCALE</small></div><a class="settings" href="/">Retour au signalement →</a></header><main class="setup-shell"><h1>Préparer <span>la démonstration.</span></h1><section class="panel setup-panel"><h2>Services</h2><div id="services" class="service-list" aria-live="polite">Vérification…</div><p>Le lanceur <strong>Start_Demo.cmd</strong> démarre les services locaux. Leur disponibilité ne constitue pas un test des modèles.</p></section>
-<section class="panel setup-panel setup-actions"><h2>Connexion NVIDIA pour Intake</h2><p>Si Intake est indisponible, enregistrez votre clé sur ce compte Windows. Elle est chiffrée localement et n’apparaît ni dans les commandes ni dans les résultats. L’ancienne copie chiffrée est conservée.</p><p>Cette configuration démarre Intake sans appel au modèle. Les appels NVIDIA auront lieu lors de vos signalements ; Gemini reste désactivé.</p><form id="keyForm"><label class="field-label" for="key">Clé API NVIDIA</label><input class="text-input" type="password" id="key" autocomplete="off" spellcheck="false" required placeholder="nvapi-…"><div class="actions"><button class="primary" id="saveKey" type="submit">Enregistrer et démarrer Intake</button></div></form><p id="message" role="status"></p></section><a class="workflow-link" href="/">Ouvrir la page d’envoi →</a></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Setup · Citizen Portal</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/citizen.css">
+  <script src="/static/setup.js" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">
+    <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 25V13l8-6 8 6v12M13 25v-8h6v8"/></svg></span>
+    <span>Municipalité Automatisée<small>System setup</small></span>
+  </a>
+  <a class="status-pill" href="/">← Back to the citizen portal</a>
+</header>
+<main class="setup-shell">
+  <h1>Prepare the <span>local demo.</span></h1>
+  <p class="lead">This page is for the person running the demo, not for citizens. It shows which local services are up and lets you store the NVIDIA key that the report-preparation service needs.</p>
+
+  <section class="panel setup-panel">
+    <h2>Local services</h2>
+    <p>Started by <strong>Start_MunicipaliteAuto.cmd</strong>. "Available" only means the service answers; it is not a test of the AI models.</p>
+    <div id="services" class="service-list" aria-live="polite">Checking…</div>
+  </section>
+
+  <section class="panel setup-panel">
+    <h2>NVIDIA key for report preparation</h2>
+    <p>If report preparation (Intake) is unavailable, save your NVIDIA API key once for this Windows account. It is encrypted locally, never shown in commands or results, and the previous encrypted copy is kept.</p>
+    <p>Saving the key starts Intake without calling any model. NVIDIA is only called when a citizen sends a report.</p>
+    <form id="keyForm">
+      <label class="field-label" for="key">NVIDIA API key</label>
+      <input class="text-input" type="password" id="key" autocomplete="off" spellcheck="false" required placeholder="nvapi-…">
+      <div class="actions"><button class="primary" id="saveKey" type="submit">Save key and start Intake</button></div>
+    </form>
+    <p id="message" role="status"></p>
+  </section>
+</main>
+<footer class="footer"><span>Municipalité Automatisée · University prototype</span><a href="/">Citizen portal</a></footer>
+</body>
+</html>

@@ -7,7 +7,7 @@ MUNICIPALITÉ AUTOMATISÉE - WINDOWS PACKAGE
 4. On http://127.0.0.1:8090/setup, enter YOUR NVIDIA API key once.
    The key is encrypted for your Windows account. No teammate key is included.
 5. Open http://127.0.0.1:8090/, upload demo/road-damage.jpg and paste the text
-   in demo/description.txt. Click Envoyer le signalement ONCE and wait.
+   in demo/description.txt. Click Send report ONCE and wait.
    Intake -> Vision -> RAG -> policy gates -> PostgreSQL all run automatically.
    The final page displays the ticket and tracking ID. No curl or manual nodes.
 
