@@ -18,7 +18,7 @@ Windows account. Do not paste credentials into chat or commit them.
 1. Select a photo with a description (at least five characters), a photo with
    an audio message, or a video by itself. Description is optional for the latter
    two combinations. An address is optional and is never inferred.
-2. Click **Send report** once. The portal is in English and shows only the citizen side; the operator setup page stays at /setup (linked from the footer).
+2. Click **Send complaint** once. The portal is in English and shows only the citizen side; the operator setup page stays at /setup (linked from the footer).
 3. n8n automatically runs Intake → Gate 1 → Vision → Gate 2 → routing → RAG →
    Gate 3, then PostgreSQL. Valid Vision uncertainty continues into RAG while
    retaining REVIEW. Unusable upstream results are saved without fabricating
@@ -38,7 +38,7 @@ The portal sends native citizen multipart fields to the **published** webhook
 directly or substitutes its own decisions. The prior strict workflow and member
 implementations are preserved; the new workflow ID is `municipalCompletionDev`. The original Intake `citizen.html` is preserved
 untouched; the portal now has its own English citizen-only interface (`static/citizen.css`,
-`static/index.html`, `static/app.js`) with a "New report" tab and a "Track a report" tab that reads
+`static/index.html`, `static/app.js`) with a "New complaint" tab and a "Track a complaint" tab that reads
 `/api/tickets/{tracking_id}`. Technical execution details (component states, trace, receipt download)
 are collapsed under "Processing details" rather than removed.
 

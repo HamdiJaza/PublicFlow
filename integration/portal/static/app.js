@@ -21,18 +21,18 @@ const session = fetch('/api/session').then(r => r.json()).then(s => { token = s.
 
 const TICKET_STATUS = { OPEN: 'Open', NEEDS_REVIEW: 'Awaiting municipal review', IN_PROGRESS: 'In progress', RESOLVED: 'Resolved', REJECTED: 'Rejected' };
 const DECISION = {
-  PASS: { badge: 'pass', label: 'Accepted', title: 'Your report has been accepted' },
-  REVIEW: { badge: 'review', label: 'Needs review', title: 'Your report needs a human check' },
-  REJECT: { badge: 'reject', label: 'Rejected', title: 'Your report could not be accepted' },
+  PASS: { badge: 'pass', label: 'Accepted', title: 'Your complaint has been accepted' },
+  REVIEW: { badge: 'review', label: 'Needs review', title: 'Your complaint needs a human check' },
+  REJECT: { badge: 'reject', label: 'Rejected', title: 'Your complaint could not be accepted' },
 };
 const STAGES = {
-  INPUT_CHECK: 'Submission check', INTAKE_HTTP: 'Report preparation (Intake)', GATE_1_INTAKE: 'Policy gate 1 · intake',
+  INPUT_CHECK: 'Submission check', INTAKE_HTTP: 'Complaint preparation (Intake)', GATE_1_INTAKE: 'Policy gate 1 · intake',
   GATE_1_PREPARATION: 'Policy gate 1 · intake', VISION_HTTP: 'Visual analysis (Vision)', GATE_2_VISION: 'Policy gate 2 · vision',
   REVIEW_CONTINUATION: 'Continued with uncertainty kept', KNOWLEDGE_REQUEST_MAPPING: 'Procedure search prepared',
   KNOWLEDGE_HTTP: 'Procedure search (RAG)', GATE_3_KNOWLEDGE: 'Policy gate 3 · sources', TICKET_ASSEMBLY: 'Ticket assembled',
   POSTGRES_PERSISTENCE: 'Saved to the ticket database',
 };
-const SERVICE_NAMES = { n8n: 'workflow engine', intake: 'report preparation', vision: 'visual analysis', media: 'media checks', knowledge: 'procedure search', evidence: 'procedure sources', ollama: 'local models', persistence: 'ticket database' };
+const SERVICE_NAMES = { n8n: 'workflow engine', intake: 'complaint preparation', vision: 'visual analysis', media: 'media checks', knowledge: 'procedure search', evidence: 'procedure sources', ollama: 'local models', persistence: 'ticket database' };
 
 /* ---------- helpers ---------- */
 function error(message) { $('formError').textContent = message || ''; $('formError').hidden = !message; }
@@ -76,7 +76,7 @@ async function readiness() {
     $('readinessText').textContent = h.ready ? 'All services ready' : 'Some services are starting';
     if (h.ready) { alert.hidden = true; return; }
     const missing = Object.keys(h.services).filter(k => !h.services[k]).map(k => SERVICE_NAMES[k] || k);
-    alert.replaceChildren(document.createTextNode('Not ready yet: ' + missing.join(', ') + '. You can prepare your report now; sending will work once every service is up. '));
+    alert.replaceChildren(document.createTextNode('Not ready yet: ' + missing.join(', ') + '. You can prepare your complaint now; sending will work once every service is up. '));
     const a = element('a', 'Open system setup'); a.href = '/setup'; alert.append(a);
     alert.hidden = false;
   } catch {
@@ -86,16 +86,35 @@ async function readiness() {
 }
 
 /* ---------- tabs ---------- */
+const motion = () => matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 function showTab(name) {
   for (const t of ['Report', 'Track']) {
     const active = t === name;
     $('tab' + t).setAttribute('aria-selected', String(active));
+    $('tab' + t).tabIndex = active ? 0 : -1;
     $('panel' + t).hidden = !active;
   }
   try { sessionStorage.setItem('municipal-tab', name); } catch { /* storage optional */ }
 }
 $('tabReport').addEventListener('click', () => showTab('Report'));
 $('tabTrack').addEventListener('click', () => showTab('Track'));
+// Tabs follow the WAI-ARIA pattern: arrow keys move between them, only the active one is in the Tab order.
+for (const [id, name, other] of [['tabReport', 'Report', 'tabTrack'], ['tabTrack', 'Track', 'tabReport']]) {
+  $(id).addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault(); showTab(name === 'Report' ? 'Track' : 'Report'); $(other).focus();
+  });
+}
+$('startBtn').addEventListener('click', () => {
+  showTab('Report');
+  $('panelReport').scrollIntoView({ behavior: motion(), block: 'start' });
+  $('description').focus({ preventScroll: true });
+});
+$('trackShortcut').addEventListener('click', () => {
+  showTab('Track');
+  $('panelTrack').scrollIntoView({ behavior: motion(), block: 'start' });
+  $('trackId').focus({ preventScroll: true });
+});
 
 /* ---------- result rendering ---------- */
 function fact(label, value, fallback) {
@@ -116,7 +135,7 @@ function trackingBox(trackingId, status, note) {
     setTimeout(() => { copy.textContent = 'Copy'; }, 2000);
   });
   row.append(copy); box.append(row);
-  box.append(element('p', (status ? 'Current status: ' + (TICKET_STATUS[status] || status) + '. ' : '') + (note || 'Keep this ID to follow your report in the "Track a report" tab.')));
+  box.append(element('p', (status ? 'Current status: ' + (TICKET_STATUS[status] || status) + '. ' : '') + (note || 'Keep this ID to follow your complaint in the "Track a complaint" tab.')));
   return box;
 }
 function knowledgeSection(k, executed) {
@@ -127,8 +146,8 @@ function knowledgeSection(k, executed) {
     if (k.deadline) wrap.append(element('p', 'Expected deadline: ' + k.deadline));
   } else {
     wrap.append(element('p', executed
-      ? 'The procedure search ran, but no source was verified well enough to publish a procedure for this report. Nothing is invented in its place.'
-      : 'The procedure search was not run for this report.'));
+      ? 'The procedure search ran, but no source was verified well enough to publish a procedure for this complaint. Nothing is invented in its place.'
+      : 'The procedure search was not run for this complaint.'));
   }
   const sources = (k?.sources || []).filter(s => typeof s.url === 'string' && s.url.startsWith('https://'));
   if (sources.length) {
@@ -147,7 +166,7 @@ function render(record) {
     $('resultTitle').textContent = record.state === 'interrupted' ? 'Processing was interrupted' : 'Processing failed';
     badge.textContent = record.state === 'interrupted' ? 'Interrupted' : 'Failed'; badge.className = 'badge reject';
     body.append(element('p', record.error || 'No result is available for this submission.', 'alert error'));
-    body.append(element('p', 'No ticket was created. Please check with the municipality before sending the same report again.', 'hint'));
+    body.append(element('p', 'No ticket was created. Please check with the municipality before sending the same complaint again.', 'hint'));
     return;
   }
   const d = DECISION[result.decision] || { badge: '', label: result.decision, title: 'Processing result' };
@@ -156,8 +175,8 @@ function render(record) {
   badge.textContent = d.label; badge.className = 'badge ' + d.badge;
 
   const messages = {
-    PASS: 'All automatic checks passed. Your report has been recorded and routed to the municipal department below.',
-    REVIEW: saved ? 'Automatic processing finished, but some points need a municipal agent to confirm them. Your report is saved and queued for review.'
+    PASS: 'All automatic checks passed. Your complaint has been recorded and routed to the municipal department below.',
+    REVIEW: saved ? 'Automatic processing finished, but some points need a municipal agent to confirm them. Your complaint is saved and queued for review.'
                   : 'The result needs a human check, and saving to the ticket database could not be confirmed.',
     REJECT: 'The submission did not pass the checks, so it was not routed to a department. See the reasons below.',
   };
@@ -203,7 +222,7 @@ function render(record) {
   const inner = element('div', undefined, 'details-body');
   const components = element('div', undefined, 'components');
   const states = { responded: 'Responded', not_called: 'Not run', unavailable: 'Unavailable', committed: 'Committed', failed_or_unconfirmed: 'Failed or unconfirmed' };
-  for (const [label, key] of [['Report preparation', 'intake'], ['Visual analysis', 'vision'], ['Procedure search', 'knowledge'], ['Database', 'persistence']]) {
+  for (const [label, key] of [['Complaint preparation', 'intake'], ['Visual analysis', 'vision'], ['Procedure search', 'knowledge'], ['Database', 'persistence']]) {
     const c = result.components?.[key] || {}, card = element('div', undefined, 'component');
     card.append(element('small', label)); card.append(document.createTextNode(states[c.execution] || pretty(c.execution) || 'Not reported'));
     components.append(card);
@@ -235,11 +254,11 @@ async function poll(id) {
     if (['queued', 'running'].includes(record.state)) {
       busy(true);
       const seconds = Math.max(0, Math.floor((Date.now() - Date.parse(record.started_at || record.submitted_at)) / 1000));
-      $('loadingText').textContent = 'Processing your report · ' + Math.floor(seconds / 60) + ' min ' + (seconds % 60) + ' s elapsed. Local AI models can take several minutes.';
-      $('resultTitle').textContent = 'Processing your report';
+      $('loadingText').textContent = 'Processing your complaint · ' + Math.floor(seconds / 60) + ' min ' + (seconds % 60) + ' s elapsed. Local AI models can take several minutes.';
+      $('resultTitle').textContent = 'Processing your complaint';
       $('globalBadge').textContent = 'Processing'; $('globalBadge').className = 'badge processing';
       const body = $('resultBody'); body.replaceChildren();
-      body.append(element('p', 'Your report is being prepared, analysed and matched with municipal procedures. The outcome and your tracking ID will appear here. You can reload this page without sending the report again.'));
+      body.append(element('p', 'Your complaint is being prepared, analysed and matched with municipal procedures. The outcome and your tracking ID will appear here. You can reload this page without sending the complaint again.'));
       const bar = element('div', undefined, 'progress'); bar.append(element('span')); body.append(bar);
       polling = setTimeout(() => poll(id), 2000);
     } else { busy(false); requestKey = null; render(record); readiness(); }
@@ -286,9 +305,9 @@ form.addEventListener('submit', async event => {
     requestKey = requestKey || crypto.randomUUID();
     const response = await fetch('/api/reports', { method: 'POST', headers: { 'X-Portal-Token': token, 'Idempotency-Key': requestKey }, body: data });
     const result = await response.json();
-    if (!response.ok) throw new Error(result.detail || 'The report could not be sent.');
+    if (!response.ok) throw new Error(result.detail || 'The complaint could not be sent.');
     sessionStorage.setItem('municipal-last-report', result.report_id);
-    $('resultWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('resultWrap').scrollIntoView({ behavior: motion(), block: 'start' });
     await poll(result.report_id);
   } catch (e) { busy(false); error(e.message); }
 });
@@ -302,7 +321,7 @@ form.addEventListener('reset', () => {
   setTimeout(applyEvidenceType, 0);
 });
 
-/* ---------- track a report ---------- */
+/* ---------- track a complaint ---------- */
 $('trackForm').addEventListener('submit', async event => {
   event.preventDefault();
   const id = $('trackId').value.trim().toLowerCase(), out = $('trackResult'), err = $('trackError');
@@ -327,9 +346,9 @@ $('trackForm').addEventListener('submit', async event => {
     facts.append(fact('Department', pretty(t.department), 'Not assigned'));
     facts.append(fact('Priority', pretty(t.priority), 'Not assigned'));
     out.append(facts);
-    if (t.summary) { const s = element('div', undefined, 'procedure'); s.append(element('div', 'Report summary', 'section-title'), element('p', t.summary)); out.append(s); }
+    if (t.summary) { const s = element('div', undefined, 'procedure'); s.append(element('div', 'Complaint summary', 'section-title'), element('p', t.summary)); out.append(s); }
     if (t.knowledge?.verified && t.knowledge.procedure) out.append(knowledgeSection(t.knowledge, true));
-    if (t.review_queued) out.append(element('p', 'A municipal agent still needs to review this report.', 'alert warning'));
+    if (t.review_queued) out.append(element('p', 'A municipal agent still needs to review this complaint.', 'alert warning'));
   } catch (e) { err.textContent = e.message; err.hidden = false; } finally { $('trackBtn').disabled = false; }
 });
 

@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id);
 let token;
 const session = fetch('/api/session').then(r => r.json()).then(s => { token = s.token; });
-const LABELS = { n8n: 'Workflow engine (n8n)', intake: 'Report preparation (Intake, NVIDIA)', vision: 'Visual analysis (Vision, local)', media: 'Media checks', knowledge: 'Procedure search (RAG)', evidence: 'Procedure sources verified', ollama: 'Local models (Ollama)', persistence: 'Ticket database (PostgreSQL)' };
+const LABELS = { n8n: 'Workflow engine (n8n)', intake: 'Complaint preparation (Intake, NVIDIA)', vision: 'Visual analysis (Vision, local)', media: 'Media checks', knowledge: 'Procedure search (RAG)', evidence: 'Procedure sources verified', ollama: 'Local models (Ollama)', persistence: 'Ticket database (PostgreSQL)' };
 
 async function health() {
   try {
@@ -16,7 +16,7 @@ async function health() {
       row.append(label, state); list.append(row);
     }
     $('saveKey').disabled = h.services.intake;
-    if (h.services.intake) { $('key').disabled = true; $('key').value = ''; $('message').textContent = 'Report preparation is running. Citizens can send reports.'; }
+    if (h.services.intake) { $('key').disabled = true; $('key').value = ''; $('message').textContent = 'Complaint preparation is running. Citizens can send complaints.'; }
     else $('key').disabled = false;
   } catch { $('services').textContent = 'The portal is not responding.'; }
 }

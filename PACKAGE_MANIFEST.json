@@ -28,8 +28,8 @@
     },
     {
       "path": "READ_ME_FIRST.txt",
-      "sha256": "51d7df21a2a3a0fef0990f9f13754fa5bbbaf119f51f890d1b51ad4b9dcfa816",
-      "bytes": 5042
+      "sha256": "197e84bffc186269833de855a6ba82be7d4a33f95fa797455e887e38013599ba",
+      "bytes": 5045
     },
     {
       "path": "Start_MunicipaliteAuto.cmd",
@@ -48,8 +48,8 @@
     },
     {
       "path": "distribution/README.txt",
-      "sha256": "51d7df21a2a3a0fef0990f9f13754fa5bbbaf119f51f890d1b51ad4b9dcfa816",
-      "bytes": 5042
+      "sha256": "197e84bffc186269833de855a6ba82be7d4a33f95fa797455e887e38013599ba",
+      "bytes": 5045
     },
     {
       "path": "distribution/Start_MunicipaliteAuto.cmd",
@@ -368,8 +368,8 @@
     },
     {
       "path": "integration/portal/README.md",
-      "sha256": "437a6607069d76f9bea4e6e8233cafa85070a1c8ff58278ea0b45b9ea34c3ad1",
-      "bytes": 6497
+      "sha256": "3a0e127c4746ccfab9d0b3b8980646672d40ad4df3d9431e90edaa25e5149212",
+      "bytes": 6506
     },
     {
       "path": "integration/portal/Start_Portal.ps1",
@@ -378,38 +378,38 @@
     },
     {
       "path": "integration/portal/app.py",
-      "sha256": "6c513c486b1b5645613d782358de94534703b0b67fcc184ea189899505b64eb0",
-      "bytes": 17230
+      "sha256": "086cf4c1f0c7c709e079f530770da0c65c58cbce66560e54aba2f5787f124bfc",
+      "bytes": 17242
     },
     {
       "path": "integration/portal/static/app.js",
-      "sha256": "66df2d7718d2cfcbecf541b2c78a848e0b10efa78e662b7525a51670c6c92926",
-      "bytes": 20535
+      "sha256": "8f69f78e54343e51ab96eaf7a02cdd3e352130129d3f88df759dc1359ecb3cf4",
+      "bytes": 21588
     },
     {
       "path": "integration/portal/static/citizen.css",
-      "sha256": "19bb1fe87c0ab2e2a4e1d57e97ba41a4953b4b5a1101183f5eb2e8f54fec9407",
-      "bytes": 16707
+      "sha256": "a9d5c76f7b1d718030b44720a288db431b5564ae2fa0a8c74e7ad77324f886bf",
+      "bytes": 22857
     },
     {
       "path": "integration/portal/static/favicon.svg",
-      "sha256": "48e6eeac016a1b08d74cbd21c1c4b678b8251dd77eb95204d6908699755defae",
-      "bytes": 207
+      "sha256": "78c7739fef3523d6a67bd518171190e78002992c4384432f7c3aa3756b0d83fe",
+      "bytes": 492
     },
     {
       "path": "integration/portal/static/index.html",
-      "sha256": "e4c7d7f0d6fc2408823c59c6dbb5982009aed17111cc4622460f1585177a4a83",
-      "bytes": 11448
+      "sha256": "0d91837e09eceb01cb13234537e1e3be3b2d3459c46cc16ce42eaaf6df1b5556",
+      "bytes": 16491
     },
     {
       "path": "integration/portal/static/setup.html",
-      "sha256": "48ca8871c5186d9eb871f3b163596539c11b47618b6927430db15cb5f769b219",
-      "bytes": 2360
+      "sha256": "241f8c1b85017bb56c880f66202f4215829a87133009d6773b07b91536ad0042",
+      "bytes": 2699
     },
     {
       "path": "integration/portal/static/setup.js",
-      "sha256": "d45a90234821a127352227623019cf121a3fa7fbcc841dbb2a80d21977ccadaa",
-      "bytes": 2172
+      "sha256": "f4068a6bd8e920c6d644d55152a3e46227e63e047ac5e87d0920e547656d28ef",
+      "bytes": 2181
     },
     {
       "path": "integration/vision/Deploy_Development.ps1",

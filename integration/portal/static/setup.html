@@ -3,22 +3,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>System Setup · Citizen Portal</title>
-  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#0b1f4b">
+  <title>System Setup · PublicFlow</title>
+  <link rel="icon" href="/static/favicon.svg?v=3" type="image/svg+xml">
   <link rel="stylesheet" href="/static/citizen.css">
   <script src="/static/setup.js" defer></script>
 </head>
 <body>
 <header class="topbar">
   <a class="brand" href="/">
-    <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 25V13l8-6 8 6v12M13 25v-8h6v8"/></svg></span>
-    <span>Municipalité Automatisée<small>System setup</small></span>
+    <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1e3a8a"/><path d="M5.5 13.5 16 7l10.5 6.5z" fill="#fff"/><rect x="8.2" y="15" width="3.2" height="8" fill="#fff"/><rect x="14.4" y="15" width="3.2" height="8" fill="#fff"/><rect x="20.6" y="15" width="3.2" height="8" fill="#fff"/><rect x="5.5" y="24.3" width="21" height="2.7" rx="1" fill="#fff"/><circle cx="25.5" cy="7" r="3.4" fill="#f43f5e" stroke="#1e3a8a" stroke-width="1.6"/></svg></span>
+    <span>PublicFlow<small>System setup</small></span>
   </a>
   <a class="status-pill" href="/">← Back to the citizen portal</a>
 </header>
 <main class="setup-shell">
   <h1>Prepare the <span>local demo.</span></h1>
-  <p class="lead">This page is for the person running the demo, not for citizens. It shows which local services are up and lets you store the NVIDIA key that the report-preparation service needs.</p>
+  <p class="lead">This page is for the person running the demo, not for citizens. It shows which local services are up and lets you store the NVIDIA key that the complaint-preparation service needs.</p>
 
   <section class="panel setup-panel">
     <h2>Local services</h2>
@@ -27,9 +28,9 @@
   </section>
 
   <section class="panel setup-panel">
-    <h2>NVIDIA key for report preparation</h2>
-    <p>If report preparation (Intake) is unavailable, save your NVIDIA API key once for this Windows account. It is encrypted locally, never shown in commands or results, and the previous encrypted copy is kept.</p>
-    <p>Saving the key starts Intake without calling any model. NVIDIA is only called when a citizen sends a report.</p>
+    <h2>NVIDIA key for complaint preparation</h2>
+    <p>If complaint preparation (Intake) is unavailable, save your NVIDIA API key once for this Windows account. It is encrypted locally, never shown in commands or results, and the previous encrypted copy is kept.</p>
+    <p>Saving the key starts Intake without calling any model. NVIDIA is only called when a citizen sends a complaint.</p>
     <form id="keyForm">
       <label class="field-label" for="key">NVIDIA API key</label>
       <input class="text-input" type="password" id="key" autocomplete="off" spellcheck="false" required placeholder="nvapi-…">
@@ -38,6 +39,6 @@
     <p id="message" role="status"></p>
   </section>
 </main>
-<footer class="footer"><span>Municipalité Automatisée · University prototype</span><a href="/">Citizen portal</a></footer>
+<footer class="footer"><div class="footer-inner"><span>PublicFlow · University prototype</span><a href="/">Citizen portal</a></div></footer>
 </body>
 </html>

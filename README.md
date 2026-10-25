@@ -32,7 +32,7 @@ With this platform you:
 
 1. Open a web page.
 2. Upload a **photo** (or a video, or a photo plus a voice message) and describe the problem.
-3. Click **Send report**.
+3. Click **Send complaint**.
 4. Receive a **tracking ID** and see the result.
 
 Behind the scenes, three specialised AI agents read your report. Strict, non-AI rules then check their work. The system picks the right municipal department, looks up the relevant procedure and saves a ticket.
@@ -73,7 +73,7 @@ When the AI is unsure, the system does **not** guess. It marks the ticket for **
 ## The building blocks
 
 ### 1. Web portal: `integration/portal/`
-The citizen-facing page, in English. It has two tabs: **New report** and **Track a report**. It sends uploads to n8n and shows the result. It never calls the AI agents directly.
+The citizen-facing page, in English. It has two tabs: **New complaint** and **Track a complaint**. It sends uploads to n8n and shows the result. It never calls the AI agents directly.
 
 ### 2. n8n workflow: `n8n/`
 n8n is the orchestration tool that connects everything. The workflow JSON files are *generated* by `build_workflow.py` scripts, with the logic for each step kept in small JavaScript files under `nodes/`. The current full workflow is called `municipalCompletionDev`.
@@ -166,7 +166,7 @@ MunicipaliteAuto/
 2. Start **Docker Desktop** and **Ollama**.
 3. Double-click **`Start_MunicipaliteAuto.cmd`** and leave the window open. The first launch builds the search indexes and imports the workflow, which can take several minutes.
 4. Open <http://127.0.0.1:8090/setup> and enter your NVIDIA key once. It is encrypted for your Windows account and never stored in plain text.
-5. Open <http://127.0.0.1:8090/>, upload `demo/road-damage.jpg`, paste the text from `demo/description.txt` and click **Send report once**.
+5. Open <http://127.0.0.1:8090/>, upload `demo/road-damage.jpg`, paste the text from `demo/description.txt` and click **Send complaint once**.
 6. Wait about **3 to 9 minutes**. The page then shows the ticket, the decision and the tracking ID.
 
 To watch the workflow run, open n8n at <http://127.0.0.1:5679/> and go to **Executions**.

@@ -122,7 +122,7 @@ def create_app(runtime=None, transport=None, configure=None):
             record = json.loads(path.read_text(encoding='utf-8'))
             if record.get('state') in ('queued', 'running'):
                 record.update(state='interrupted', finished_at=now(),
-                              error='The portal restarted while this report was being processed. Check the n8n execution before sending it again.')
+                              error='The portal restarted while this complaint was being processed. Check the n8n execution before sending it again.')
                 save(record)
                 # Only this portal's generated upload files; never member originals.
                 for uploaded in jobs.glob(record['report_id'] + '-*.upload'):
@@ -194,7 +194,7 @@ def create_app(runtime=None, transport=None, configure=None):
     @app.post('/api/setup/intake')
     async def setup_intake(request: Request):
         if admission.locked() or setup_lock.locked():
-            raise HTTPException(409, 'A report is already being processed. Please wait for it to finish.')
+            raise HTTPException(409, 'A complaint is already being processed. Please wait for it to finish.')
         async with setup_lock:
             if len(await request.body()) > 4096:
                 raise HTTPException(400, 'Invalid key.')
@@ -232,7 +232,7 @@ def create_app(runtime=None, transport=None, configure=None):
                     raise ValueError('Unexpected n8n response')
                 record.update(state='completed', result=result, webhook_http_status=response.status_code)
         except asyncio.CancelledError:
-            record.update(state='interrupted', error='The portal was stopped during processing. Check n8n before sending the report again.')
+            record.update(state='interrupted', error='The portal was stopped during processing. Check n8n before sending the complaint again.')
             raise
         except (httpx.HTTPError, ValueError):
             record.update(state='failed', error='The workflow engine did not return a valid result. Check the n8n execution before sending again; nothing is retried automatically.')
@@ -256,7 +256,7 @@ def create_app(runtime=None, transport=None, configure=None):
         if (jobs / (report_id + '.json')).exists():
             return {'report_id': report_id, 'existing': True}
         if admission.locked() or setup_lock.locked():
-            raise HTTPException(409, 'Another report is already being processed on this computer. Please wait for it to finish.')
+            raise HTTPException(409, 'Another complaint is already being processed on this computer. Please wait for it to finish.')
         await admission.acquire()
         uploads = []
         started = False
