@@ -388,8 +388,8 @@
     },
     {
       "path": "integration/portal/static/citizen.css",
-      "sha256": "a9d5c76f7b1d718030b44720a288db431b5564ae2fa0a8c74e7ad77324f886bf",
-      "bytes": 22857
+      "sha256": "1556e38e1e8519a156a3f480c6871870ebdc0fe528a3fc6e94b01dd27023ff4e",
+      "bytes": 22817
     },
     {
       "path": "integration/portal/static/favicon.svg",
@@ -398,8 +398,8 @@
     },
     {
       "path": "integration/portal/static/index.html",
-      "sha256": "0d91837e09eceb01cb13234537e1e3be3b2d3459c46cc16ce42eaaf6df1b5556",
-      "bytes": 16491
+      "sha256": "a8063b77950beb2db2f99af18e946751562b1ebc2ca29d53ab072a3e845bd42c",
+      "bytes": 16218
     },
     {
       "path": "integration/portal/static/setup.html",

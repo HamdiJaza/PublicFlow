@@ -274,7 +274,7 @@ details[open] summary:after{content:"–"}
 .footer :focus-visible{outline-color:#fff}
 
 /* Responsive */
-@media(min-width:1000px){.cats{grid-template-columns:repeat(5,1fr)}}
+@media(min-width:1000px){.cats{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:900px){
   .top-links{display:none}.topbar{justify-content:space-between}
 }
@@ -291,7 +291,6 @@ details[open] summary:after{content:"–"}
   .result-head{flex-direction:column}.track-form{grid-template-columns:1fr}
   .wrap{padding-top:36px}.after{margin-top:56px}
   .cats{grid-template-columns:1fr 1fr;gap:12px}.cats li{padding:14px;gap:10px;font-size:13px}.cats b{font-size:16px}.cat-icon{width:44px;height:44px}.cat-icon svg{width:24px;height:24px}
-  .cats li:last-child{grid-column:1/-1}
 }
 @media(max-width:480px){
   .topbar{gap:8px}.brand{font-size:15px;gap:10px}.logo{width:38px;height:38px}.status-pill{font-size:12px;padding:5px 10px}
