@@ -24,7 +24,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// Citizen contract only; Intake keeps its native texte/image/audio/video API.\nconst item=$input.first(), b=item.json.body, errors=[];\nconst object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);\nconst body=object(b)?b:{};\nconst report_id=typeof body.report_id==='string'?body.report_id.trim():'';\nconst description=typeof body.description==='string'?body.description:'';\nif(!/^[A-Za-z0-9_-]{3,64}$/.test(report_id))errors.push('INVALID_REPORT_ID');\nif((body.description!==undefined&&typeof body.description!=='string')||description.length>3000)errors.push('INVALID_DESCRIPTION');\nif(Object.keys(body).some(k=>!['report_id','description','location'].includes(k)))errors.push('UNSUPPORTED_FORM_FIELD');\nlet location=null;\nif(body.location!==undefined&&body.location!==''){\n  try{\n    location=typeof body.location==='string'?JSON.parse(body.location):body.location;\n    if(location!==null){\n      if(!object(location)||Object.keys(location).some(k=>!['address','latitude','longitude'].includes(k)))throw Error();\n      for(const [key,limit] of [['latitude',90],['longitude',180]]){\n        const v=location[key];if(v!==undefined&&v!==null&&(typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>limit))throw Error();\n      }\n      if(location.address!==undefined&&location.address!==null&&(typeof location.address!=='string'||location.address.length>300))throw Error();\n    }\n  }catch{errors.push('INVALID_LOCATION');location=null;}\n}\nconst files={...(item.binary||{})};\n// Preserve the previous single-image alias, but never infer audio/video from it.\nconst keys=Object.keys(files);\nif(keys.length===1&&!['image','audio','video'].includes(keys[0])&&['image/jpeg','image/png','image/webp'].includes(files[keys[0]]?.mimeType)){\n  files.image=files[keys[0]];delete files[keys[0]];\n}\nif(Object.keys(files).some(k=>!['image','audio','video'].includes(k)))errors.push('UNSUPPORTED_OR_DUPLICATE_MEDIA_FIELD');\nconst image=Boolean(files.image),audio=Boolean(files.audio),video=Boolean(files.video);\nif((video&&(image||audio))||(!video&&!image))errors.push('UNSUPPORTED_MEDIA_COMBINATION');\nif(image&&!audio&&description.trim().length<5)errors.push('DESCRIPTION_OR_AUDIO_REQUIRED');\nconst mime={image:['image/jpeg','image/png','image/webp'],\n  audio:['audio/wav','audio/x-wav','audio/wave','audio/mpeg','audio/mp3','audio/mp4','audio/x-m4a','audio/ogg','audio/webm','audio/flac','audio/x-flac'],\n  video:['video/mp4','video/webm','video/quicktime','video/x-msvideo','video/x-matroska']};\nfor(const kind of ['image','audio','video'])if(files[kind]&&!mime[kind].includes(files[kind].mimeType))errors.push('UNSUPPORTED_'+kind.toUpperCase()+'_TYPE');\nconst mode=video?'video':audio?'image_audio':'image_text';\nconst decision=errors.length?'REJECT':'PASS';\nconst x={report_id:report_id||null,original:{description,location},submission:{mode,has_audio:audio,has_video:video},decision,\n  errors:[...new Set(errors)],review_reasons:[],policy:{gate_1:{decision:'NOT_RUN',reason_codes:[]}},\n  integration:{\"trusted_safe_root\": \"C:/Municipal/MunicipaliteAuto/.runtime/intake/safe\", \"privacy_invariant\": \"checked_yunet_output_v1\", \"yunet_model_sha256\": \"8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4\", \"local_source_sha256\": \"858b81f63bc4f1e17ca80b970185cb668e46be0e4317ef1735df7bc87ba56836\"},\n  components:{intake:{execution:'not_called',inference:'not_verified'},vision:{execution:'not_called'},knowledge:{execution:'not_called'},persistence:{execution:'not_called'}},\n  trace:[{at:new Date().toISOString(),stage:'INPUT_CHECK',decision,reason_codes:[...new Set(errors)]}]};\nreturn [{json:x,...(!errors.length?{binary:files}:{})}];\n"
+        "jsCode": "// Citizen contract only; Intake keeps its native texte/image/audio/video API.\nconst item=$input.first(), b=item.json.body, errors=[];\nconst object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);\nconst body=object(b)?b:{};\nconst report_id=typeof body.report_id==='string'?body.report_id.trim():'';\nconst description=typeof body.description==='string'?body.description:'';\nif(!/^[A-Za-z0-9_-]{3,64}$/.test(report_id))errors.push('INVALID_REPORT_ID');\nif((body.description!==undefined&&typeof body.description!=='string')||description.length>3000)errors.push('INVALID_DESCRIPTION');\nif(Object.keys(body).some(k=>!['report_id','description','location'].includes(k)))errors.push('UNSUPPORTED_FORM_FIELD');\nlet location=null;\nif(body.location!==undefined&&body.location!==''){\n  try{\n    location=typeof body.location==='string'?JSON.parse(body.location):body.location;\n    if(location!==null){\n      if(!object(location)||Object.keys(location).some(k=>!['address','latitude','longitude','commune'].includes(k)))throw Error();\n      for(const [key,limit] of [['latitude',90],['longitude',180]]){\n        const v=location[key];if(v!==undefined&&v!==null&&(typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>limit))throw Error();\n      }\n      if(location.address!==undefined&&location.address!==null&&(typeof location.address!=='string'||location.address.length>300))throw Error();\n      if(location.commune!==undefined&&location.commune!==null&&(typeof location.commune!=='string'||!/^COMMUNE_[A-Z0-9_]{2,31}$/.test(location.commune)))throw Error();\n    }\n  }catch{errors.push('INVALID_LOCATION');location=null;}\n}\nconst files={...(item.binary||{})};\n// Preserve the previous single-image alias, but never infer audio/video from it.\nconst keys=Object.keys(files);\nif(keys.length===1&&!['image','audio','video'].includes(keys[0])&&['image/jpeg','image/png','image/webp'].includes(files[keys[0]]?.mimeType)){\n  files.image=files[keys[0]];delete files[keys[0]];\n}\nif(Object.keys(files).some(k=>!['image','audio','video'].includes(k)))errors.push('UNSUPPORTED_OR_DUPLICATE_MEDIA_FIELD');\nconst image=Boolean(files.image),audio=Boolean(files.audio),video=Boolean(files.video);\nif((video&&(image||audio))||(!video&&!image))errors.push('UNSUPPORTED_MEDIA_COMBINATION');\nif(image&&!audio&&description.trim().length<5)errors.push('DESCRIPTION_OR_AUDIO_REQUIRED');\nconst mime={image:['image/jpeg','image/png','image/webp'],\n  audio:['audio/wav','audio/x-wav','audio/wave','audio/mpeg','audio/mp3','audio/mp4','audio/x-m4a','audio/ogg','audio/webm','audio/flac','audio/x-flac'],\n  video:['video/mp4','video/webm','video/quicktime','video/x-msvideo','video/x-matroska']};\nfor(const kind of ['image','audio','video'])if(files[kind]&&!mime[kind].includes(files[kind].mimeType))errors.push('UNSUPPORTED_'+kind.toUpperCase()+'_TYPE');\nconst mode=video?'video':audio?'image_audio':'image_text';\nconst decision=errors.length?'REJECT':'PASS';\nconst x={report_id:report_id||null,original:{description,location},submission:{mode,has_audio:audio,has_video:video},decision,\n  errors:[...new Set(errors)],review_reasons:[],policy:{gate_1:{decision:'NOT_RUN',reason_codes:[]}},\n  integration:{\"trusted_safe_root\": \"C:/Municipal/MunicipaliteAuto/.runtime/intake/safe\", \"privacy_invariant\": \"checked_yunet_output_v1\", \"yunet_model_sha256\": \"8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4\", \"local_source_sha256\": \"858b81f63bc4f1e17ca80b970185cb668e46be0e4317ef1735df7bc87ba56836\"},\n  components:{intake:{execution:'not_called',inference:'not_verified'},vision:{execution:'not_called'},knowledge:{execution:'not_called'},persistence:{execution:'not_called'}},\n  trace:[{at:new Date().toISOString(),stage:'INPUT_CHECK',decision,reason_codes:[...new Set(errors)]}]};\nreturn [{json:x,...(!errors.length?{binary:files}:{})}];\n"
       },
       "id": "input-check",
       "name": "Input Check",
@@ -217,7 +217,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "// Rules control the department: no LLM is permitted to choose it.\nconst x=$input.first().json;\nconst departments={\n  ROAD_DAMAGE:'ROADS_DEPARTMENT',\n  STREET_LIGHTING:'PUBLIC_LIGHTING_DEPARTMENT',\n  WASTE:'SANITATION_DEPARTMENT',\n  WATER_LEAK:'WATER_SERVICES_DEPARTMENT'\n};\nx.department=departments[x.vision.category]||null;\nif(!x.department){x.decision='REVIEW';x.review_reasons.push('NO_DEPARTMENT_RULE');}\nx.trace.push({at:new Date().toISOString(),stage:'DEPARTMENT_ROUTING',decision:x.decision,reason_codes:x.department?[]:['NO_DEPARTMENT_RULE']});\nreturn [{json:x}];"
+        "jsCode": "// Rules control the department: no LLM is permitted to choose it.\nconst x=$input.first().json;\nconst departments={\n  ROAD_DAMAGE:'ROADS_DEPARTMENT',\n  STREET_LIGHTING:'PUBLIC_LIGHTING_DEPARTMENT',\n  WASTE:'SANITATION_DEPARTMENT',\n  WATER_LEAK:'WATER_SERVICES_DEPARTMENT'\n};\nx.department=departments[x.vision.category]||null;\nif(!x.department){x.decision='REVIEW';x.review_reasons.push('NO_DEPARTMENT_RULE');}\n// Executing organisation for the staff console; no LLM chooses it either.\n// SUPERVISING_COMMUNE is resolved by the database to the citizen's commune.\nx.organisation={ROAD_DAMAGE:'SUPERVISING_COMMUNE',WASTE:'SUPERVISING_COMMUNE',STREET_LIGHTING:'STEG',WATER_LEAK:'SONEDE'}[x.vision.category]||null;\nx.trace.push({at:new Date().toISOString(),stage:'DEPARTMENT_ROUTING',decision:x.decision,reason_codes:x.department?[]:['NO_DEPARTMENT_RULE']});\nreturn [{json:x}];"
       },
       "id": "department-rules",
       "name": "Department Rules",
@@ -1429,6 +1429,57 @@
       }
     },
     {
+      "id": "http-translate",
+      "name": "HTTP Translate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        850
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "municipalTranslationDev",
+          "name": "Municipal translation bridge (development)"
+        }
+      },
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8014/translate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {text: $json.intake_native?.cleaned_text || ''} }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "attach-translation",
+      "name": "Attach Translation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        250,
+        850
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Display-only English translation of the French Intake summary; never changes gates, routing or the decision.\nconst x=JSON.parse(JSON.stringify($('Intake PASS?').first().json));\nconst received=$input.first().json, status=Number.isInteger(received.statusCode)?received.statusCode:null;\nlet body=received.body;\nif(typeof body==='string'){try{body=JSON.parse(body);}catch{body=null;}}\nconst ok=status===200&&body&&typeof body==='object'&&body.kind==='machine_translation'&&typeof body.en==='string';\nx.summary_translation=ok?{en:body.en,provider:body.provider,model:body.model,prompt_version:body.prompt_version}:null;\nx.components.translation={execution:ok?'responded':status===null?'unavailable':'failed',scope:'display_only'};\nx.trace.push({at:new Date().toISOString(),stage:'SUMMARY_TRANSLATION',decision:ok?'TRANSLATED':'SKIPPED',reason_codes:ok?[]:['TRANSLATION_UNAVAILABLE']});\nreturn [{json:x}];\n"
+      }
+    },
+    {
       "id": "assemble-ticket",
       "name": "Assemble Ticket",
       "type": "n8n-nodes-base.code",
@@ -1439,7 +1490,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const x=$input.first().json;\nconst gates=['gate_1','gate_2','gate_3'];\nx.review_reasons=[...new Set(x.review_reasons||[])];x.errors=[...new Set(x.errors||[])];\nconst rejected=x.decision==='REJECT'||x.trace.some(s=>s.stage==='INPUT_CHECK'&&s.decision==='REJECT');\nif(!/^[A-Za-z0-9_-]{3,64}$/.test(x.report_id||'')){\n  x.report_id='REJECTED-'+String($execution.id);\n}\nfor(const key of gates)if(!x.policy[key]){\n  x.policy[key]={decision:'NOT_RUN',reason_codes:['UPSTREAM_RESULT_UNUSABLE']};\n}\nx.decision=rejected?'REJECT':gates.every(k=>x.policy[k]?.decision==='PASS')&&!x.review_reasons.length?'PASS':'REVIEW';\nconst usable=x.policy.gate_2?.checks?.usable_for_routing_and_retrieval===true;\nx.priority=usable&&['LOW','MEDIUM','HIGH'].includes(x.vision?.severity)?x.vision.severity:null;\nx.trace.push({at:new Date().toISOString(),stage:'TICKET_ASSEMBLY',decision:x.decision,reason_codes:x.review_reasons});\nconst knowledge=x.knowledge_native||null, verified=x.policy.gate_3?.decision==='PASS';\nx.persistence_request={\n  report_id:x.report_id,decision:x.decision,\n  input_identity:{original:x.original,media:(x.intake_native?.media||[]).map(m=>({id:m.id,sha256:m.sha256}))},\n  summary:x.intake_native?.cleaned_text||null,location:x.original?.location||null,\n  category:usable?x.vision.category:null,severity:usable?x.vision.severity:null,\n  department:usable?x.department||null:null,priority:x.priority,priority_rule:'severity_to_priority_v1',\n  review_reasons:x.review_reasons,errors:x.errors,policy:x.policy,trace:x.trace,components:x.components,\n  vision_frames:(x.vision_frames||[]).map(f=>({media_id:f.media_id,sha256:f.sha256,native:f.native,gate_2:f.gate_2})),\n  knowledge:{answer_found:knowledge?.answer_found===true,verified,\n    procedure:verified?knowledge.procedure:null,deadline:verified?knowledge.deadline:null,\n    sources:x.knowledge_evidence?.receipt_verified===true&&Array.isArray(knowledge?.sources)?knowledge.sources:[],\n    native:knowledge,evidence:x.knowledge_evidence||null,request:x.knowledge_request||null},\n  provenance:{workflow:'municipal-completion-v1',execution_id:String($execution.id)}\n};\nreturn [{json:x}];\n"
+        "jsCode": "const x=$input.first().json;\nconst gates=['gate_1','gate_2','gate_3'];\nx.review_reasons=[...new Set(x.review_reasons||[])];x.errors=[...new Set(x.errors||[])];\nconst rejected=x.decision==='REJECT'||x.trace.some(s=>s.stage==='INPUT_CHECK'&&s.decision==='REJECT');\nif(!/^[A-Za-z0-9_-]{3,64}$/.test(x.report_id||'')){\n  x.report_id='REJECTED-'+String($execution.id);\n}\nfor(const key of gates)if(!x.policy[key]){\n  x.policy[key]={decision:'NOT_RUN',reason_codes:['UPSTREAM_RESULT_UNUSABLE']};\n}\nx.decision=rejected?'REJECT':gates.every(k=>x.policy[k]?.decision==='PASS')&&!x.review_reasons.length?'PASS':'REVIEW';\nconst usable=x.policy.gate_2?.checks?.usable_for_routing_and_retrieval===true;\nx.priority=usable&&['LOW','MEDIUM','HIGH'].includes(x.vision?.severity)?x.vision.severity:null;\nx.trace.push({at:new Date().toISOString(),stage:'TICKET_ASSEMBLY',decision:x.decision,reason_codes:x.review_reasons});\nconst knowledge=x.knowledge_native||null, verified=x.policy.gate_3?.decision==='PASS';\nx.persistence_request={\n  report_id:x.report_id,decision:x.decision,\n  input_identity:{original:x.original,media:(x.intake_native?.media||[]).map(m=>({id:m.id,sha256:m.sha256}))},\n  summary:x.intake_native?.cleaned_text||null,location:x.original?.location||null,\n  category:usable?x.vision.category:null,severity:usable?x.vision.severity:null,\n  department:usable?x.department||null:null,organisation:usable?x.organisation||null:null,priority:x.priority,priority_rule:'severity_to_priority_v1',\n  review_reasons:x.review_reasons,errors:x.errors,policy:x.policy,trace:x.trace,components:x.components,\n  vision_frames:(x.vision_frames||[]).map(f=>({media_id:f.media_id,sha256:f.sha256,native:f.native,gate_2:f.gate_2})),\n  summary_translation:x.summary_translation||null,\n  knowledge:{answer_found:knowledge?.answer_found===true,verified,\n    procedure:verified?knowledge.procedure:null,deadline:verified?knowledge.deadline:null,\n    sources:x.knowledge_evidence?.receipt_verified===true&&Array.isArray(knowledge?.sources)?knowledge.sources:[],\n    native:knowledge,evidence:x.knowledge_evidence||null,request:x.knowledge_request||null},\n  provenance:{workflow:'municipal-completion-v1',execution_id:String($execution.id)}\n};\nreturn [{json:x}];\n"
       }
     },
     {
@@ -1623,7 +1674,7 @@
       "main": [
         [
           {
-            "node": "Select Frame 1",
+            "node": "HTTP Translate",
             "type": "main",
             "index": 0
           }
@@ -2217,6 +2268,28 @@
         [
           {
             "node": "Assemble Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Translate": {
+      "main": [
+        [
+          {
+            "node": "Attach Translation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Translation": {
+      "main": [
+        [
+          {
+            "node": "Select Frame 1",
             "type": "main",
             "index": 0
           }

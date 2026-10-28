@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import socket
 import subprocess
@@ -21,6 +22,8 @@ ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ROOT / '.runtime'
 ENVS = ('nvidia-intake-venv', 'vision-venv', 'knowledge-venv')
 COMPOSE = ['docker', 'compose', '-f', str(ROOT / 'distribution/compose.yaml')]
+# Bump when staff_schema.sql or the staff/citizen workflows change: the upgrade then reruns once.
+STAFF_VERSION = 4
 
 
 def run(args, *, capture=False, **kwargs):
@@ -83,7 +86,8 @@ def local():
     run([python(ENVS[1]), '-B', ROOT / 'distribution/smoke.py', 'vision'])
     run([python(ENVS[2]), '-B', ROOT / 'distribution/smoke.py', 'knowledge'])
     for script in ('integration/persistence/setup.py', 'integration/vision/media_bridge.py',
-                   'n8n/vision-integration/build_workflow.py', 'n8n/completion-integration/build_workflow.py'):
+                   'n8n/vision-integration/build_workflow.py', 'n8n/completion-integration/build_workflow.py',
+                   'n8n/staff-integration/build_workflow.py', 'integration/translation/translation_bridge.py'):
         run([python(ENVS[0]), '-B', ROOT / script])
     run([python(ENVS[2]), '-B', ROOT / 'integration/knowledge/common.py'])
     run([python(ENVS[2]), '-B', ROOT / 'integration/knowledge/evidence_bridge.py'])
@@ -143,17 +147,17 @@ def preflight_models():
     if missing:
         raise RuntimeError('Required local models missing: ' + ', '.join(sorted(missing)) + '. No models were downloaded.')
     if not (RUNTIME / 'distribution/ready.json').exists():
-        for port in (8010, 8012, 8013, 8020, 8021, 8090):
+        for port in (8010, 8012, 8013, 8014, 8020, 8021, 8090, 8091):
             if occupied(port):
                 raise RuntimeError(f'Port {port} is occupied by an earlier service. Stop it before first launch.')
 
 
-def import_n8n(command, path=None):
+def import_n8n(command, path=None, workflow_id='municipalCompletionDev'):
     args = COMPOSE + ['run', '--rm', '--no-deps']
     if path:
         args += ['-v', str(path.resolve()).replace('\\', '/') + ':/package-input.json:ro']
     args += ['n8n', command]
-    args += ['--input=/package-input.json'] if path else ['--id=municipalCompletionDev']
+    args += ['--input=/package-input.json'] if path else ['--id=' + workflow_id]
     output = run(args, capture=True)
     # n8n's import handler can report an error with a zero exit code.
     if command.startswith('import:') and 'Successfully imported' not in output:
@@ -163,11 +167,52 @@ def import_n8n(command, path=None):
     print('n8n: ' + command + ' completed.', flush=True)
 
 
+def staff_console():
+    """Staff console upgrade; also runs once on installations prepared before it existed.
+
+    Every step is idempotent (additive migration, credential and workflow imports by id).
+    The marker is written only after the published communes webhook answers from PostgreSQL.
+    """
+    marker = RUNTIME / 'distribution/staff-ready.json'
+    if marker.exists() and json.loads(marker.read_text(encoding='utf-8')).get('version') == STAFF_VERSION:
+        return
+    print('Installing the staff console: additive database migration and staff workflow.', flush=True)
+    # Rehearse the migration on a throwaway container from the same pinned image before the live database.
+    image = re.search(r'image:\s*(postgres@sha256:[a-f0-9]{64})', (ROOT / 'distribution/compose.yaml').read_text(encoding='utf-8')).group(1)
+    run([python(ENVS[0]), '-B', ROOT / 'integration/persistence/verify_staff_schema.py'], env=os.environ | {'MUNICIPAL_SCHEMA_CHECK_IMAGE': image})
+    run([python(ENVS[0]), '-B', ROOT / 'integration/persistence/setup.py', '--initialize'])
+    run(COMPOSE + ['stop', 'n8n'])
+    try:
+        import_n8n('import:credentials', RUNTIME / 'persistence/n8n-credential.json')
+        import_n8n('import:credentials', RUNTIME / 'translation-bridge/n8n-credential.json')
+        # The citizen workflow changed too (commune field, executing organisation).
+        import_n8n('import:workflow', ROOT / 'n8n/completion-integration/municipal-completion-development.json')
+        import_n8n('import:workflow', ROOT / 'n8n/staff-integration/municipal-staff-development.json')
+        import_n8n('publish:workflow')
+        import_n8n('publish:workflow', workflow_id='municipalStaffDev')
+    finally:
+        run(COMPOSE + ['up', '-d', 'n8n'])
+    base = 'http://127.0.0.1:' + os.getenv('MUNICIPAL_N8N_PORT', '5679')
+    for _ in range(90):
+        try:
+            if isinstance(fetch(base + '/webhook/municipal-communes').get('communes'), list):
+                break
+        except Exception:
+            pass
+        time.sleep(1)
+    else:
+        raise RuntimeError('The staff workflow did not answer from the database. Inspect Docker logs; setup can be retried.')
+    marker.write_text(json.dumps({'root': str(ROOT), 'version': STAFF_VERSION, 'workflow_id': 'municipalStaffDev',
+                                  'communes_lookup_verified': True}), encoding='utf-8')
+    print('Staff console workflow published and verified.', flush=True)
+
+
 def containers():
     check_ownership()
     marker = RUNTIME / 'distribution/ready.json'
     if marker.exists():
         run(COMPOSE + ['up', '-d', '--wait', '--wait-timeout', '120'])
+        staff_console()
         return
     print('Starting isolated database; Docker downloads pinned images only if missing.', flush=True)
     run(COMPOSE + ['up', '-d', '--wait', '--wait-timeout', '120', 'postgres'])
@@ -199,6 +244,7 @@ def containers():
     marker.write_text(json.dumps({'root': str(ROOT), 'workflow_id': 'municipalCompletionDev',
                                  'database_lookup_verified': True}), encoding='utf-8')
     print('n8n workflow published and PostgreSQL lookup verified.', flush=True)
+    staff_console()
 
 
 def main():

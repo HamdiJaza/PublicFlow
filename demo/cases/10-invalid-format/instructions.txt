@@ -1,0 +1,10 @@
+Unsupported file format (input validation)
+
+Evidence type: Photo
+File(s) to upload: animation.gif
+Your municipality: Municipality of Tunis
+Where is it?: (leave empty)
+Description: paste description.txt
+
+Expected result:
+Refused before any processing: "This media format is not supported." (only JPG, PNG and WEBP photos).

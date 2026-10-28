@@ -312,6 +312,31 @@ The database itself enforces important rules, through the SQL functions `save_re
 
 ---
 
+### 5.8 Staff console: `integration/staff/`
+
+The second web application (port 8091), in French, for the people who handle tickets after the AI. Three roles, each with its own screen:
+
+| Role | Sees | Does |
+|---|---|---|
+| **Municipality** (one account per commune) | Every ticket of **its** commune, whatever the type | Reviews uncertain tickets, corrects category and severity, assigns the work (its own services, STEG or SONEDE), reassigns, rejects, reopens |
+| **STEG / SONEDE** | Only the work assigned to it | Starts the work, marks it **done** or **not done** (the ticket then returns to the commune) |
+| **Maintenance administrator** | Service health and anonymous counts, **never ticket content** | NVIDIA key, staff accounts, list of communes |
+
+```
+Citizen → AI agents + gates → commune reviews / corrects / assigns
+                                 ├─ commune services (roads, waste)
+                                 ├─ STEG (street lighting)
+                                 └─ SONEDE (water leaks)
+                                       → done      → RESOLVED, visible to the citizen
+                                       → not done  → back to the commune
+```
+
+- **Routing proposal:** *Department Rules* adds the executing organisation (fixed table). The commune confirms or changes it; the AI's original classification is kept beside any human correction.
+- **Enforced in the database:** `integration/persistence/staff_schema.sql` (additive migration) defines `municipal.staff_api`, which checks who may see and change each ticket, optimistic versions and mandatory notes. A forged or out-of-scope request gets `TICKET_NOT_FOUND` or `STAFF_ACTION_FORBIDDEN`.
+- **Passwords never reach n8n:** accounts are scrypt hashes in `.runtime/staff/`. The console sends n8n only the agent's name, role and organisation, through a header-authenticated webhook (`municipal-staff`).
+- **Citizen side:** the portal now asks for the commune (never inferred) and the tracking page shows the timeline and the public message left by the organisation. Internal notes and agent names are never shown.
+- The former `/setup` page of the portal now redirects to the authenticated administrator console.
+
 ## 6. Technology stack
 
 | Layer | Technology | Role | Where |
@@ -373,7 +398,7 @@ All numbers below were counted or measured from this repository and the runs sto
 
 ### 7.4 What a ticket stores (and what a dashboard could track)
 
-Every ticket records: category, severity, department, priority, a summary, the three gates' decisions with reason codes, the verified procedure and sources (if any), a full execution trace, and timestamps with a version number. From this data a staff dashboard (**not built yet**) could report, for example: the PASS / REVIEW / REJECT rate, the most common review reasons, time from submission to first human action, and tickets per department and status.
+Every ticket records: category, severity, department, priority, a summary, the three gates' decisions with reason codes, the verified procedure and sources (if any), a full execution trace, and timestamps with a version number. From this data a reporting dashboard (**not built yet**; the staff console shows counts per status) could report, for example: the PASS / REVIEW / REJECT rate, the most common review reasons, time from submission to first human action, and tickets per department and status.
 
 ---
 
@@ -475,6 +500,7 @@ To watch the workflow run, open n8n at <http://127.0.0.1:5679/>, create your loc
 | Port | Service |
 |---|---|
 | 8090 | Citizen web portal |
+| 8091 | Staff console (municipality, STEG, SONEDE, maintenance admin) |
 | 5679 | n8n workflow editor and webhooks |
 | 5434 | PostgreSQL ticket database |
 | 8010 | Vision Agent API |
@@ -514,7 +540,8 @@ Behaviour confirmed with **real runs** (not mocks):
 **Working (verified with real runs):** see the list in section 13, plus the 8 recorded runs in section 7.3.
 
 **Known limitations:**
-- **No staff dashboard yet.** Review records are stored in the database, but there is no screen for staff to review, assign or update tickets. This is the biggest missing piece.
+- **Staff console not yet verified live.** The console, the n8n staff workflow and the SQL migration are built and covered by contract tests (`integration/staff/test_staff.py`, `integration/portal/test_portal_commune.py`) and by a throwaway-database rehearsal (`integration/persistence/verify_staff_schema.py`). A full run through the live n8n and PostgreSQL containers still has to be recorded.
+- **Photos are not shown to staff.** Only the media fingerprint is stored in the database, so the console shows the AI's description and evidence, not the photo itself.
 - **Only four incident types are implemented.** Damage to public property is not classified and is sent to review.
 - **No all-PASS demo case recorded.** All 8 recorded runs ended as `REVIEW` or earlier: Vision was uncertain and the RAG corpus had no supported procedure.
 - **RAG is still modest.** Retained Hit@3 is 5/9 and 6/9 in development tests, on a small corpus (9 enabled documents).
@@ -524,7 +551,7 @@ Behaviour confirmed with **real runs** (not mocks):
 - **Needs a cloud key.** Intake uses NVIDIA's hosted models, so it is not fully offline.
 - **Some test suites and the original design documents are not in this repository.** Some READMEs mention them.
 
-**Natural next steps:** a staff dashboard, a labelled evaluation set to measure accuracy and calibrate confidence, a larger corpus with better retrieval, more incident types, authentication and a job queue.
+**Natural next steps:** a recorded live run of the staff console, an Arabic version of the citizen portal, a labelled evaluation set to measure accuracy and calibrate confidence, a larger corpus with better retrieval, more incident types, authentication and a job queue.
 
 ---
 

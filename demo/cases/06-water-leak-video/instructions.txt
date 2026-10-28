@@ -1,0 +1,10 @@
+Water leak (synthetic animated video)
+
+Evidence type: Video
+File(s) to upload: video.mp4
+Your municipality: Municipality of Tunis
+Where is it?: Rue de Rome
+Description: (leave empty)
+
+Expected result:
+Water leak, proposed to SONEDE. The description is optional with a video.

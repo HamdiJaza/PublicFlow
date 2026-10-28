@@ -4,12 +4,21 @@ MUNICIPALITÉ AUTOMATISÉE - WINDOWS PACKAGE
    Do not run it inside the ZIP. Keep this folder in place after first setup.
 2. Start Docker Desktop (Linux containers) and Ollama.
 3. Double-click Start_MunicipaliteAuto.cmd. Leave its window open until setup finishes.
-4. On http://127.0.0.1:8090/setup, enter YOUR NVIDIA API key once.
-   The key is encrypted for your Windows account. No teammate key is included.
-5. Open http://127.0.0.1:8090/, upload demo/road-damage.jpg and paste the text
-   in demo/description.txt. Click Send complaint ONCE and wait.
+4. Open http://127.0.0.1:8091/ (staff console). The first visit creates the
+   maintenance administrator account. In Administration > Clé NVIDIA, enter
+   YOUR NVIDIA API key once. It is encrypted for your Windows account.
+   In Administration > Comptes, create the responsables: one municipality
+   account (Commune de Tunis) and, if wanted, STEG and SONEDE accounts.
+5. Open http://127.0.0.1:8090/. The first screen is the citizen sign-in: choose
+   "Create an account" and enter a CIN (8 digits starting with 0) and a password.
+   In the complaint space, choose the municipality, upload demo/road-damage.jpg,
+   paste the text in demo/description.txt and click "Send complaint" ONCE.
    Intake -> Vision -> RAG -> policy gates -> PostgreSQL all run automatically.
-   The final page displays the ticket and tracking ID. No curl or manual nodes.
+   The page then shows the ticket and tracking ID; "My complaints" lists it.
+6. Sign in to http://127.0.0.1:8091/ as the municipality: review the ticket,
+   correct it if needed and assign it (municipal services, STEG or SONEDE).
+   The assigned organisation starts the work and marks it done or not done.
+   The citizen sees each step in "My complaints".
 
 PREREQUISITES
 - Windows 10/11 x64, Docker Desktop, Ollama, internet for NVIDIA and the first
@@ -45,15 +54,19 @@ available memory. This is a useful demo input, not a guaranteed all-PASS case.
 Uncertain Vision output or unsupported RAG evidence produces NEEDS_REVIEW with
 the ticket still saved and displayed. No procedures/citations are fabricated.
 Invalid input can end in REJECT; service failures are reported truthfully.
-The staff dashboard remains deferred. PostgreSQL stores tickets, reviews and
-status events. This package includes the citizen upload/result portal.
+PostgreSQL stores tickets, reviews and status events. The staff console
+(port 8091) lets each commune review, correct and assign its tickets, and lets
+STEG/SONEDE execute assigned work; the database enforces who may see and change
+what. The maintenance administrator manages keys, accounts and communes but
+never sees ticket content. Existing installations receive the additive staff
+migration and workflow once, after a rehearsal on a throwaway database.
 
 STORAGE AND TROUBLESHOOTING
 Docker project: municipalite-auto. Containers: municipalite-auto-n8n and
 municipalite-auto-postgres. Volumes: municipalite-auto_n8n_data and
 municipalite-auto_ticket_data. Existing installations are not overwritten.
 Logs: .runtime/portal/services and .runtime/knowledge-ollama.
-Reserved local ports: 5679, 5434, 8090, 8010, 8012, 8013, 8020, 8021, 11435.
+Reserved local ports: 5679, 5434, 8090, 8091, 8014, 8010, 8012, 8013, 8020, 8021, 11435.
 If a port is busy, close the earlier project before retrying. Do not delete
 Docker volumes to solve a startup error: they contain your saved tickets.
 If setup is interrupted, run Start_MunicipaliteAuto.cmd again. Credentials are reused.

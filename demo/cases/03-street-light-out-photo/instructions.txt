@@ -1,0 +1,10 @@
+Street lamp off at night (synthetic image)
+
+Evidence type: Photo
+File(s) to upload: photo.jpg
+Your municipality: Municipality of Ariana
+Where is it?: Avenue de la Liberté, in front of the pharmacy
+Description: paste description.txt
+
+Expected result:
+Street lighting, proposed to STEG. Ariana has no procedure corpus, so the ticket needs municipal review.

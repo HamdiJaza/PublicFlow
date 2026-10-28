@@ -1,0 +1,10 @@
+Overflowing bin and rubbish bags (synthetic image)
+
+Evidence type: Photo
+File(s) to upload: photo.jpg
+Your municipality: Municipality of Ben Arous
+Where is it?: Rue Ibn Khaldoun, next to the market
+Description: paste description.txt
+
+Expected result:
+Waste, routed to the municipal services of Ben Arous.

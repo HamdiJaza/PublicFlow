@@ -28,8 +28,8 @@
     },
     {
       "path": "READ_ME_FIRST.txt",
-      "sha256": "197e84bffc186269833de855a6ba82be7d4a33f95fa797455e887e38013599ba",
-      "bytes": 5045
+      "sha256": "0c9c0ee3dfc1219879e4ec1ebdf074ed3749e7fff3dab8deb46af8b23e731de9",
+      "bytes": 6133
     },
     {
       "path": "Start_MunicipaliteAuto.cmd",
@@ -37,9 +37,169 @@
       "bytes": 149
     },
     {
+      "path": "demo/README.md",
+      "sha256": "bb09bbc7cd7d92fb87806dade7224b691a7acaf4c2ec40b97701cc7067d9d2c1",
+      "bytes": 3709
+    },
+    {
+      "path": "demo/cases/01-road-pothole-photo/description.txt",
+      "sha256": "7a4d987f1af1bfd0a8488a15c4a6cbfb7287045c3e949614da55dadbb81d2166",
+      "bytes": 118
+    },
+    {
+      "path": "demo/cases/01-road-pothole-photo/instructions.txt",
+      "sha256": "856a71af3ca6cbf19a86d66c4c896678c319726d9bd60df81fd3ad39fb94b6ad",
+      "bytes": 344
+    },
+    {
+      "path": "demo/cases/01-road-pothole-photo/photo.jpg",
+      "sha256": "5ae3304de6415229f128d1235424d9bddd53966d1e3c20a8cf94ea0b2f551c3d",
+      "bytes": 95323
+    },
+    {
+      "path": "demo/cases/02-road-damage-video/description.txt",
+      "sha256": "3f278c63ef35e9b90b0a42b5e73436600496405e1c71ad4df459070a271dc080",
+      "bytes": 68
+    },
+    {
+      "path": "demo/cases/02-road-damage-video/instructions.txt",
+      "sha256": "b2ed1183c9e95ce6093a4d8d51eeec6184d0678684bf5b3c38b8f0d9805c348d",
+      "bytes": 341
+    },
+    {
+      "path": "demo/cases/02-road-damage-video/video.mp4",
+      "sha256": "acc6c5818456e4312ce6732b002d7e476580b848bf3717b7c20dc94eac07f82c",
+      "bytes": 639008
+    },
+    {
+      "path": "demo/cases/03-street-light-out-photo/description.txt",
+      "sha256": "51c95d732809cf9244260ab8412e91c6d72bdfed6983fffc52f2975765c66277",
+      "bytes": 128
+    },
+    {
+      "path": "demo/cases/03-street-light-out-photo/instructions.txt",
+      "sha256": "bde1b8e3369f15f21d0c2a541b55eeed9ab621422f7c15105ff4c95c9a853afe",
+      "bytes": 366
+    },
+    {
+      "path": "demo/cases/03-street-light-out-photo/photo.jpg",
+      "sha256": "6654cb6abf9a238a621e24aa1a6bce08f1e5cf603f17a47c28207bc0e53f5b44",
+      "bytes": 472048
+    },
+    {
+      "path": "demo/cases/04-waste-pile-photo/description.txt",
+      "sha256": "8276622640f11e327bda52a479aeea9560dbfec91f555e568a5ffc2b16e9c44b",
+      "bytes": 118
+    },
+    {
+      "path": "demo/cases/04-waste-pile-photo/instructions.txt",
+      "sha256": "9a73ce518869404449324ce0b07c54cd97b3a830875fd0c2c12eb4a963e38f5c",
+      "bytes": 315
+    },
+    {
+      "path": "demo/cases/04-waste-pile-photo/photo.jpg",
+      "sha256": "5158bd84cc81b0e0101faf32775ddb4e70735daa8dd2229b9fc18c5fa8c8357d",
+      "bytes": 551635
+    },
+    {
+      "path": "demo/cases/05-water-leak-photo/description.txt",
+      "sha256": "4f29644895c9d30d97a0a97f0a188084636de5bf35e449ac8f7d57f20da79f96",
+      "bytes": 105
+    },
+    {
+      "path": "demo/cases/05-water-leak-photo/instructions.txt",
+      "sha256": "bdbf89492a3a6fc0a27d46837ebda4e4d1fc5044d3d34c4f5e4f6e16b5a31500",
+      "bytes": 294
+    },
+    {
+      "path": "demo/cases/05-water-leak-photo/photo.jpg",
+      "sha256": "2abd90f89782845d8ffd3fdda5e8655db712cb44d7aa0e2ee627c24348a93e8f",
+      "bytes": 498424
+    },
+    {
+      "path": "demo/cases/06-water-leak-video/instructions.txt",
+      "sha256": "116dbb557cfb7331319a5850e7124526acf4ed00a2def3151f0f95358b5c1070",
+      "bytes": 285
+    },
+    {
+      "path": "demo/cases/06-water-leak-video/video.mp4",
+      "sha256": "87ec6a4da06767c519c119878256c1a18a522ac21a8a03cf5a421b808af3fe05",
+      "bytes": 2163653
+    },
+    {
+      "path": "demo/cases/07-photo-with-voice-note/instructions.txt",
+      "sha256": "6bbcc5a9cee760daf9e236f9a3819bfa2e0ec40c6311c637395e1a6a31877322",
+      "bytes": 510
+    },
+    {
+      "path": "demo/cases/07-photo-with-voice-note/photo.jpg",
+      "sha256": "43a7c47f36e467cd76c7a3704db09ef3b3d13bc3f8f600d58889b8e781a34981",
+      "bytes": 547833
+    },
+    {
+      "path": "demo/cases/07-photo-with-voice-note/voice.wav",
+      "sha256": "1f6e3fb47e909e985d55fbcf8f61f6ddfdc4cc4529017641ca7fba331b061244",
+      "bytes": 254286
+    },
+    {
+      "path": "demo/cases/08-text-photo-mismatch/description.txt",
+      "sha256": "fb16253652324142a7f7e58fe91ec1c39b2806a992d167a318361c8d04df1a06",
+      "bytes": 88
+    },
+    {
+      "path": "demo/cases/08-text-photo-mismatch/instructions.txt",
+      "sha256": "2387e0fea935aaa1908e72cb49a506716fbb954fe9a2dac74a01522bf25d3f85",
+      "bytes": 348
+    },
+    {
+      "path": "demo/cases/08-text-photo-mismatch/photo.jpg",
+      "sha256": "a201915ee6494fbc7c0c4ed85d19231036aedc3da25726fd34b7a4aade3a6884",
+      "bytes": 470814
+    },
+    {
+      "path": "demo/cases/09-out-of-scope-bench/description.txt",
+      "sha256": "3ff80ca4a0426c6705e66aac58d324111024ce2b3ab974013c49ce53cf13cb09",
+      "bytes": 96
+    },
+    {
+      "path": "demo/cases/09-out-of-scope-bench/instructions.txt",
+      "sha256": "efd18267ff060241bf02166d0ba3239abd5a2ee87b36505ee75c736ea876dda1",
+      "bytes": 345
+    },
+    {
+      "path": "demo/cases/09-out-of-scope-bench/photo.jpg",
+      "sha256": "baf8da4e7e078988bb7659450f042791e067b9c9eb2ebfcf5d2d19d6b81e3637",
+      "bytes": 546215
+    },
+    {
+      "path": "demo/cases/10-invalid-format/animation.gif",
+      "sha256": "fa8bc9911b68bf981b95996b782058fa637ff4e6e704e79003c48f5e5981eb57",
+      "bytes": 83546
+    },
+    {
+      "path": "demo/cases/10-invalid-format/description.txt",
+      "sha256": "610013d84c52f73bf2aee5fc87a219e4b42d4ffcbc220e1e594a4dd0e5442ef5",
+      "bytes": 21
+    },
+    {
+      "path": "demo/cases/10-invalid-format/instructions.txt",
+      "sha256": "ad3f32e877cdbf83f3d4b101e312cf3f724fef495850bb1465f3ae421b568714",
+      "bytes": 332
+    },
+    {
+      "path": "demo/cases/cases.json",
+      "sha256": "aa97dbc6b59bae3869c6f7ab1f69273da7e89f744c1ff587337bf53d57dae492",
+      "bytes": 2168
+    },
+    {
       "path": "demo/description.txt",
       "sha256": "82271cc2529e26b4cf075ba5baa2222ea959ec1876f1a86d9cf208a0bb4f201f",
       "bytes": 101
+    },
+    {
+      "path": "demo/make_demo_cases.py",
+      "sha256": "74b9ad99928d5ee7e32bb09b44fd2b9e1eea68795d59c5330fd83734f4d9199d",
+      "bytes": 15319
     },
     {
       "path": "demo/road-damage.jpg",
@@ -48,8 +208,8 @@
     },
     {
       "path": "distribution/README.txt",
-      "sha256": "197e84bffc186269833de855a6ba82be7d4a33f95fa797455e887e38013599ba",
-      "bytes": 5045
+      "sha256": "0c9c0ee3dfc1219879e4ec1ebdf074ed3749e7fff3dab8deb46af8b23e731de9",
+      "bytes": 6133
     },
     {
       "path": "distribution/Start_MunicipaliteAuto.cmd",
@@ -63,8 +223,8 @@
     },
     {
       "path": "distribution/build_package.py",
-      "sha256": "8617b45c9aaffa0b1cf40542c96f1b514b7e6c4f52aa0fd2da540ec35461bb89",
-      "bytes": 9554
+      "sha256": "c015b843fd96f8e94a7f018a0f143c777791ffda5ad6f12036956076967a51af",
+      "bytes": 9865
     },
     {
       "path": "distribution/compose.yaml",
@@ -73,8 +233,13 @@
     },
     {
       "path": "distribution/prepare.py",
-      "sha256": "3d574bd6164fe9586080866ee262c681db5bbba80868f5dd501a3a26d8e117f5",
-      "bytes": 11951
+      "sha256": "d4665e5aad72e9dcf9a09e140bb67362bc86d7246e44c2db85588420c9a4e601",
+      "bytes": 14739
+    },
+    {
+      "path": "distribution/refresh_manifest.py",
+      "sha256": "384f0ca99497bf3a9d000f22b2661f43d2a4d2ee5e79fefee0292c2d65248b1c",
+      "bytes": 3173
     },
     {
       "path": "distribution/smoke.py",
@@ -348,8 +513,13 @@
     },
     {
       "path": "integration/persistence/setup.py",
-      "sha256": "e243e4892495ce56351b573d69adfe1de3a92f044baa97acc1cc0b710b5155a2",
-      "bytes": 3005
+      "sha256": "fde5cbdd5aa69ef01cc9a30162fb8c9e3e4d9be66ce17110e1efc90f7ba91179",
+      "bytes": 3476
+    },
+    {
+      "path": "integration/persistence/staff_schema.sql",
+      "sha256": "3794e1bbfc82c6d4dee72cbfbbf7a67e29653d09d2e28cb4a9891f60de626a16",
+      "bytes": 22703
     },
     {
       "path": "integration/persistence/verify_execution_recording.py",
@@ -360,6 +530,11 @@
       "path": "integration/persistence/verify_live.py",
       "sha256": "fcf0d35fa9e63d1591cc9639c74fb2e50a96eb6dfc1bb072fac9d03a9fb21a04",
       "bytes": 6983
+    },
+    {
+      "path": "integration/persistence/verify_staff_schema.py",
+      "sha256": "6bd9998bbd069c4647153d37cf45d269cc033ff140a923b1f9926ddc68c5af29",
+      "bytes": 12265
     },
     {
       "path": "integration/portal/Configure_Intake.ps1",
@@ -373,23 +548,28 @@
     },
     {
       "path": "integration/portal/Start_Portal.ps1",
-      "sha256": "0922a2fe7929bce6cfc2d13b9fc341d4b1d909dac685ea565d2f88eb99197277",
-      "bytes": 4957
+      "sha256": "c3697463171ccf7b03344c3db98afbb5c2fc025333439d8b409edd05efc14608",
+      "bytes": 6277
     },
     {
       "path": "integration/portal/app.py",
-      "sha256": "086cf4c1f0c7c709e079f530770da0c65c58cbce66560e54aba2f5787f124bfc",
-      "bytes": 17242
+      "sha256": "661ddfb44bfe136fff06d0d7c9dfccf7a8ed85bb57e3f039ada6f21e05369796",
+      "bytes": 28685
+    },
+    {
+      "path": "integration/portal/citizens.py",
+      "sha256": "7927a82cdf6ec5204c323006e0b27e842ba160aefe55b46733d7143b7449f840",
+      "bytes": 4338
     },
     {
       "path": "integration/portal/static/app.js",
-      "sha256": "8f69f78e54343e51ab96eaf7a02cdd3e352130129d3f88df759dc1359ecb3cf4",
-      "bytes": 21588
+      "sha256": "0da657439fc43dd051ee458d28470e1e0f822b6a663cbdda5a8ccffce32a4991",
+      "bytes": 37689
     },
     {
       "path": "integration/portal/static/citizen.css",
-      "sha256": "1556e38e1e8519a156a3f480c6871870ebdc0fe528a3fc6e94b01dd27023ff4e",
-      "bytes": 22817
+      "sha256": "47832c402f79c745817d2d237d3647b4d454aef389005e7558df749897af3bfc",
+      "bytes": 28697
     },
     {
       "path": "integration/portal/static/favicon.svg",
@@ -398,8 +578,8 @@
     },
     {
       "path": "integration/portal/static/index.html",
-      "sha256": "a8063b77950beb2db2f99af18e946751562b1ebc2ca29d53ab072a3e845bd42c",
-      "bytes": 16218
+      "sha256": "6fb89875c73ff447bb8761d98f3262967fc95799b9f4066ddb977278f6112ad5",
+      "bytes": 27457
     },
     {
       "path": "integration/portal/static/setup.html",
@@ -410,6 +590,76 @@
       "path": "integration/portal/static/setup.js",
       "sha256": "f4068a6bd8e920c6d644d55152a3e46227e63e047ac5e87d0920e547656d28ef",
       "bytes": 2181
+    },
+    {
+      "path": "integration/staff/accounts.py",
+      "sha256": "c78c58ce2e1058214d687870eb3915e27a0bcdfb2eb1828514f3bad8d01a6412",
+      "bytes": 6203
+    },
+    {
+      "path": "integration/staff/app.py",
+      "sha256": "9af206cef4b65f949f9e66a2ff1d2c946a3bd2a369427489ecbaa228d1190e84",
+      "bytes": 19746
+    },
+    {
+      "path": "integration/staff/static/admin.html",
+      "sha256": "ffa67e36b9310649b4a04ae3c7a3b287b9c54f6f3013bcd8d51a876cfc8208fb",
+      "bytes": 8766
+    },
+    {
+      "path": "integration/staff/static/admin.js",
+      "sha256": "8c6762b8f242a65ab7ac803382aea954aa123200c25759bd77e811e22a99ec05",
+      "bytes": 11007
+    },
+    {
+      "path": "integration/staff/static/common.js",
+      "sha256": "79fa95e6699574c53611e76a0819ffec7e28a262541fc6d1f63a2660f84e82f4",
+      "bytes": 6788
+    },
+    {
+      "path": "integration/staff/static/console.html",
+      "sha256": "5bed438a3b51898fc87eba64faf8ceba4f6db61e4ec7a913c1439fd75ce32c53",
+      "bytes": 2445
+    },
+    {
+      "path": "integration/staff/static/console.js",
+      "sha256": "b3fde015c3b7aa7d0e8df8c3ff92baf5b401b0aa584d41b98d671f1de2c94767",
+      "bytes": 17717
+    },
+    {
+      "path": "integration/staff/static/favicon.svg",
+      "sha256": "78c7739fef3523d6a67bd518171190e78002992c4384432f7c3aa3756b0d83fe",
+      "bytes": 492
+    },
+    {
+      "path": "integration/staff/static/login.html",
+      "sha256": "0b38487cb2d916b17398c5b4d5ac4b1317e010ff80427037064f1e122af79e73",
+      "bytes": 3306
+    },
+    {
+      "path": "integration/staff/static/login.js",
+      "sha256": "d3b15c7b0058928229e1494b827baef2da5cc1f449553babe1d50deeb64d460a",
+      "bytes": 1532
+    },
+    {
+      "path": "integration/staff/static/staff.css",
+      "sha256": "816f15e49596b6f00af70a4fb3148873b8941ce29d72e375d441a37d18aafda1",
+      "bytes": 14454
+    },
+    {
+      "path": "integration/translation/Start_Translation_Bridge.ps1",
+      "sha256": "4075b1700351e45009c41b8a70b06990a48a5ee3cfc6e47c97df8a47f1215bca",
+      "bytes": 924
+    },
+    {
+      "path": "integration/translation/prompts/translate-summary-en-v1.txt",
+      "sha256": "c6eccd7eb903d19382b8b466a92efa527d2a0ae879e623fcf21236df26bf9d72",
+      "bytes": 670
+    },
+    {
+      "path": "integration/translation/translation_bridge.py",
+      "sha256": "d82a906a39b350fad3b7168f3f5d13e2f034a54547e2b42787f9c3a567b75d85",
+      "bytes": 6550
     },
     {
       "path": "integration/vision/Deploy_Development.ps1",
@@ -473,13 +723,18 @@
     },
     {
       "path": "n8n/completion-integration/build_workflow.py",
-      "sha256": "1500f335da48a99f4ee28026f8a77a8f25ce095e8255733d54ad3fdbcbb4b1e5",
-      "bytes": 5762
+      "sha256": "8f23567e7659e9c68f7f8e108c18a93c61a73a10c46481c4395abc32f63b67e3",
+      "bytes": 8075
     },
     {
       "path": "n8n/completion-integration/nodes/aggregate.js",
       "sha256": "8938db8c04f67d332da7aedbf940f16b1d22594396b89914b92119a43ac3a71e",
       "bytes": 1263
+    },
+    {
+      "path": "n8n/completion-integration/nodes/attach-translation.js",
+      "sha256": "a8aafec19efea13cf0f7ffe67aca8ebd6c5a64dae6e0d82ba30760befb04359a",
+      "bytes": 903
     },
     {
       "path": "n8n/completion-integration/nodes/continuation.js",
@@ -488,8 +743,13 @@
     },
     {
       "path": "n8n/completion-integration/nodes/finalize.js",
-      "sha256": "cd9bc3ea2198d90bf97cef8a6ba40d31dcb40cdffcdfd4fd5c5bc956e24691d4",
-      "bytes": 2137
+      "sha256": "4d28c8373239f6f2faecfe09791d2bf6b600562b176866bfb8fa46cec482f6e6",
+      "bytes": 2234
+    },
+    {
+      "path": "n8n/completion-integration/nodes/organisation.js",
+      "sha256": "f38b378e2b9b212336d74c079b0c30be2e5d75eedc82f73ec7d21ca8ad51cef8",
+      "bytes": 300
     },
     {
       "path": "n8n/completion-integration/nodes/persisted.js",
@@ -575,6 +835,16 @@
       "path": "n8n/municipal-phase5/n8n/municipal-ticket-phase5.json",
       "sha256": "04ef815ee0403d715513c1ea06c16546d7c5f333fd3e9ae8147e1369a48b5c20",
       "bytes": 27572
+    },
+    {
+      "path": "n8n/staff-integration/build_workflow.py",
+      "sha256": "ba60988aa79771332e7577b40ba4eb7686372547f5a73074c07661e42997045c",
+      "bytes": 5711
+    },
+    {
+      "path": "n8n/staff-integration/nodes/request.js",
+      "sha256": "b16a07b10a35897463cd8cb914293587a50295916957502a43b54237222c0d9a",
+      "bytes": 834
     },
     {
       "path": "n8n/vision-integration/build_workflow.py",

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Sign in · PublicFlow Staff</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/staff.css">
+  <script src="/static/common.js" defer></script>
+  <script src="/static/login.js" defer></script>
+</head>
+<body>
+<main class="auth" id="main">
+  <div class="card">
+    <div class="row auth-head">
+      <span class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0369a1"/><path d="M5.5 13.5 16 7l10.5 6.5z" fill="#fff"/><rect x="8.2" y="15" width="3.2" height="8" fill="#fff"/><rect x="14.4" y="15" width="3.2" height="8" fill="#fff"/><rect x="20.6" y="15" width="3.2" height="8" fill="#fff"/><rect x="5.5" y="24.3" width="21" height="2.7" rx="1" fill="#fff"/></svg>
+        <span>PublicFlow<small>Staff area</small></span>
+      </span>
+    </div>
+
+    <form id="loginForm" novalidate>
+      <h1>Sign in</h1>
+      <p class="muted">Municipalities, STEG, SONEDE and the maintenance administrator.</p>
+      <div id="loginNotice" aria-live="polite"></div>
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" name="username" autocomplete="username" required autocapitalize="none" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <label class="row hint"><input type="checkbox" id="showPassword" class="check"> Show password</label>
+      </div>
+      <p class="spaced">No account yet? <a href="/register">Request an account</a></p>
+      <button class="button primary full" type="submit">Sign in</button>
+      <p class="muted spaced">Forgot your password? Ask the maintenance administrator to reset it.</p>
+    </form>
+
+    <form id="bootstrapForm" novalidate hidden>
+      <h1>First start</h1>
+      <p>No administrator exists yet. Create the maintenance engineer's account. They manage API keys, services, municipalities and staff accounts. They do not handle tickets.</p>
+      <div id="bootstrapNotice" aria-live="polite"></div>
+      <div class="field">
+        <label for="bUsername">Username</label>
+        <input id="bUsername" autocomplete="username" required autocapitalize="none" spellcheck="false" aria-describedby="bUsernameHint">
+        <span class="hint" id="bUsernameHint">3 to 32 characters: lowercase letters, digits, dot, dash or underscore.</span>
+      </div>
+      <div class="field">
+        <label for="bName">Display name</label>
+        <input id="bName" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="bPassword">Password</label>
+        <input id="bPassword" type="password" autocomplete="new-password" required minlength="10" aria-describedby="bPasswordHint">
+        <span class="hint" id="bPasswordHint">At least 10 characters. A password manager is recommended.</span>
+      </div>
+      <button class="button primary full" type="submit">Create administrator</button>
+    </form>
+  </div>
+</main>
+</body>
+</html>

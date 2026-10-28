@@ -57,7 +57,14 @@ if (-not (Test-PortalService 'http://127.0.0.1:8012/')) {
     try { Invoke-WithProjectNvidiaKey -Action { }; $portalKeyReadable = $true } catch { }
     if ($portalKeyReadable) {
         Start-PortalHelper -Name intake -Script 'intake-agent\Start_NVIDIA_Intake.ps1' -ExtraArgs @('-DockerAccess','-EnableNvidiaApi')
-    } else { Write-Host 'Configure the NVIDIA key once at http://127.0.0.1:8090/setup. No key is printed.' }
+    } else { Write-Host 'Configure the NVIDIA key once in the admin console: http://127.0.0.1:8091/admin. No key is printed.' }
+}
+# Display-only Vision translation; optional, it needs the same NVIDIA key as Intake.
+if (-not (Test-PortalService 'http://127.0.0.1:8014/healthz')) {
+    . (Join-Path $portalProject 'integration\intake-local\NVIDIA_Credentials.ps1')
+    $portalKeyReadable = $false
+    try { Invoke-WithProjectNvidiaKey -Action { }; $portalKeyReadable = $true } catch { }
+    if ($portalKeyReadable) { Start-PortalHelper -Name translation -Script 'integration\translation\Start_Translation_Bridge.ps1' }
 }
 if (-not (Test-PortalService 'http://127.0.0.1:8090/api/session')) {
     $portalStamp = [guid]::NewGuid().ToString('N')
@@ -67,9 +74,19 @@ if (-not (Test-PortalService 'http://127.0.0.1:8090/api/session')) {
         -RedirectStandardOutput (Join-Path $portalLogs "portal-$portalStamp.stdout.log") `
         -RedirectStandardError (Join-Path $portalLogs "portal-$portalStamp.stderr.log") | Out-Null
 }
+# Staff console (municipalities, STEG, SONEDE and the maintenance admin).
+if (-not (Test-PortalService 'http://127.0.0.1:8091/connexion')) {
+    $portalStamp = [guid]::NewGuid().ToString('N')
+    $staffArguments = @('-B','-m','uvicorn','app:app','--app-dir',('"' + (Join-Path $portalProject 'integration\staff') + '"'),
+        '--host','127.0.0.1','--port','8091','--workers','1','--no-access-log')
+    Start-Process -FilePath $portalPython -ArgumentList $staffArguments -WindowStyle Hidden -WorkingDirectory $portalProject `
+        -RedirectStandardOutput (Join-Path $portalLogs "staff-$portalStamp.stdout.log") `
+        -RedirectStandardError (Join-Path $portalLogs "staff-$portalStamp.stderr.log") | Out-Null
+}
 for ($portalWait=0; $portalWait -lt 30; $portalWait++) {
     if (Test-PortalService 'http://127.0.0.1:8090/api/session') {
         Write-Host 'Upload page: http://127.0.0.1:8090/'
+        Write-Host 'Staff console (municipality, STEG, SONEDE, admin): http://127.0.0.1:8091/'
         Write-Host 'One media submission starts n8n automatically. A tracking ID confirms database persistence.'
         if (-not $NoBrowser) { Start-Process 'http://127.0.0.1:8090/' -WindowStyle Hidden }
         return

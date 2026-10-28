@@ -1,0 +1,287 @@
+{
+  "name": "Municipalité Automatisée - Console des responsables",
+  "nodes": [
+    {
+      "id": "staff-webhook",
+      "name": "Staff Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "municipal-staff",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "municipalStaffWebhook",
+          "name": "Municipal staff console webhook (development)"
+        }
+      },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "municipal-staff",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "staff-request",
+      "name": "Staff Request Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        300,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Staff console contract only; scope and transitions are enforced by municipal.staff_api.\nconst b=$input.first().json.body, object=v=>v!==null&&typeof v==='object'&&!Array.isArray(v);\nconst body=object(b)?b:{}, actor=object(body.actor)?body.actor:{};\nconst allowed=['action','actor','tracking_id','expected_version','status','note','public_note','organisation',\n  'category','severity','code','name_fr','name_ar','active'];\nconst request={};\nfor(const k of allowed)if(k in body&&k!=='actor')request[k]=body[k];\nrequest.actor={name:actor.name,role:actor.role,organisation:actor.organisation??null};\nconst valid=typeof request.action==='string'&&/^[a-z_]{2,20}$/.test(request.action)&&\n  Object.keys(body).every(k=>allowed.includes(k))&&['MUNICIPALITY','UTILITY','ADMIN'].includes(request.actor.role);\nreturn [{json:{valid,request}}];\n"
+      }
+    },
+    {
+      "id": "staff-valid",
+      "name": "Request Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        600,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "staff-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "staff-api",
+      "name": "Staff API",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        900,
+        -100
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "postgres": {
+          "id": "municipalTicketsDev",
+          "name": "Municipal PostgreSQL tickets (development)"
+        }
+      },
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT municipal.staff_api($1::jsonb) AS result;",
+        "options": {
+          "queryReplacement": "={{ [JSON.stringify($json.request)] }}",
+          "connectionTimeout": 5,
+          "queryBatching": "single"
+        }
+      }
+    },
+    {
+      "id": "staff-response",
+      "name": "Staff Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1200,
+        -100
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.result || {ok:false,error:'DATABASE_UNAVAILABLE'} }}",
+        "options": {
+          "responseCode": "={{ $json.result ? 200 : 503 }}"
+        }
+      }
+    },
+    {
+      "id": "staff-invalid",
+      "name": "Invalid Staff Request",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        900,
+        100
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {ok:false,error:'STAFF_REQUEST_INVALID'} }}",
+        "options": {
+          "responseCode": 400
+        }
+      }
+    },
+    {
+      "id": "communes-webhook",
+      "name": "Communes Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        400
+      ],
+      "webhookId": "municipal-communes",
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "municipal-communes",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "communes-list",
+      "name": "List Communes",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        300,
+        400
+      ],
+      "retryOnFail": false,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "postgres": {
+          "id": "municipalTicketsDev",
+          "name": "Municipal PostgreSQL tickets (development)"
+        }
+      },
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT municipal.public_communes() AS communes;",
+        "options": {
+          "connectionTimeout": 5
+        }
+      }
+    },
+    {
+      "id": "communes-response",
+      "name": "Communes Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        600,
+        400
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {communes: $json.communes || null} }}",
+        "options": {
+          "responseCode": "={{ $json.communes ? 200 : 503 }}"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Staff Webhook": {
+      "main": [
+        [
+          {
+            "node": "Staff Request Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Staff Request Check": {
+      "main": [
+        [
+          {
+            "node": "Request Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Valid?": {
+      "main": [
+        [
+          {
+            "node": "Staff API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid Staff Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Staff API": {
+      "main": [
+        [
+          {
+            "node": "Staff Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Communes Webhook": {
+      "main": [
+        [
+          {
+            "node": "List Communes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Communes": {
+      "main": [
+        [
+          {
+            "node": "Communes Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "tags": [],
+  "id": "municipalStaffDev",
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Tunis",
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "all",
+    "saveManualExecutions": false
+  },
+  "meta": {
+    "staff_contract": "POST municipal-staff {action, actor{name,role,organisation}, ...}; header X-Staff-Secret",
+    "scope_policy": "Enforced in municipal.staff_api: commune sees its tickets, STEG/SONEDE see assigned work, ADMIN sees no ticket content"
+  }
+}

@@ -27,7 +27,8 @@ def psql(sql):
 def prepare():
     RUNTIME.mkdir(parents=True, exist_ok=True)
     passwords = {}
-    for kind in ('admin', 'app'):
+    # 'staff-webhook' authenticates the staff console to its n8n webhook (header auth).
+    for kind in ('admin', 'app', 'staff-webhook'):
         path = RUNTIME / (kind + '-password.txt')
         if not path.exists():
             path.write_text(secrets.token_urlsafe(36), encoding='ascii')
@@ -38,7 +39,9 @@ def prepare():
     credential = [{'id': 'municipalTicketsDev', 'name': 'Municipal PostgreSQL tickets (development)',
         'type': 'postgres', 'data': {'host': CONTAINER, 'port': 5432, 'database': 'municipal_tickets',
             'user': 'municipal_app', 'password': passwords['app'], 'ssl': 'disable',
-            'maxConnections': 3, 'allowUnauthorizedCerts': False}}]
+            'maxConnections': 3, 'allowUnauthorizedCerts': False}},
+        {'id': 'municipalStaffWebhook', 'name': 'Municipal staff console webhook (development)',
+         'type': 'httpHeaderAuth', 'data': {'name': 'X-Staff-Secret', 'value': passwords['staff-webhook']}}]
     (RUNTIME / 'n8n-credential.json').write_text(json.dumps(credential), encoding='utf-8')
     return passwords
 
@@ -50,6 +53,7 @@ def main():
     passwords = prepare()
     if args.initialize:
         psql((ROOT / 'integration/persistence/schema.sql').read_text(encoding='utf-8'))
+        psql((ROOT / 'integration/persistence/staff_schema.sql').read_text(encoding='utf-8'))
         psql("""DO $$ BEGIN
           IF NOT EXISTS(SELECT FROM pg_roles WHERE rolname='municipal_app') THEN
             CREATE ROLE municipal_app LOGIN;
@@ -59,9 +63,9 @@ def main():
              + passwords['app'] + """';
         GRANT CONNECT ON DATABASE municipal_tickets TO municipal_app;
         GRANT USAGE ON SCHEMA municipal TO municipal_app;
-        GRANT EXECUTE ON FUNCTION municipal.save_report(jsonb),municipal.ticket_status(text) TO municipal_app;
+        GRANT EXECUTE ON FUNCTION municipal.save_report(jsonb),municipal.ticket_status(text),municipal.staff_api(jsonb),municipal.public_communes() TO municipal_app;
         """)
-        print('Schema initialized. n8n has function-only access; status changes remain administrator-only.')
+        print('Schema initialized. n8n has function-only access; staff changes go through scoped municipal.staff_api.')
     else:
         print('Ignored local credentials prepared; no containers or database were changed.')
 
