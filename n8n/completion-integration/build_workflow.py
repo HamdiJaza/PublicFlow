@@ -29,8 +29,34 @@ def build():
         gate=nodes['Gate 2 - Vision'+suffix]['parameters']
         gate['jsCode']=gate['jsCode'].replace('return [{json:x}];','')+(HERE/'nodes/continuation.js').read_text(encoding='utf-8')
         nodes['Vision PASS?'+suffix]['parameters']['conditions']['conditions'][0]['leftValue']="={{ $json.policy.gate_2.checks.usable_for_routing_and_retrieval ? 'PASS' : 'BLOCK' }}"
+    # Staff console: the citizen-chosen commune travels inside location (never inferred).
+    check=nodes['Input Check']['parameters']
+    allowlist="['address','latitude','longitude']"
+    assert check['jsCode'].count(allowlist)==1
+    address="location.address.length>300))throw Error();\n"
+    assert check['jsCode'].count(address)==1
+    check['jsCode']=check['jsCode'].replace(allowlist,"['address','latitude','longitude','commune']").replace(address,
+        address+"      if(location.commune!==undefined&&location.commune!==null&&(typeof location.commune!=='string'||!/^COMMUNE_[A-Z0-9_]{2,31}$/.test(location.commune)))throw Error();\n")
+    assert 'location.commune' in check['jsCode']
+    rules=nodes['Department Rules']['parameters']
+    rules['jsCode']=rules['jsCode'].replace("x.trace.push(",(HERE/'nodes/organisation.js').read_text(encoding='utf-8')+"x.trace.push(",1)
     code('Aggregate Frames','aggregate.js')
     nodes['All Frames PASS?']['parameters']['conditions']['conditions'][0]['leftValue']="={{ $json.policy.gate_2.checks.usable_for_routing_and_retrieval ? 'PASS' : 'BLOCK' }}"
+    # Display-only English translation of the French Intake summary, right after Gate 1 passes.
+    branches=w['connections']['Intake PASS?']['main']
+    assert [e['node'] for e in branches[0]]==['Select Frame 1']
+    translate={'id':'http-translate','name':'HTTP Translate','type':'n8n-nodes-base.httpRequest','typeVersion':4.2,
+        'position':[nodes['Select Frame 1']['position'][0],nodes['Select Frame 1']['position'][1]+250],'retryOnFail':False,'onError':'continueRegularOutput',
+        'credentials':{'httpHeaderAuth':{'id':'municipalTranslationDev','name':'Municipal translation bridge (development)'}},
+        'parameters':{'method':'POST','url':'http://host.docker.internal:8014/translate',
+            'authentication':'genericCredentialType','genericAuthType':'httpHeaderAuth','sendBody':True,'specifyBody':'json',
+            'jsonBody':"={{ {text: $json.intake_native?.cleaned_text || ''} }}",
+            'options':{'timeout':60000,'response':{'response':{'fullResponse':True,'neverError':True,'responseFormat':'json'}}}}}
+    w['nodes'].append(translate);nodes[translate['name']]=translate
+    code('Attach Translation','attach-translation.js')
+    nodes['Attach Translation']['position']=[translate['position'][0]+250,translate['position'][1]]
+    branches[0]=[{'node':'HTTP Translate','type':'main','index':0}]
+    link('HTTP Translate',['Attach Translation']);link('Attach Translation',['Select Frame 1'])
     prepare=nodes['Prepare Knowledge Request']['parameters']['jsCode']
     prepare=prepare.replace("x.policy.gate_2?.decision!=='PASS'","x.policy.gate_2?.checks?.usable_for_routing_and_retrieval!==true")
     nodes['Prepare Knowledge Request']['parameters']['jsCode']=prepare

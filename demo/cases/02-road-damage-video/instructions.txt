@@ -1,0 +1,10 @@
+Damaged road (video made from the real photo)
+
+Evidence type: Video
+File(s) to upload: video.mp4
+Your municipality: Municipality of Tunis
+Where is it?: Rue de Marseille
+Description: paste description.txt
+
+Expected result:
+Three frames are analysed and must agree. Road damage, municipal services. If frames disagree: Needs review.

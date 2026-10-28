@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Tickets · PublicFlow Staff</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/staff.css">
+  <script src="/static/common.js" defer></script>
+  <script src="/static/console.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#detail">Skip to the selected ticket</a>
+<header class="topbar">
+  <a class="brand" href="/console">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0369a1"/><path d="M5.5 13.5 16 7l10.5 6.5z" fill="#fff"/><rect x="8.2" y="15" width="3.2" height="8" fill="#fff"/><rect x="14.4" y="15" width="3.2" height="8" fill="#fff"/><rect x="20.6" y="15" width="3.2" height="8" fill="#fff"/><rect x="5.5" y="24.3" width="21" height="2.7" rx="1" fill="#fff"/></svg>
+    <span>PublicFlow<small id="orgName"></small></span>
+  </a>
+  <span class="spacer"></span>
+  <span class="who"><strong id="userName"></strong><span id="userRole"></span></span>
+  <button class="button small" id="logout" type="button">Sign out</button>
+</header>
+
+<main class="console" id="console">
+  <aside class="queue" aria-labelledby="queueTitle">
+    <div class="card">
+      <div class="row">
+        <h1 id="queueTitle">Tickets</h1>
+        <span class="spacer"></span>
+        <button class="button small" id="refresh" type="button">Refresh</button>
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Filter by status"></div>
+      <div class="field">
+        <label class="sr-only" for="search">Search</label>
+        <input id="search" type="search" placeholder="Search: address, description, tracking ID" autocomplete="off">
+      </div>
+      <div id="listNotice" aria-live="polite"></div>
+      <p class="sr-only" id="listStatus" role="status" aria-live="polite"></p>
+      <ul class="list" id="list" aria-label="Ticket list"></ul>
+    </div>
+  </aside>
+
+  <section class="detail" id="detail" tabindex="-1" aria-label="Selected ticket">
+    <div class="card empty" id="placeholder">
+      <h2>No ticket selected</h2>
+      <p>Choose a ticket in the list to see the complaint, the automatic analysis and the available actions.</p>
+    </div>
+    <div id="detailBody" hidden></div>
+  </section>
+</main>
+</body>
+</html>

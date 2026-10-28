@@ -1,0 +1,10 @@
+Pothole on a road (real photo)
+
+Evidence type: Photo
+File(s) to upload: photo.jpg
+Your municipality: Municipality of Tunis
+Where is it?: Avenue Habib Bourguiba, near the bus stop
+Description: paste description.txt
+
+Expected result:
+Road damage, routed to the municipal services of Tunis. A verified procedure may or may not be found.

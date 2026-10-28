@@ -1,0 +1,91 @@
+{
+  "01-road-pothole-photo": {
+    "title": "Pothole on a road (real photo)",
+    "mode": "Photo",
+    "files": [
+      "description.txt",
+      "instructions.txt",
+      "photo.jpg"
+    ]
+  },
+  "02-road-damage-video": {
+    "title": "Damaged road (video made from the real photo)",
+    "mode": "Video",
+    "files": [
+      "description.txt",
+      "instructions.txt",
+      "video.mp4"
+    ]
+  },
+  "03-street-light-out-photo": {
+    "title": "Street lamp off at night (synthetic image)",
+    "mode": "Photo",
+    "files": [
+      "description.txt",
+      "instructions.txt",
+      "photo.jpg"
+    ]
+  },
+  "04-waste-pile-photo": {
+    "title": "Overflowing bin and rubbish bags (synthetic image)",
+    "mode": "Photo",
+    "files": [
+      "description.txt",
+      "instructions.txt",
+      "photo.jpg"
+    ]
+  },
+  "05-water-leak-photo": {
+    "title": "Broken pipe and water on the road (synthetic image)",
+    "mode": "Photo",
+    "files": [
+      "description.txt",
+      "instructions.txt",
+      "photo.jpg"
+    ]
+  },
+  "06-water-leak-video": {
+    "title": "Water leak (synthetic animated video)",
+    "mode": "Video",
+    "files": [
+      "instructions.txt",
+      "video.mp4"
+    ]
+  },
+  "07-photo-with-voice-note": {
+    "title": "Rubbish photo with a voice note instead of text",
+    "mode": "Photo + voice note",
+    "files": [
+      "instructions.txt",
+      "photo.jpg",
+      "voice.wav"
+    ]
+  },
+  "08-text-photo-mismatch": {
+    "title": "Text does not match the photo (test of the policy gate)",
+    "mode": "Photo",
+    "files": [
+      "description.txt",
+      "instructions.txt",
+      "photo.jpg"
+    ]
+  },
+  "09-out-of-scope-bench": {
+    "title": "Broken public bench, a type the system does not handle (synthetic image)",
+    "mode": "Photo",
+    "files": [
+      "description.txt",
+      "instructions.txt",
+      "photo.jpg"
+    ]
+  },
+  "10-invalid-format": {
+    "title": "Unsupported file format (input validation)",
+    "mode": "Photo",
+    "files": [
+      "animation.gif",
+      "description.txt",
+      "instructions.txt"
+    ]
+  }
+}

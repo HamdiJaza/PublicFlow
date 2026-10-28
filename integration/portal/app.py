@@ -1,4 +1,8 @@
-"""Loopback upload UI. n8n alone orchestrates agents and makes policy decisions."""
+"""Loopback citizen portal. n8n alone orchestrates agents and makes policy decisions.
+
+Citizens sign in with their CIN before filing a complaint; the account link stays on
+this computer and is never sent to n8n or stored in a ticket.
+"""
 import asyncio
 from contextlib import asynccontextmanager, ExitStack
 from datetime import datetime, timezone
@@ -9,21 +13,29 @@ from pathlib import Path
 import re
 import secrets
 import subprocess
+import time
 import uuid
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.datastructures import UploadFile
 from starlette.middleware.trustedhost import TrustedHostMiddleware
+
+from citizens import CitizenError, Citizens
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
 WEBHOOK = 'http://127.0.0.1:5679/webhook/municipal-ticket-development'
 WORKFLOW = 'http://127.0.0.1:5679/workflow/municipalCompletionDev'
 TICKET_LOOKUP = 'http://127.0.0.1:5679/webhook/municipal-ticket-status'
+COMMUNES = 'http://127.0.0.1:5679/webhook/municipal-communes'
+STAFF = 'http://127.0.0.1:8091'
+STAFF_ADMIN = STAFF + '/admin'
+STAFF_SESSION_SECONDS = 8 * 3600  # same lifetime as the staff console's own sessions
 MAX_BODY = 52 * 1024 * 1024
+SESSION_SECONDS = 12 * 3600
 LIMITS = {'image': 10 * 1024**2, 'audio': 30 * 1024**2, 'video': 50 * 1024**2}
 MIMES = {
     'image': {'image/jpeg', 'image/png', 'image/webp'},
@@ -41,6 +53,7 @@ SERVICES = {
     'ollama': 'http://127.0.0.1:11435/api/version',
     'persistence': TICKET_LOOKUP + '?tracking_id=00000000-0000-0000-0000-000000000000',
 }
+TRACKING = re.compile(r'[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}')
 
 
 def now():
@@ -100,6 +113,20 @@ def create_app(runtime=None, transport=None, configure=None):
     admission = asyncio.Lock()
     setup_lock = asyncio.Lock()
     configure = configure or configure_intake
+    citizens = Citizens(directory)
+    citizen_sessions, citizen_failures = {}, {}
+
+    def citizen(request):
+        session = citizen_sessions.get(request.cookies.get('citizen_session', ''))
+        if not session or session['expires'] < time.time():
+            return None
+        return citizens.get(session['account'])
+
+    def signed_in(request):
+        account = citizen(request)
+        if not account:
+            raise HTTPException(401, 'Please sign in with your CIN.')
+        return account
 
     def save(record):
         target = jobs / (record['report_id'] + '.json')
@@ -109,11 +136,21 @@ def create_app(runtime=None, transport=None, configure=None):
 
     def read(report_id):
         if not re.fullmatch(r'RPT-[a-f0-9]{32}', report_id):
-            raise HTTPException(404, 'Report not found.')
+            raise HTTPException(404, 'Submission not found.')
         path = jobs / (report_id + '.json')
         if not path.is_file():
-            raise HTTPException(404, 'Report not found.')
+            raise HTTPException(404, 'Submission not found.')
         return json.loads(path.read_text(encoding='utf-8'))
+
+    async def lookup(client, tracking_id):
+        response = await client.get(TICKET_LOOKUP, params={'tracking_id': tracking_id})
+        body = response.json()
+        if response.status_code == 404 and body == {'ticket': None, 'error': None}:
+            return None
+        if (response.status_code != 200 or not isinstance(body.get('ticket'), dict)
+                or body['ticket'].get('tracking_id') != tracking_id or body['ticket'].get('persisted') is not True):
+            raise ValueError('Unconfirmed ticket lookup')
+        return body['ticket']
 
     @asynccontextmanager
     async def lifespan(service):
@@ -132,7 +169,7 @@ def create_app(runtime=None, transport=None, configure=None):
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
 
-    app = FastAPI(title='Municipalité Automatisée — n8n upload portal', lifespan=lifespan,
+    app = FastAPI(title='Municipalité Automatisée — citizen portal', lifespan=lifespan,
                   docs_url=None, redoc_url=None, openapi_url=None)
     app.add_middleware(BodyLimit)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=['127.0.0.1', 'localhost', 'testserver'])
@@ -162,7 +199,8 @@ def create_app(runtime=None, transport=None, configure=None):
 
     @app.get('/setup')
     async def setup_page():
-        return FileResponse(HERE / 'static/setup.html')
+        # Key setup lives in the authenticated maintenance console.
+        return RedirectResponse(STAFF_ADMIN, 303)
 
     @app.get('/api/session')
     async def session():
@@ -194,7 +232,7 @@ def create_app(runtime=None, transport=None, configure=None):
     @app.post('/api/setup/intake')
     async def setup_intake(request: Request):
         if admission.locked() or setup_lock.locked():
-            raise HTTPException(409, 'A complaint is already being processed. Please wait for it to finish.')
+            raise HTTPException(409, 'A complaint is being processed. Wait for it to finish before changing the key.')
         async with setup_lock:
             if len(await request.body()) > 4096:
                 raise HTTPException(400, 'Invalid key.')
@@ -247,6 +285,7 @@ def create_app(runtime=None, transport=None, configure=None):
 
     @app.post('/api/reports', status_code=202)
     async def submit(request: Request):
+        account = signed_in(request)
         # Retrying a browser POST with the same UUID returns its existing job.
         key = request.headers.get('idempotency-key', '')
         try:
@@ -254,6 +293,8 @@ def create_app(runtime=None, transport=None, configure=None):
         except ValueError:
             raise HTTPException(400, 'Invalid submission reference.') from None
         if (jobs / (report_id + '.json')).exists():
+            if report_id not in citizens.reports(account['account']):
+                raise HTTPException(409, 'Invalid submission reference.')
             return {'report_id': report_id, 'existing': True}
         if admission.locked() or setup_lock.locked():
             raise HTTPException(409, 'Another complaint is already being processed on this computer. Please wait for it to finish.')
@@ -261,13 +302,16 @@ def create_app(runtime=None, transport=None, configure=None):
         uploads = []
         started = False
         try:
-            async with request.form(max_files=3, max_fields=2, max_part_size=4096) as form:
+            async with request.form(max_files=3, max_fields=3, max_part_size=4096) as form:
                 pairs = list(form.multi_items())
-                if len({k for k, _ in pairs}) != len(pairs) or any(k not in ('description', 'address', *LIMITS) for k, _ in pairs):
+                if len({k for k, _ in pairs}) != len(pairs) or any(k not in ('description', 'address', 'commune', *LIMITS) for k, _ in pairs):
                     raise HTTPException(422, 'Unknown or duplicate form fields.')
-                description, address = form.get('description', ''), form.get('address', '')
+                description, address, commune = form.get('description', ''), form.get('address', ''), form.get('commune', '')
                 if not isinstance(description, str) or len(description) > 3000 or not isinstance(address, str) or len(address) > 300:
                     raise HTTPException(422, 'The description or address is too long.')
+                # Chosen by the citizen, never inferred; the database checks that it exists.
+                if not isinstance(commune, str) or (commune and not re.fullmatch(r'COMMUNE_[A-Z0-9_]{2,31}', commune)):
+                    raise HTTPException(422, 'Invalid municipality.')
                 selected = {k: v for k, v in pairs if k in LIMITS}
                 if (('video' in selected and len(selected) != 1) or
                         ('video' not in selected and 'image' not in selected)):
@@ -292,12 +336,15 @@ def create_app(runtime=None, transport=None, configure=None):
                             digest.update(chunk)
                     media.append({'kind': kind, 'size': upload.size, 'sha256': digest.hexdigest()})
                 data = {'report_id': report_id, 'description': description}
-                if address.strip():
-                    data['location'] = json.dumps({'address': address.strip()}, ensure_ascii=False)
+                location = {k: v for k, v in (('address', address.strip()), ('commune', commune)) if v}
+                if location:
+                    data['location'] = json.dumps(location, ensure_ascii=False)
                 record = {'report_id': report_id, 'state': 'queued', 'submitted_at': now(),
                           'media': media, 'workflow_url': WORKFLOW,
                           'storage': 'LOCAL_EXECUTION_RECEIPT_NOT_TICKET_DATABASE'}
                 save(record)
+                # Account link kept only on this computer (never sent to n8n).
+                await asyncio.to_thread(citizens.add_report, account['account'], report_id)
                 task = asyncio.create_task(dispatch(record, data, uploads))
                 tasks.add(task)
                 task.add_done_callback(tasks.discard)
@@ -310,25 +357,184 @@ def create_app(runtime=None, transport=None, configure=None):
                 admission.release()
 
     @app.get('/api/reports/{report_id}')
-    async def report(report_id: str):
+    async def report(request: Request, report_id: str):
+        # A citizen only reads the receipts of their own submissions.
+        if report_id not in citizens.reports(signed_in(request)['account']):
+            raise HTTPException(404, 'Submission not found.')
         return read(report_id)
 
     @app.get('/api/tickets/{tracking_id}')
-    async def ticket(tracking_id: str):
-        if not re.fullmatch(r'[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}', tracking_id):
-            raise HTTPException(404, 'No ticket matches this tracking ID.')
+    async def ticket(request: Request, tracking_id: str):
+        signed_in(request)
+        if not TRACKING.fullmatch(tracking_id):
+            raise HTTPException(404, 'No complaint matches this tracking ID.')
         try:
             async with httpx.AsyncClient(timeout=10, trust_env=False, transport=transport) as client:
-                response = await client.get(TICKET_LOOKUP, params={'tracking_id': tracking_id})
-            body = response.json()
-            if response.status_code == 404 and body == {'ticket': None, 'error': None}:
-                raise HTTPException(404, 'No ticket matches this tracking ID.')
-            if (response.status_code != 200 or not isinstance(body.get('ticket'), dict)
-                    or body['ticket'].get('tracking_id') != tracking_id or body['ticket'].get('persisted') is not True):
-                raise ValueError('Unconfirmed ticket lookup')
-            return body
+                found = await lookup(client, tracking_id)
         except (httpx.HTTPError, ValueError, AttributeError):
-            raise HTTPException(503, 'The ticket database is unavailable right now.') from None
+            raise HTTPException(503, 'The complaint database is unavailable right now.') from None
+        if found is None:
+            raise HTTPException(404, 'No complaint matches this tracking ID.')
+        return {'ticket': found, 'error': None}
+
+    # ---------- Citizen accounts (CIN) ----------
+    async def credentials(request):
+        if len(await request.body()) > 2048:
+            raise HTTPException(413, 'Request too large.')
+        try:
+            data = await request.json()
+        except ValueError:
+            raise HTTPException(400, 'Invalid request.') from None
+        if not isinstance(data, dict):
+            raise HTTPException(400, 'Invalid request.')
+        return str(data.get('cin', '')).strip(), data.get('password')
+
+    def open_citizen_session(account):
+        session = secrets.token_urlsafe(32)
+        citizen_sessions[session] = {'account': account['account'], 'expires': time.time() + SESSION_SECONDS}
+        response = JSONResponse({'authenticated': True, 'cin_hint': account['cin_hint']})
+        response.set_cookie('citizen_session', session, max_age=SESSION_SECONDS, httponly=True, samesite='strict', path='/')
+        return response
+
+    @app.post('/api/citizen/register')
+    async def citizen_register(request: Request):
+        cin, password = await credentials(request)
+        try:
+            account = await asyncio.to_thread(citizens.create, cin, password)
+        except CitizenError as error:
+            raise HTTPException(422, str(error)) from None
+        return open_citizen_session(account)
+
+    @app.post('/api/citizen/login')
+    async def citizen_login(request: Request):
+        cin, password = await credentials(request)
+        count, last = citizen_failures.get(cin, (0, 0))
+        if count >= 5 and time.time() - last < 60:
+            raise HTTPException(429, 'Too many attempts. Try again in one minute.')
+        account = await asyncio.to_thread(citizens.verify, cin, password)
+        if not account:
+            citizen_failures[cin] = (count + 1, time.time())
+            raise HTTPException(401, 'Incorrect CIN or password.')
+        citizen_failures.pop(cin, None)
+        return open_citizen_session(account)
+
+    @app.post('/api/citizen/logout')
+    async def citizen_logout(request: Request):
+        citizen_sessions.pop(request.cookies.get('citizen_session', ''), None)
+        response = JSONResponse({'authenticated': False})
+        response.delete_cookie('citizen_session', path='/')
+        return response
+
+    @app.get('/api/citizen/me')
+    async def citizen_me(request: Request):
+        account = citizen(request)
+        return {'authenticated': bool(account), 'cin_hint': account['cin_hint'] if account else None}
+
+    @app.get('/api/citizen/reports')
+    async def citizen_reports(request: Request):
+        account = signed_in(request)
+        items = []
+        for report_id in reversed(citizens.reports(account['account'])[-50:]):
+            try:
+                record = read(report_id)
+            except HTTPException:
+                continue
+            ticket = (record.get('result') or {}).get('ticket') or {}
+            items.append({'report_id': report_id, 'submitted_at': record.get('submitted_at'), 'state': record.get('state'),
+                          'decision': (record.get('result') or {}).get('decision'), 'tracking_id': ticket.get('tracking_id'),
+                          'category': ticket.get('category'), 'status': ticket.get('status')})
+
+        # Current status from the database through n8n; the receipt value is only a fallback.
+        async with httpx.AsyncClient(timeout=10, trust_env=False, transport=transport) as client:
+            async def refresh(item):
+                if not item['tracking_id']:
+                    return
+                try:
+                    current = await lookup(client, item['tracking_id'])
+                    if current:
+                        item.update(status=current.get('status'), updated_at=current.get('updated_at'),
+                                    organisation_name=current.get('organisation_name'), category=current.get('category'))
+                except (httpx.HTTPError, ValueError, AttributeError):
+                    item['status_unconfirmed'] = True
+            await asyncio.gather(*(refresh(i) for i in items))
+        return {'reports': items}
+
+    # ---------- Staff sign-in on the same screen, forwarded to the staff console ----------
+    async def staff_call(method, path, payload=None):
+        try:
+            async with httpx.AsyncClient(timeout=20, trust_env=False, transport=transport) as client:
+                response = await client.request(method, STAFF + path, json=payload)
+            return response, response.json()
+        except (httpx.HTTPError, ValueError):
+            raise HTTPException(503, 'The staff console is unavailable right now.') from None
+
+    async def small_json(request):
+        if len(await request.body()) > 4096:
+            raise HTTPException(413, 'Request too large.')
+        try:
+            data = await request.json()
+        except ValueError:
+            raise HTTPException(400, 'Invalid request.') from None
+        if not isinstance(data, dict):
+            raise HTTPException(400, 'Invalid request.')
+        return data
+
+    def relay_error(response, body, fallback):
+        detail = body.get('detail') if isinstance(body, dict) and isinstance(body.get('detail'), str) else fallback
+        raise HTTPException(response.status_code if response.status_code in (400, 401, 403, 409, 422, 429) else 503, detail)
+
+    @app.get('/api/staff/status')
+    async def staff_status():
+        response, body = await staff_call('GET', '/api/me')
+        return {'bootstrap': bool(body.get('bootstrap'))}
+
+    @app.post('/api/staff/login')
+    async def staff_login(request: Request):
+        data = await small_json(request)
+        response, body = await staff_call('POST', '/api/login', {'username': data.get('username'), 'password': data.get('password')})
+        if response.status_code != 200:
+            relay_error(response, body, 'Sign-in failed.')
+        session = response.cookies.get('staff_session')
+        if not isinstance(session, str) or not re.fullmatch(r'[A-Za-z0-9_-]{20,100}', session):
+            raise HTTPException(503, 'The staff console did not open a session.')
+        role = (body.get('account') or {}).get('role')
+        result = JSONResponse({'redirect': STAFF + ('/admin' if role == 'ADMIN' else '/console')})
+        # Cookies are scoped to the host, not the port: the console on :8091 receives this session.
+        result.set_cookie('staff_session', session, max_age=STAFF_SESSION_SECONDS, httponly=True, samesite='strict', path='/')
+        return result
+
+    @app.get('/api/staff/organisations')
+    async def staff_organisations():
+        response, body = await staff_call('GET', '/api/register/organisations')
+        if response.status_code != 200 or not isinstance(body.get('organisations'), list):
+            raise HTTPException(503, 'The organisation list is unavailable.')
+        return {'organisations': [{k: o.get(k) for k in ('code', 'kind', 'name_fr', 'name_en')} for o in body['organisations'] if isinstance(o, dict)]}
+
+    @app.post('/api/staff/register')
+    async def staff_register(request: Request):
+        data = await small_json(request)
+        fields = {k: data.get(k) for k in ('username', 'display_name', 'password', 'role', 'organisation', 'request_note')}
+        response, body = await staff_call('POST', '/api/register', fields)
+        if response.status_code != 200:
+            relay_error(response, body, 'The request could not be sent.')
+        return {'pending': True}
+
+    @app.get('/api/communes')
+    async def communes():
+        try:
+            async with httpx.AsyncClient(timeout=5, trust_env=False, transport=transport) as client:
+                response = await client.get(COMMUNES)
+            body = response.json()
+            if response.status_code != 200 or not isinstance(body.get('communes'), list):
+                raise ValueError('Unconfirmed commune list')
+            return {'communes': [{'code': c['code'], 'name_fr': c['name_fr'],
+                                  'name_en': c['name_en'] if isinstance(c.get('name_en'), str) else None,
+                                  'region': c['region'] if isinstance(c.get('region'), str) and re.fullmatch(r'[A-Z][A-Z_]{1,39}', c['region']) else None}
+                                 for c in body['communes']
+                                 if isinstance(c, dict) and re.fullmatch(r'COMMUNE_[A-Z0-9_]{2,31}', str(c.get('code')))
+                                 and isinstance(c.get('name_fr'), str)]}
+        except (httpx.HTTPError, ValueError, AttributeError, KeyError):
+            raise HTTPException(503, 'The municipality list is unavailable.') from None
 
     return app
 

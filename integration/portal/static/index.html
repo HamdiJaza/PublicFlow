@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1f4b">
-  <title>File a Complaint · PublicFlow</title>
+  <title>Sign in · PublicFlow</title>
   <link rel="icon" href="/static/favicon.svg?v=3" type="image/svg+xml">
   <link rel="stylesheet" href="/static/citizen.css">
   <script src="/static/app.js" defer></script>
@@ -17,194 +17,337 @@
     <span class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#1e3a8a"/><path d="M5.5 13.5 16 7l10.5 6.5z" fill="#fff"/><rect x="8.2" y="15" width="3.2" height="8" fill="#fff"/><rect x="14.4" y="15" width="3.2" height="8" fill="#fff"/><rect x="20.6" y="15" width="3.2" height="8" fill="#fff"/><rect x="5.5" y="24.3" width="21" height="2.7" rx="1" fill="#fff"/><circle cx="25.5" cy="7" r="3.4" fill="#f43f5e" stroke="#1e3a8a" stroke-width="1.6"/></svg></span>
     <span>PublicFlow<small>Citizen services</small></span>
   </a>
-  <nav class="top-links" aria-label="Page sections">
-    <a href="#cats">What to report</a>
-    <a href="#after">How it works</a>
-  </nav>
+  <div class="account-bar" id="accountBar" hidden>
+    <span class="account-chip">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      <span class="account-id" id="accountId"></span>
+    </span>
+    <button class="signout" id="logoutBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/></svg>
+      <span>Sign out</span>
+    </button>
+  </div>
   <div id="readiness" class="status-pill" role="status"><span class="dot" aria-hidden="true"></span><span id="readinessText">Checking services…</span></div>
 </header>
 
 <main id="main" tabindex="-1">
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-copy">
-        <p class="eyebrow">Report a problem in your city</p>
-        <h1>Help us fix your neighbourhood.</h1>
-        <p class="lead">See a pothole, a broken streetlight or a pile of rubbish? Send a photo with a few words. Your complaint is sent to the right municipal team, and you get a tracking ID to follow it.</p>
-        <div class="hero-actions">
-          <button class="primary large" id="startBtn" type="button">Start a complaint</button>
-          <button class="secondary large" id="trackShortcut" type="button">Track an existing complaint</button>
-        </div>
-        <ul class="trust" aria-label="Good to know">
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Just a photo and a few words</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Faces in photos are blurred</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>A person reviews unclear cases</li>
-        </ul>
+  <!-- ===== Sign in / create account (first screen) ===== -->
+  <section class="auth-view" id="authView" aria-labelledby="authTitle">
+    <div class="auth-card">
+      <h1 id="authTitle" class="sr-only">Sign in to PublicFlow</h1>
+      <div class="auth-switch-group" role="tablist" aria-label="Who is signing in">
+        <button class="auth-tab" id="audienceCitizen" type="button" role="tab" aria-selected="true" aria-controls="citizenForms">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          Citizen
+        </button>
+        <button class="auth-tab" id="audienceStaff" type="button" role="tab" aria-selected="false" aria-controls="staffForms" tabindex="-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg>
+          Staff
+        </button>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <svg viewBox="0 0 380 400">
-          <circle cx="190" cy="205" r="160" fill="#ffffff" fill-opacity=".07"/>
-          <rect x="108" y="34" width="164" height="332" rx="28" fill="#ffffff"/>
-          <rect x="119" y="56" width="142" height="288" rx="18" fill="#eaf1ff"/>
-          <rect x="132" y="72" width="116" height="104" rx="10" fill="#cbd5e1"/>
-          <path d="M132 176 154 112h72l22 64z" fill="#64748b"/>
-          <path d="M190 112v64" stroke="#e2e8f0" stroke-width="3" stroke-dasharray="8 7"/>
-          <ellipse cx="190" cy="152" rx="24" ry="9" fill="#1e293b"/>
-          <path d="M190 78c-11 0-19 8-19 18 0 13 19 30 19 30s19-17 19-30c0-10-8-18-19-18z" fill="#f43f5e"/><circle cx="190" cy="96" r="6.5" fill="#fff"/>
-          <rect x="132" y="190" width="104" height="9" rx="4.5" fill="#94a3b8"/>
-          <rect x="132" y="208" width="82" height="9" rx="4.5" fill="#cbd5e1"/>
-          <rect x="132" y="240" width="116" height="36" rx="11" fill="#1e40af"/>
-          <rect x="161" y="255" width="58" height="7" rx="3.5" fill="#fff"/>
-          <rect x="228" y="82" width="120" height="58" rx="14" fill="#ffffff"/>
-          <rect x="240" y="95" width="48" height="8" rx="4" fill="#94a3b8"/><rect x="240" y="112" width="86" height="10" rx="5" fill="#1e40af"/>
-          <circle cx="262" cy="312" r="30" fill="#16a34a" stroke="#fff" stroke-width="6"/>
-          <path d="m248 313 10 10 19-21" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+
+      <div class="auth-notice" id="authNotice" role="status" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        <span id="authNoticeText"></span>
+        <button class="auth-notice-close" id="authNoticeClose" type="button" aria-label="Dismiss message">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+
+      <!-- ===== Citizen ===== -->
+      <div id="citizenForms" role="tabpanel" aria-labelledby="audienceCitizen">
+        <form id="loginForm" novalidate>
+          <h2 class="auth-title">Sign in</h2>
+          <p class="hint">Use your national ID card number (CIN) to file a complaint and follow it until the work is done.</p>
+          <div id="loginError" class="alert error" role="alert" hidden></div>
+          <div class="field">
+            <label class="field-label" for="loginCin">CIN</label>
+            <input class="text-input" id="loginCin" name="cin" inputmode="numeric" autocomplete="username" maxlength="8" pattern="0[0-9]{7}"
+                   required aria-describedby="loginCinError" placeholder="Enter your CIN">
+            <p class="field-error" id="loginCinError"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="loginPassword">Password</label>
+            <input class="text-input" id="loginPassword" name="password" type="password" autocomplete="current-password" required aria-describedby="loginPasswordError">
+            <button class="eye-toggle" type="button" data-target="loginPassword" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Show password</span>
+            </button>
+            <p class="field-error" id="loginPasswordError"></p>
+          </div>
+          <p class="auth-switch">Don't have an account? <a href="#register" id="toRegister">Create an account</a></p>
+          <button class="primary large full" type="submit">Sign in</button>
+        </form>
+
+        <form id="registerForm" novalidate hidden>
+          <h2 class="auth-title">Create an account</h2>
+          <p class="hint">Your CIN is stored only as a protected fingerprint on this computer. It is never added to your complaints or sent to the processing system.</p>
+          <div id="registerError" class="alert error" role="alert" hidden></div>
+          <div class="field">
+            <label class="field-label" for="registerCin">CIN</label>
+            <input class="text-input" id="registerCin" name="cin" inputmode="numeric" autocomplete="username" maxlength="8" pattern="0[0-9]{7}"
+                   required aria-describedby="registerCinHint registerCinError" placeholder="Enter your CIN">
+            <p class="hint" id="registerCinHint">8 digits, starting with 0.</p>
+            <p class="field-error" id="registerCinError"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="registerPassword">Password</label>
+            <input class="text-input" id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="8" required aria-describedby="registerPasswordHint registerPasswordError">
+            <button class="eye-toggle" type="button" data-target="registerPassword" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Show password</span>
+            </button>
+            <p class="hint" id="registerPasswordHint">At least 8 characters. It cannot be recovered, so keep it safe.</p>
+            <p class="field-error" id="registerPasswordError"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="registerConfirm">Confirm password</label>
+            <input class="text-input" id="registerConfirm" name="confirm" type="password" autocomplete="new-password" required aria-describedby="registerConfirmError">
+            <p class="field-error" id="registerConfirmError"></p>
+          </div>
+          <p class="auth-switch">Already have an account? <a href="#signin" id="toLogin">Sign in</a></p>
+          <button class="primary large full" type="submit">Create account</button>
+        </form>
+      </div>
+
+      <!-- ===== Staff: municipalities, STEG, SONEDE and the maintenance administrator ===== -->
+      <div id="staffForms" role="tabpanel" aria-labelledby="audienceStaff" hidden>
+        <form id="staffLoginForm" novalidate>
+          <h2 class="auth-title">Staff sign in</h2>
+          <p class="hint">Municipalities, STEG, SONEDE and the maintenance administrator.</p>
+          <div id="staffBootstrap" class="alert warning" role="status" hidden>No administrator exists yet. <a href="http://127.0.0.1:8091/login">Create the administrator account</a> first.</div>
+          <div id="staffLoginError" class="alert error" role="alert" hidden></div>
+          <div class="field">
+            <label class="field-label" for="staffUsername">Username</label>
+            <input class="text-input" id="staffUsername" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required aria-describedby="staffUsernameError" placeholder="Enter your username">
+            <p class="field-error" id="staffUsernameError"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="staffPassword">Password</label>
+            <input class="text-input" id="staffPassword" name="password" type="password" autocomplete="current-password" required aria-describedby="staffPasswordError">
+            <button class="eye-toggle" type="button" data-target="staffPassword" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Show password</span>
+            </button>
+            <p class="field-error" id="staffPasswordError"></p>
+          </div>
+          <p class="auth-switch">No staff account? <a href="#staff-register" id="toStaffRegister">Request an account</a></p>
+          <button class="primary large full" type="submit">Sign in</button>
+          <p class="hint auth-footnote">Forgot your password? Ask the maintenance administrator to reset it.</p>
+        </form>
+
+        <form id="staffRegisterForm" novalidate hidden>
+          <h2 class="auth-title">Request a staff account</h2>
+          <p class="hint">Your account stays inactive until the maintenance administrator approves it.</p>
+          <div id="staffRegisterError" class="alert error" role="alert" hidden></div>
+          <div class="field">
+            <label class="field-label" for="staffRole">You work for</label>
+            <select class="text-input" id="staffRole" name="role" required>
+              <option value="MUNICIPALITY">A municipality</option>
+              <option value="UTILITY">STEG or SONEDE</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="staffOrg">Organisation</label>
+            <select class="text-input" id="staffOrg" name="organisation" required aria-describedby="staffOrgError"></select>
+            <p class="field-error" id="staffOrgError"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="staffName">Full name</label>
+            <input class="text-input" id="staffName" name="display_name" autocomplete="name" maxlength="100" required aria-describedby="staffNameError">
+            <p class="field-error" id="staffNameError"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="staffNote">Department and job title</label>
+            <input class="text-input" id="staffNote" name="request_note" maxlength="300" required aria-describedby="staffNoteHint staffNoteError">
+            <p class="hint" id="staffNoteHint">For example: roads department, team leader. The administrator uses it to check your request.</p>
+            <p class="field-error" id="staffNoteError"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="staffNewUsername">Username</label>
+            <input class="text-input" id="staffNewUsername" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required aria-describedby="staffNewUsernameHint staffNewUsernameError">
+            <p class="hint" id="staffNewUsernameHint">3 to 32 characters: lowercase letters, digits, dot, dash or underscore.</p>
+            <p class="field-error" id="staffNewUsernameError"></p>
+          </div>
+          <div class="field">
+            <label class="field-label" for="staffNewPassword">Password</label>
+            <input class="text-input" id="staffNewPassword" name="password" type="password" autocomplete="new-password" minlength="10" required aria-describedby="staffNewPasswordHint staffNewPasswordError">
+            <button class="eye-toggle" type="button" data-target="staffNewPassword" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>Show password</span>
+            </button>
+            <p class="hint" id="staffNewPasswordHint">At least 10 characters.</p>
+            <p class="field-error" id="staffNewPasswordError"></p>
+          </div>
+          <p class="auth-switch">Already have a staff account? <a href="#staff" id="toStaffLogin">Sign in</a></p>
+          <button class="primary large full" type="submit">Send request</button>
+        </form>
       </div>
     </div>
-    <svg class="skyline" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 120V80h70V45h50v40h70V25h50v45h60v25h80V50h50V20h40v40h70v30h80V40h60v35h70V30h50v35h80v25h80V50h50V15h40v55h70v15h80v35z" fill="#ffffff" fill-opacity=".07"/></svg>
   </section>
 
-  <div class="wrap">
-    <section class="cats-section" id="cats" aria-labelledby="catsTitle">
-      <h2 id="catsTitle" class="section-heading">What can you report?</h2>
-      <p class="section-sub">Our system recognises these four types from your photo or video. Anything else is sent to a municipal agent for review.</p>
-      <ul class="cats">
-        <li><span class="cat-icon cat-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21 9 3M18 21 15 3M12 6v2.5M12 12v2.5M12 18v2"/></svg></span><span><b>Roads and potholes</b>Cracks, holes and damaged surfaces</span></li>
-        <li><span class="cat-icon cat-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21h6M12 21V10M7 10a5 5 0 0 1 10 0z"/><path d="M12 3V2M4.5 5.5 3.7 4.7M19.5 5.5l.8-.8"/></svg></span><span><b>Streetlights</b>Lamps that are broken or flickering</span></li>
-        <li><span class="cat-icon cat-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></span><span><b>Waste</b>Rubbish piles and overflowing bins</span></li>
-        <li><span class="cat-icon cat-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6.5 6.5 6.5 11.5a6.5 6.5 0 0 1-13 0C5.5 9.5 12 3 12 3z"/><path d="M9 15a3 3 0 0 0 3 3"/></svg></span><span><b>Water leaks</b>Visible leaks in streets and pipes</span></li>
-      </ul>
+  <!-- ===== Complaint space (after sign-in) ===== -->
+  <div class="app-view" id="appView" hidden>
+    <section class="space-head">
+      <div class="wrap">
+        <p class="eyebrow">Your complaint space</p>
+        <h1 id="spaceTitle" tabindex="-1">Report a problem in your city</h1>
+        <p class="lead">Send a photo and a few words. Your municipality checks the complaint and assigns it to the right team: municipal services, STEG or SONEDE. You can follow every step here.</p>
+      </div>
     </section>
 
-    <div class="col">
-      <div class="tabs" role="tablist" aria-label="Portal sections">
-        <button class="tab" id="tabReport" type="button" role="tab" aria-selected="true" aria-controls="panelReport">New complaint</button>
-        <button class="tab" id="tabTrack" type="button" role="tab" aria-selected="false" aria-controls="panelTrack" tabindex="-1">Track a complaint</button>
-      </div>
-
-      <!-- ===== New complaint ===== -->
-      <div id="panelReport" role="tabpanel" aria-labelledby="tabReport">
-        <div id="readinessAlert" class="alert warning readiness-alert" role="status" hidden></div>
-
-        <section class="panel">
-          <div class="panel-body">
-            <form id="reportForm" novalidate>
-              <fieldset id="fields">
-
-                <div class="step">
-                  <div class="step-head"><span class="step-no" aria-hidden="true">1</span><div><h2>What is the problem?</h2><p>Tell us what you see. Please leave out names, phone numbers and other personal details.</p></div></div>
-                  <div class="field">
-                    <label class="field-label" for="description">Description <span class="tag required" id="descriptionTag">Required with a photo, unless you add a voice note</span></label>
-                    <textarea id="description" name="description" maxlength="3000" aria-describedby="descriptionCount" placeholder="Example: The road surface is badly cracked, with loose pieces of asphalt near the bus stop."></textarea>
-                    <div class="counter"><span id="descriptionCount">0</span> / 3000</div>
-                  </div>
-                  <div class="field">
-                    <label class="field-label" for="address">Where is it? <span class="tag">Optional</span></label>
-                    <input class="text-input" id="address" name="address" maxlength="300" autocomplete="off" aria-describedby="addressHint" placeholder="Street, neighbourhood or landmark, if you know it">
-                    <p class="hint" id="addressHint">The location is never guessed from your photo. Only what you type here is used.</p>
-                  </div>
-                </div>
-
-                <div class="step">
-                  <div class="step-head"><span class="step-no" aria-hidden="true">2</span><div><h2>Add your evidence</h2><p>Choose one: a photo (with a description or a voice note) or a single video.</p></div></div>
-                  <div class="segmented" role="radiogroup" aria-label="Evidence type">
-                    <label class="segment"><input type="radio" name="evidenceType" value="photo" id="typePhoto" checked><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg>Photo</span></label>
-                    <label class="segment"><input type="radio" name="evidenceType" value="video" id="typeVideo"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg>Video</span></label>
-                  </div>
-
-                  <div class="upload-grid" id="photoGroup">
-                    <label class="upload-card" for="image" id="imageCard">
-                      <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add a photo">
-                      <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span>
-                      <span><span class="upload-title">Photo <span class="tag required">Required</span></span><span class="upload-desc" id="imageName">JPG, PNG or WEBP · up to 10 MB</span></span>
-                    </label>
-                    <label class="upload-card" for="audio" id="audioCard">
-                      <input id="audio" name="audio" type="file" accept="audio/*" aria-label="Add a voice note">
-                      <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
-                      <span><span class="upload-title">Voice note <span class="tag">Optional</span></span><span class="upload-desc" id="audioName">Replaces the written description · up to 2 min, 30 MB</span></span>
-                    </label>
-                  </div>
-
-                  <div class="upload-grid single" id="videoGroup" hidden>
-                    <label class="upload-card" for="video" id="videoCard">
-                      <input id="video" name="video" type="file" accept="video/*" aria-label="Add a video">
-                      <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg></span>
-                      <span><span class="upload-title">Video <span class="tag required">Required</span></span><span class="upload-desc" id="videoName">MP4, WEBM or MOV · up to 1 min, 50 MB</span></span>
-                    </label>
-                  </div>
-
-                  <div id="preview" class="preview" hidden></div>
-                </div>
-
-                <div class="step">
-                  <div class="step-head"><span class="step-no" aria-hidden="true">3</span><div><h2>Send your complaint</h2><p>Processing starts right away and usually takes a few minutes. Please send it only once.</p></div></div>
-                  <div class="actions">
-                    <button class="primary large" id="submitBtn" type="submit">Send complaint</button>
-                    <button class="secondary" id="resetBtn" type="reset">Clear form</button>
-                  </div>
-                </div>
-
-              </fieldset>
-            </form>
-            <div id="formError" class="alert error" role="alert" hidden></div>
-            <div id="loading" class="loading" role="status"><span class="spinner" aria-hidden="true"></span><span id="loadingText">Processing your complaint…</span></div>
-          </div>
-        </section>
-
-        <section class="panel result-wrap" id="resultWrap" aria-live="polite">
-          <div class="result-head">
-            <div><h2 id="resultTitle">Processing your complaint</h2><p id="reference"></p></div>
-            <span id="globalBadge" class="badge processing">Processing</span>
-          </div>
-          <div class="result-body" id="resultBody"></div>
-        </section>
-      </div>
-
-      <!-- ===== Track a complaint ===== -->
-      <div id="panelTrack" role="tabpanel" aria-labelledby="tabTrack" hidden>
-        <section class="panel track-panel">
-          <div class="panel-body">
-            <h2>Track a complaint</h2>
-            <p class="hint">Enter the tracking ID you received when your complaint was saved. It looks like <code>3f2a1c4e-…</code> and contains 36 characters.</p>
-            <form id="trackForm" class="track-form" novalidate>
-              <label class="sr-only" for="trackId">Tracking ID</label>
-              <input class="text-input" id="trackId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" maxlength="36" autocomplete="off" spellcheck="false">
-              <button class="primary" id="trackBtn" type="submit">Check status</button>
-            </form>
-            <div id="trackError" class="alert error" role="alert" hidden></div>
-            <div id="trackResult" class="track-result" aria-live="polite"></div>
-          </div>
-        </section>
-      </div>
-    </div>
-
-    <section class="after" id="after" aria-labelledby="nextTitle">
-      <h2 id="nextTitle" class="section-heading">What happens after you send it</h2>
-      <p class="section-sub">From your phone to the right municipal team, in four steps.</p>
-      <ol class="how">
-        <li><div><b>We prepare it</b><p>Text and voice notes are transcribed, photos are checked and faces are blurred.</p></div></li>
-        <li><div><b>We analyse the photo</b><p>The problem type and how serious it looks are identified and verified.</p></div></li>
-        <li><div><b>We route it</b><p>Your complaint goes to the right department with the municipal procedure that applies.</p></div></li>
-        <li><div><b>You get a tracking ID</b><p>The complaint is saved and you can follow its status at any time.</p></div></li>
-      </ol>
-      <div class="tips-box">
-        <h3>Tips for a good complaint</h3>
-        <ul class="tips">
-          <li>Take the photo in daylight and close enough to show the damage clearly.</li>
-          <li>Keep people, licence plates and house numbers out of the frame when you can.</li>
-          <li>Mention the street or a nearby landmark so the team can find the spot.</li>
-          <li>If a complaint is unclear, it is not dropped: a municipal agent reviews it.</li>
+    <div class="wrap">
+      <section class="cats-section" id="cats" aria-labelledby="catsTitle">
+        <h2 id="catsTitle" class="section-heading">What can you report?</h2>
+        <p class="section-sub">The system recognises these four types from your photo or video. Anything else is reviewed by an agent of your municipality.</p>
+        <ul class="cats">
+          <li><span class="cat-icon cat-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21 9 3M18 21 15 3M12 6v2.5M12 12v2.5M12 18v2"/></svg></span><span><b>Roads and potholes</b>Cracks, holes and damaged surfaces · municipal services</span></li>
+          <li><span class="cat-icon cat-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21h6M12 21V10M7 10a5 5 0 0 1 10 0z"/><path d="M12 3V2M4.5 5.5 3.7 4.7M19.5 5.5l.8-.8"/></svg></span><span><b>Street lighting</b>Lamps that are off or flickering · STEG</span></li>
+          <li><span class="cat-icon cat-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13M10 11v6M14 11v6"/></svg></span><span><b>Waste</b>Rubbish piles and overflowing bins · municipal services</span></li>
+          <li><span class="cat-icon cat-cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3s6.5 6.5 6.5 11.5a6.5 6.5 0 0 1-13 0C5.5 9.5 12 3 12 3z"/><path d="M9 15a3 3 0 0 0 3 3"/></svg></span><span><b>Water leaks</b>Visible leaks in streets and pipes · SONEDE</span></li>
         </ul>
+      </section>
+
+      <div class="col">
+        <div class="tabs" role="tablist" aria-label="Complaint space">
+          <button class="tab" id="tabReport" type="button" role="tab" aria-selected="true" aria-controls="panelReport">New complaint</button>
+          <button class="tab" id="tabMine" type="button" role="tab" aria-selected="false" aria-controls="panelMine" tabindex="-1">My complaints</button>
+          <button class="tab" id="tabTrack" type="button" role="tab" aria-selected="false" aria-controls="panelTrack" tabindex="-1">Track a complaint</button>
+        </div>
+
+        <!-- ===== New complaint ===== -->
+        <div id="panelReport" role="tabpanel" aria-labelledby="tabReport">
+          <div id="readinessAlert" class="alert warning readiness-alert" role="status" hidden></div>
+          <section class="panel">
+            <div class="panel-body">
+              <form id="reportForm" novalidate>
+                <fieldset id="fields">
+                  <div class="step">
+                    <div class="step-head"><span class="step-no" aria-hidden="true">1</span><div><h2>What is the problem?</h2><p>Tell us what you see. Please leave out names, phone numbers and other personal details.</p></div></div>
+                    <div class="field">
+                      <label class="field-label" for="description">Description <span class="tag required" id="descriptionTag">Required with a photo, unless you add a voice note</span></label>
+                      <textarea id="description" name="description" maxlength="3000" aria-describedby="descriptionCount" placeholder="Example: The road surface is badly cracked, with loose pieces of asphalt near the bus stop."></textarea>
+                      <div class="counter"><span id="descriptionCount">0</span> / 3000</div>
+                    </div>
+                    <div class="field">
+                      <label class="field-label" for="commune">Your municipality <span class="tag required">Required</span></label>
+                      <select class="text-input" id="commune" name="commune" required aria-describedby="communeHint"><option value="COMMUNE_TUNIS">Municipality of Tunis</option></select>
+                      <p class="hint" id="communeHint">Your municipality follows the complaint until the work is done.</p>
+                    </div>
+                    <div class="field">
+                      <label class="field-label" for="address">Where is it? <span class="tag">Optional</span></label>
+                      <input class="text-input" id="address" name="address" maxlength="300" autocomplete="off" aria-describedby="addressHint" placeholder="Street, neighbourhood or landmark, if you know it">
+                      <p class="hint" id="addressHint">The location is never guessed from your photo. Only what you type here is used.</p>
+                    </div>
+                  </div>
+
+                  <div class="step">
+                    <div class="step-head"><span class="step-no" aria-hidden="true">2</span><div><h2>Add your evidence</h2><p>Choose one: a photo (with a description or a voice note) or a single video.</p></div></div>
+                    <div class="segmented" role="radiogroup" aria-label="Evidence type">
+                      <label class="segment"><input type="radio" name="evidenceType" value="photo" id="typePhoto" checked><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg>Photo</span></label>
+                      <label class="segment"><input type="radio" name="evidenceType" value="video" id="typeVideo"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg>Video</span></label>
+                    </div>
+                    <div class="upload-grid" id="photoGroup">
+                      <label class="upload-card" for="image" id="imageCard">
+                        <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add a photo">
+                        <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg></span>
+                        <span><span class="upload-title">Photo <span class="tag required">Required</span></span><span class="upload-desc" id="imageName">JPG, PNG or WEBP · up to 10 MB</span></span>
+                      </label>
+                      <label class="upload-card" for="audio" id="audioCard">
+                        <input id="audio" name="audio" type="file" accept="audio/*" aria-label="Add a voice note">
+                        <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+                        <span><span class="upload-title">Voice note <span class="tag">Optional</span></span><span class="upload-desc" id="audioName">Replaces the written description · up to 2 min, 30 MB</span></span>
+                      </label>
+                    </div>
+                    <div class="upload-grid single" id="videoGroup" hidden>
+                      <label class="upload-card" for="video" id="videoCard">
+                        <input id="video" name="video" type="file" accept="video/*" aria-label="Add a video">
+                        <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3z"/></svg></span>
+                        <span><span class="upload-title">Video <span class="tag required">Required</span></span><span class="upload-desc" id="videoName">MP4, WEBM or MOV · up to 1 min, 50 MB</span></span>
+                      </label>
+                    </div>
+                    <div id="preview" class="preview" hidden></div>
+                  </div>
+
+                  <div class="step">
+                    <div class="step-head"><span class="step-no" aria-hidden="true">3</span><div><h2>Send your complaint</h2><p>Processing starts right away and usually takes a few minutes. Please send it only once.</p></div></div>
+                    <div class="actions">
+                      <button class="primary large" id="submitBtn" type="submit">Send complaint</button>
+                      <button class="secondary" id="resetBtn" type="reset">Clear form</button>
+                    </div>
+                  </div>
+                </fieldset>
+              </form>
+              <div id="formError" class="alert error" role="alert" hidden></div>
+              <div id="loading" class="loading" role="status"><span class="spinner" aria-hidden="true"></span><span id="loadingText">Processing your complaint…</span></div>
+            </div>
+          </section>
+
+          <section class="panel result-wrap" id="resultWrap" aria-live="polite">
+            <div class="result-head">
+              <div><h2 id="resultTitle">Processing your complaint</h2><p id="reference"></p></div>
+              <span id="globalBadge" class="badge processing">Processing</span>
+            </div>
+            <div class="result-body" id="resultBody"></div>
+          </section>
+        </div>
+
+        <!-- ===== My complaints ===== -->
+        <div id="panelMine" role="tabpanel" aria-labelledby="tabMine" hidden>
+          <section class="panel">
+            <div class="panel-body">
+              <div class="status-row"><h2>My complaints</h2><button class="ghost" id="refreshMine" type="button">Refresh</button></div>
+              <p class="hint">Every complaint you send is listed here with its current status.</p>
+              <div id="myReports"></div>
+            </div>
+          </section>
+        </div>
+
+        <!-- ===== Track a complaint ===== -->
+        <div id="panelTrack" role="tabpanel" aria-labelledby="tabTrack" hidden>
+          <section class="panel track-panel">
+            <div class="panel-body">
+              <h2>Track a complaint</h2>
+              <p class="hint">Enter the tracking ID you received when your complaint was saved. It looks like <code>3f2a1c4e-…</code> and contains 36 characters.</p>
+              <form id="trackForm" class="track-form" novalidate>
+                <label class="sr-only" for="trackId">Tracking ID</label>
+                <input class="text-input" id="trackId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" maxlength="36" autocomplete="off" spellcheck="false">
+                <button class="primary" id="trackBtn" type="submit">Check status</button>
+              </form>
+              <div id="trackError" class="alert error" role="alert" hidden></div>
+              <div id="trackResult" class="track-result" aria-live="polite"></div>
+            </div>
+          </section>
+        </div>
       </div>
-    </section>
+
+      <section class="after" id="after" aria-labelledby="nextTitle">
+        <h2 id="nextTitle" class="section-heading">What happens after you send it</h2>
+        <p class="section-sub">From your phone to the end of the work, in four steps.</p>
+        <ol class="how">
+          <li><div><b>We prepare it</b><p>Text is cleaned, voice notes are transcribed, photos are checked and faces are blurred.</p></div></li>
+          <li><div><b>We analyse it</b><p>The problem type and how serious it looks are identified, then checked by fixed rules.</p></div></li>
+          <li><div><b>Your municipality checks it</b><p>It confirms the complaint and assigns it to its own services, to STEG or to SONEDE.</p></div></li>
+          <li><div><b>You follow the work</b><p>Each step appears here: checked, in progress, resolved.</p></div></li>
+        </ol>
+        <div class="tips-box">
+          <h3>Tips for a good complaint</h3>
+          <ul class="tips">
+            <li>Take the photo in daylight and close enough to show the damage clearly.</li>
+            <li>Keep people, licence plates and house numbers out of the frame when you can.</li>
+            <li>Mention the street or a nearby landmark so the team can find the spot.</li>
+            <li>If a complaint is unclear, it is not dropped: an agent of your municipality reviews it.</li>
+          </ul>
+        </div>
+      </section>
+    </div>
   </div>
 </main>
 
 <footer class="footer">
   <div class="footer-inner">
     <span><b>PublicFlow</b> · University prototype · Runs locally on this computer</span>
-    <a href="/setup">System setup</a>
+    <a href="#staff" id="footerStaff">Staff sign in</a>
   </div>
 </footer>
 </body>

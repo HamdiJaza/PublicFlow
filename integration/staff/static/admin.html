@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f172a">
+  <title>Administration · PublicFlow</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/staff.css">
+  <script src="/static/common.js" defer></script>
+  <script src="/static/admin.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="/admin">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#0369a1"/><path d="M5.5 13.5 16 7l10.5 6.5z" fill="#fff"/><rect x="8.2" y="15" width="3.2" height="8" fill="#fff"/><rect x="14.4" y="15" width="3.2" height="8" fill="#fff"/><rect x="20.6" y="15" width="3.2" height="8" fill="#fff"/><rect x="5.5" y="24.3" width="21" height="2.7" rx="1" fill="#fff"/></svg>
+    <span>PublicFlow<small>Administration and maintenance</small></span>
+  </a>
+  <span class="spacer"></span>
+  <span class="who"><strong id="userName"></strong><span>Maintenance engineer</span></span>
+  <button class="button small" id="logout" type="button">Sign out</button>
+</header>
+
+<main class="admin" id="main" tabindex="-1">
+  <h1>Administration</h1>
+  <p class="muted">Technical configuration of the application. Handling tickets belongs to the municipalities, STEG and SONEDE: this page never shows their content.</p>
+  <div class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" type="button">Overview</button>
+    <button class="tab" role="tab" id="tab-accounts" aria-controls="panel-accounts" aria-selected="false" tabindex="-1" type="button">Accounts <span class="count" id="pendingCount"></span></button>
+    <button class="tab" role="tab" id="tab-communes" aria-controls="panel-communes" aria-selected="false" tabindex="-1" type="button">Organisations</button>
+    <button class="tab" role="tab" id="tab-key" aria-controls="panel-key" aria-selected="false" tabindex="-1" type="button">NVIDIA key</button>
+  </div>
+
+  <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+    <div id="overviewNotice" aria-live="polite"></div>
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <div class="row"><h2>Service status</h2><span class="spacer"></span><button class="button small" id="refreshHealth" type="button">Check</button></div>
+      <ul class="services" id="services"></ul>
+      <p class="muted spaced">Availability only: no AI analysis is started. Detailed runs: <a href="http://127.0.0.1:5679/" rel="noreferrer">n8n editor</a>.</p>
+    </div>
+  </section>
+
+  <section id="panel-accounts" role="tabpanel" aria-labelledby="tab-accounts" hidden>
+    <div id="accountsNotice" aria-live="polite"></div>
+    <div class="card" id="requestsCard" hidden>
+      <h2>Account requests</h2>
+      <p class="muted">Check that the person really works for the stated organisation before approving.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Username</th><th scope="col">Name</th><th scope="col">Organisation</th><th scope="col">Department and job title</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody id="requests"></tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <h2>Accounts</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Username</th><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Organisation</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody id="accounts"></tbody>
+      </table></div>
+    </div>
+    <form class="card" id="accountForm" novalidate>
+      <h2>Create an account</h2>
+      <div class="grid-2">
+        <div class="field"><label for="aUsername">Username</label><input id="aUsername" name="username" required autocapitalize="none" spellcheck="false" autocomplete="off"></div>
+        <div class="field"><label for="aName">Display name</label><input id="aName" name="display_name" required autocomplete="off"></div>
+        <div class="field"><label for="aRole">Role</label>
+          <select id="aRole" name="role" required>
+            <option value="MUNICIPALITY">Municipality (supervises and assigns)</option>
+            <option value="UTILITY">Utility: STEG or SONEDE (does the work)</option>
+            <option value="ADMIN">Administrator (maintenance)</option>
+          </select></div>
+        <div class="field" id="aOrgField"><label for="aOrg">Organisation</label><select id="aOrg" name="organisation" required></select></div>
+      </div>
+      <div class="field">
+        <label for="aPassword">Temporary password</label>
+        <div class="row"><input id="aPassword" name="password" required minlength="10" autocomplete="new-password" class="grow">
+          <button class="button" type="button" id="generate">Generate</button></div>
+        <span class="hint">At least 10 characters. Give it to the person through a safe channel.</span>
+      </div>
+      <p class="field-error" id="accountError" role="alert"></p>
+      <button class="button primary" type="submit">Create account</button>
+    </form>
+  </section>
+
+  <section id="panel-communes" role="tabpanel" aria-labelledby="tab-communes" hidden>
+    <div id="communesNotice" aria-live="polite"></div>
+    <div class="card">
+      <h2>Organisations</h2>
+      <p class="muted">STEG and SONEDE are national. Each municipality sees only its own complaints. The procedure corpus (RAG) currently covers only Commune de Tunis.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th scope="col">Name</th><th scope="col">Code</th><th scope="col">Type</th><th scope="col">Region</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody id="organisations"></tbody>
+      </table></div>
+    </div>
+    <form class="card" id="communeForm" novalidate>
+      <h2>Add a municipality</h2>
+      <div class="grid-2">
+        <div class="field"><label for="cNameEn">Name in English</label><input id="cNameEn" name="name_en" required placeholder="Municipality of La Marsa"></div>
+        <div class="field"><label for="cName">Official name (French)</label><input id="cName" name="name_fr" required placeholder="Commune de La Marsa"></div>
+        <div class="field"><label for="cRegion">Region</label>
+          <select id="cRegion" name="region"><option value="GRAND_TUNIS">Greater Tunis</option><option value="">Other / not specified</option></select></div>
+        <div class="field"><label for="cCode">Code</label><input id="cCode" name="code" required class="mono" aria-describedby="cCodeHint">
+          <span class="hint" id="cCodeHint">Generated from the name, can be edited. Format: COMMUNE_LA_MARSA.</span></div>
+      </div>
+      <p class="field-error" id="communeError" role="alert"></p>
+      <button class="button primary" type="submit">Add municipality</button>
+    </form>
+  </section>
+
+  <section id="panel-key" role="tabpanel" aria-labelledby="tab-key" hidden>
+    <form class="card" id="keyForm" novalidate>
+      <h2>NVIDIA API key (Intake agent and translation)</h2>
+      <p>The Intake agent (text cleaning, transcription) and the translation service use models hosted by NVIDIA. The key is encrypted for this Windows account (DPAPI) and is never shown again.</p>
+      <div id="keyNotice" aria-live="polite"></div>
+      <div class="field"><label for="key">API key</label><input id="key" name="key" type="password" autocomplete="off" required spellcheck="false" aria-describedby="keyHint">
+        <span class="hint" id="keyHint">Starts with nvapi-. Refused while a complaint is being processed.</span></div>
+      <button class="button primary" type="submit">Save key</button>
+    </form>
+  </section>
+
+  <dialog id="passwordDialog" aria-labelledby="pwTitle">
+    <form method="dialog" id="passwordForm" novalidate>
+      <h2 id="pwTitle">New password</h2>
+      <p id="pwFor" class="muted"></p>
+      <div class="field"><label for="pwValue">Temporary password</label><input id="pwValue" minlength="10" required autocomplete="new-password"></div>
+      <p class="field-error" id="pwError" role="alert"></p>
+      <div class="row"><button class="button primary" value="save" type="submit">Save</button><button class="button" value="cancel" type="button" id="pwCancel">Cancel</button></div>
+    </form>
+  </dialog>
+</main>
+</body>
+</html>

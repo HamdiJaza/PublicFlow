@@ -1,0 +1,10 @@
+Broken pipe and water on the road (synthetic image)
+
+Evidence type: Photo
+File(s) to upload: photo.jpg
+Your municipality: Municipality of Tunis
+Where is it?: Rue de Rome, corner with Avenue de Paris
+Description: paste description.txt
+
+Expected result:
+Water leak, proposed to SONEDE.

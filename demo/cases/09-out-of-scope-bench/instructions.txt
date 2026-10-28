@@ -1,0 +1,10 @@
+Broken public bench, a type the system does not handle (synthetic image)
+
+Evidence type: Photo
+File(s) to upload: photo.jpg
+Your municipality: Municipality of Tunis
+Where is it?: Place Pasteur
+Description: paste description.txt
+
+Expected result:
+Not one of the four handled types: the ticket needs review and the municipality decides.

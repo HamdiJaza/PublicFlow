@@ -94,7 +94,7 @@ def main():
                 add(source, source.relative_to(ROOT))
     for filename in ('Start_NVIDIA_Intake.ps1', 'assets.lock.json', 'requirements-nvidia.txt'):
         add(ROOT / 'intake-agent' / filename, Path('intake-agent') / filename)
-    for part in ('intake-integration', 'vision-integration', 'knowledge-integration', 'completion-integration'):
+    for part in ('intake-integration', 'vision-integration', 'knowledge-integration', 'completion-integration', 'staff-integration'):
         for source in walk(ROOT / 'n8n' / part):
             if source.suffix in {'.py', '.js', '.mjs', '.md'}:
                 add(source, source.relative_to(ROOT))
@@ -112,8 +112,9 @@ def main():
             raise RuntimeError('Original RAG delivery changed: ' + record['path'])
         add(ROOT / rag / record['path'], rag / record['path'])
     add(ROOT / rag / 'PACKAGE_CONTENTS.json', rag / 'PACKAGE_CONTENTS.json')
-    for name in ('road-damage.jpg', 'description.txt'):
+    for name in ('road-damage.jpg', 'description.txt', 'README.md', 'make_demo_cases.py'):
         add(ROOT / 'demo' / name, Path('demo') / name)
+    tree(ROOT / 'demo/cases')  # ready-made test complaints (photos, videos, voice note)
     add(ROOT / 'distribution/Start_MunicipaliteAuto.cmd', 'Start_MunicipaliteAuto.cmd')
     add(ROOT / 'distribution/README.txt', 'READ_ME_FIRST.txt')
 

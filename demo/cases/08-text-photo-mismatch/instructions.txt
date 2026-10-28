@@ -1,0 +1,10 @@
+Text does not match the photo (test of the policy gate)
+
+Evidence type: Photo
+File(s) to upload: photo.jpg
+Your municipality: Municipality of Tunis
+Where is it?: Rue de Rome
+Description: paste description.txt
+
+Expected result:
+Needs review: the image shows a street lamp, the text describes a water leak (IMAGE_TEXT_MISMATCH_OR_UNCLEAR).

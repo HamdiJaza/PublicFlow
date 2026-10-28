@@ -1,0 +1,13 @@
+Rubbish photo with a voice note instead of text
+
+Evidence type: Photo + voice note
+File(s) to upload: photo.jpg, voice.wav
+Your municipality: Municipality of Ben Arous
+Where is it?: (leave empty)
+Description: (leave empty)
+
+Expected result:
+The voice note is transcribed by the Intake agent and replaces the description. Waste, municipal services.
+
+What the voice note says (synthetic voice):
+Hello. Rubbish bags are piled up around the bin next to the market. Nobody has collected them for days.
