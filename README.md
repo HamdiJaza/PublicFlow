@@ -6,7 +6,7 @@
 This is a university project (Advanced Deep Learning) built by a team of five students. It demonstrates **multimodal AI, prompt engineering, RAG (Retrieval-Augmented Generation), multi-agent orchestration, workflow automation, deterministic validation and human review**.
 
 <p align="center">
-  <img src="docs/images/portal-landing.png" alt="PublicFlow citizen portal landing page" width="900">
+  <img src="docs/images/portal-sign-in.png" alt="PublicFlow sign-in screen for citizens and staff" width="900">
 </p>
 
 > **Status:** a local demonstration. It has run end to end with real AI models and saved real database tickets. It is **not** a production system. See [Current status and limitations](#14-current-status-and-limitations) for an honest list of what is missing.
@@ -40,17 +40,17 @@ Imagine you see a pothole. Today you would have to find the right office, descri
 
 With PublicFlow:
 
-1. A citizen opens a web page and uploads a **photo** (or a video, or a photo plus a voice note) with a few words.
+1. A citizen signs in with their national ID card number (CIN), then uploads a **photo** (or a video, or a photo plus a voice note) with a few words.
 2. Three specialised **AI agents** read the report one after another: **Intake** (prepares and protects it), **Vision** (looks at the photo), **Knowledge** (finds the municipal procedure).
-3. Strict, non-AI **policy gates** check each agent's work. A fixed **router** picks the department.
+3. Strict, non-AI **policy gates** check each agent's work. A fixed **router** picks the department and proposes who does the work: the municipality's own services, **STEG** or **SONEDE**.
 4. The system saves a **ticket** in PostgreSQL and gives the citizen a **tracking ID**.
 
-When the AI is unsure, the system does **not** guess. It saves the ticket for **human review**.
+When the AI is unsure, the system does **not** guess. It saves the ticket for **human review** in the staff console, where the municipality checks it, corrects it and assigns the work.
 
 | Who | What they get |
 |---|---|
-| **Citizen** | One page: add evidence, write a few words, get a tracking ID and follow the status. |
-| **Municipality** | A structured ticket: category, severity, department, priority, and the applicable procedure with its sources. |
+| **Citizen** | Sign in, add evidence, write a few words, get a tracking ID and follow every step of the work. |
+| **Municipality, STEG, SONEDE** | A structured ticket in a staff console: category, severity, department, priority and the applicable procedure with its sources; the municipality reviews and assigns, STEG and SONEDE report the work. |
 | **Trust and safety** | Uncertain cases go to review. Nothing is invented: no made-up procedure, category or location. |
 
 **Problems it recognises today (four types):** road damage and potholes, broken streetlights, waste accumulation, and water leaks. Anything else (for example damaged public property) is not classified automatically and is sent to a municipal agent for review.
@@ -59,15 +59,19 @@ When the AI is unsure, the system does **not** guess. It saves the ticket for **
 
 ## 2. See it in action: how a citizen files a complaint
 
-### Step 0: open the portal
+### Step 0: sign in
 
-The citizen opens `http://127.0.0.1:8090/`. The header shows a live **service status** (all agents and the database must be reachable). The page lists the four problem types the system recognises.
+The citizen opens `http://127.0.0.1:8090/`. The first screen is a **sign-in page shared by citizens and staff**, with two tabs. A citizen signs in with the **CIN** (exactly 8 digits, starting with 0) and a password, or creates an account with the link above the sign-in button. Staff use the second tab; a new staff account stays inactive until the maintenance administrator approves it. The header shows a live **service status**.
+
+<p align="center"><img src="docs/images/portal-sign-in-tabs.png" alt="Citizen and Staff tabs of the sign-in screen" width="620"></p>
+
+After signing in, the citizen lands in the complaint space, which lists the four problem types the system recognises and who handles each one.
 
 <p align="center"><img src="docs/images/portal-problem-types.png" alt="The four problem types the system recognises" width="900"></p>
 
 ### Step 1: describe the problem
 
-The form has three steps. In **step 1** the citizen writes what they see (up to 3,000 characters) and, optionally, where it is (a street, neighbourhood or landmark). The location is **never guessed from the photo**: only what the citizen types is used. The page asks citizens to leave out names and phone numbers.
+The form has three steps. In **step 1** the citizen writes what they see (up to 3,000 characters), chooses the **municipality** (Tunis, Ariana or Ben Arous, in Greater Tunis) and, optionally, where it is (a street, neighbourhood or landmark). The location is **never guessed from the photo**: only what the citizen types is used. The page asks citizens to leave out names and phone numbers.
 
 ### Step 2: add the evidence
 
@@ -88,13 +92,13 @@ The citizen clicks **Send complaint**. The page then shows a progress message wi
 
 The portal is responsive (checked down to a 320 px screen width), has keyboard-accessible tabs, visible focus rings and respects reduced-motion settings.
 
-<p align="center"><img src="docs/images/portal-mobile.png" alt="The portal on a phone" width="260"></p>
+<p align="center"><img src="docs/images/portal-mobile.png" alt="The sign-in screen on a phone" width="260"></p>
 
 ---
 
 ## 3. What the citizen gets back
 
-When processing finishes, the page shows the **decision**, the **tracking ID** and what the system understood. The example below is a **real run** (a photo of damaged asphalt):
+When processing finishes, the page shows the **decision**, the **tracking ID** and what the system understood. The example below is a **real run** from 28 October 2026 (a photo of a broken street lamp). Vision was not certain, so the result is REVIEW and the Knowledge Agent was not called:
 
 <p align="center"><img src="docs/images/portal-result.png" alt="Result page after processing a complaint" width="800"></p>
 
@@ -119,13 +123,19 @@ Key things on this page:
 
 Ticket statuses stored in the database: `OPEN`, `NEEDS_REVIEW`, `IN_PROGRESS`, `RESOLVED`, `REJECTED`. The system **never silently continues** when something is uncertain.
 
+### My complaints
+
+The **My complaints** tab lists only the signed-in citizen's own complaints, read from PostgreSQL, with a status written for citizens.
+
+<p align="center"><img src="docs/images/portal-my-complaints.png" alt="The citizen's list of their own complaints" width="650"></p>
+
 ### Tracking a complaint later
 
-The **Track a complaint** tab takes the tracking ID and reads the ticket back from PostgreSQL (through an n8n webhook). It works even after the services restart, because the ticket is stored in the database, not in the page.
+The **Track a complaint** tab takes the tracking ID and reads the ticket back from PostgreSQL (through an n8n webhook). It shows who is in charge and a **history** of every step, with the public message left by the team. Below, the same street-lamp ticket after the Municipality of Tunis assigned it to STEG and STEG repaired it.
 
-<p align="center"><img src="docs/images/portal-track.png" alt="Tracking a complaint by ID" width="650"></p>
+<p align="center"><img src="docs/images/portal-track.png" alt="Tracking a complaint by ID, with its history" width="650"></p>
 
-> The summary in this screenshot is in French because the Intake Agent normalises text into French for the downstream agents.
+> The summary is shown in English: it is a machine translation of the Intake Agent's French summary, labelled as such. The gates and the ticket keep the original French text.
 
 ### After sending: what happens next
 
@@ -192,11 +202,11 @@ sequenceDiagram
 
 ### The n8n workflow
 
-The full workflow, `municipalCompletionDev`, has **62 nodes and 72 connections**: 30 Code nodes (gates and rules), 15 IF branches, 11 HTTP calls to the agents, 2 webhooks, 2 responses and 2 PostgreSQL nodes. Videos are analysed frame by frame (up to three frames), then aggregated.
+The full workflow, `municipalCompletionDev`, has **64 nodes and 74 connections**: 31 Code nodes (gates and rules), 15 IF branches, 12 HTTP calls to the agents and the translation bridge, 2 webhooks, 2 responses and 2 PostgreSQL nodes. Videos are analysed frame by frame (up to three frames), then aggregated.
 
 <p align="center"><img src="docs/images/n8n-workflow.png" alt="Diagram of the n8n workflow, drawn from the exported JSON" width="1000"></p>
 
-*This diagram is drawn from the exported workflow file `n8n/completion-integration/municipal-completion-development.json`, using the same node positions as the n8n editor. Long jumps between rows are shown as short labelled arrows. Three nodes in the file are not connected (leftovers from earlier versions).*
+*This diagram is drawn from the exported workflow file `n8n/completion-integration/municipal-completion-development.json`, using the same node positions as the n8n editor. Long jumps between rows are shown as short labelled arrows. Three nodes in the file are not connected (leftovers from earlier versions). The diagram was drawn before the two summary-translation nodes (`HTTP Translate`, `Attach Translation`) were added after Intake, so it shows 62 nodes.* A second, 9-node workflow, `municipalStaffDev`, serves the staff console.
 
 You can watch real runs in n8n at `http://127.0.0.1:5679/` under **Executions**.
 
@@ -206,15 +216,13 @@ You can watch real runs in n8n at `http://127.0.0.1:5679/` under **Executions**.
 
 ### 5.1 Web portal: `integration/portal/`
 
-The citizen-facing page (and the operator setup page). It never calls the AI agents directly: it sends uploads to n8n and shows the result.
+The citizen-facing page, with the shared sign-in screen. It never calls the AI agents directly: it sends uploads to n8n and shows the result.
 
 - **Tech:** Python **FastAPI** backend, plain **HTML + CSS + JavaScript** front end (no framework, no build step).
-- **Routes:** `GET /` (portal), `GET /setup` (operator page), `GET /api/health`, `GET /api/session`, `POST /api/reports` (submit, returns `202`), `GET /api/reports/{id}` (progress and result), `GET /api/tickets/{tracking_id}` (ticket lookup), `POST /api/setup/intake` (store the NVIDIA key).
+- **Routes:** `GET /` (portal), `POST /api/citizen/register`, `/login`, `/logout`, `GET /api/citizen/reports` (own complaints), `/api/staff/*` (staff sign-in, forwarded to the console), `GET /setup` (redirects to the admin console), `GET /api/health`, `GET /api/session`, `POST /api/reports` (submit, returns `202`), `GET /api/reports/{id}` (progress and result), `GET /api/tickets/{tracking_id}` (ticket lookup), `POST /api/setup/intake` (store the NVIDIA key).
 - **Good to know:** one complaint is processed at a time; submissions carry an idempotency key; results are kept as local execution receipts.
 
-The **operator setup page** (`/setup`) shows which local services are up and lets the person running the demo store the NVIDIA key once:
-
-<p align="center"><img src="docs/images/portal-setup.png" alt="Operator setup page" width="520"></p>
+- **Accounts:** the CIN is never stored in clear (keyed hash plus the last two digits); passwords are scrypt hashes; a session is required to send, list or track a complaint.
 
 ### 5.2 n8n workflow: `n8n/`
 
@@ -285,14 +293,14 @@ Three checkpoints written as **plain JavaScript, with no AI**. Each outputs PASS
 
 Design choices worth noting: Gate 2 sets **no confidence threshold**, because the model's confidence is an uncalibrated estimate, not evidence of correctness.
 
-The **router** is a lookup table. **No language model chooses the department:**
+The **router** is a lookup table. **No language model chooses the department or the organisation** (the municipality can change the organisation in the console):
 
-| Category | Department |
-|---|---|
-| `ROAD_DAMAGE` | `ROADS_DEPARTMENT` |
-| `STREET_LIGHTING` | `PUBLIC_LIGHTING_DEPARTMENT` |
-| `WASTE` | `SANITATION_DEPARTMENT` |
-| `WATER_LEAK` | `WATER_SERVICES_DEPARTMENT` |
+| Category | Department | Organisation doing the work |
+|---|---|---|
+| `ROAD_DAMAGE` | `ROADS_DEPARTMENT` | municipal services |
+| `STREET_LIGHTING` | `PUBLIC_LIGHTING_DEPARTMENT` | STEG |
+| `WASTE` | `SANITATION_DEPARTMENT` | municipal services |
+| `WATER_LEAK` | `WATER_SERVICES_DEPARTMENT` | SONEDE |
 
 ### 5.7 Ticket database: `integration/persistence/`
 
@@ -314,7 +322,7 @@ The database itself enforces important rules, through the SQL functions `save_re
 
 ### 5.8 Staff console: `integration/staff/`
 
-The second web application (port 8091), in French, for the people who handle tickets after the AI. Three roles, each with its own screen:
+The second web application (port 8091), in English, for the people who handle tickets after the AI. Three roles, each with its own screen:
 
 | Role | Sees | Does |
 |---|---|---|
@@ -336,6 +344,17 @@ Citizen → AI agents + gates → commune reviews / corrects / assigns
 - **Passwords never reach n8n:** accounts are scrypt hashes in `.runtime/staff/`. The console sends n8n only the agent's name, role and organisation, through a header-authenticated webhook (`municipal-staff`).
 - **Citizen side:** the portal now asks for the commune (never inferred) and the tracking page shows the timeline and the public message left by the organisation. Internal notes and agent names are never shown.
 - The former `/setup` page of the portal now redirects to the authenticated administrator console.
+
+The municipality's view (left) and STEG's view (right) of the same street-light ticket, during the real run of 28 October 2026:
+
+<p align="center">
+  <img src="docs/images/staff-console-municipality.png" alt="Staff console, Municipality of Tunis: review and assign" width="49%">
+  <img src="docs/images/staff-console-steg.png" alt="Staff console, STEG: assigned work" width="49%">
+</p>
+
+The administration console, for the maintenance engineer (accounts, NVIDIA key, communes; never ticket content):
+
+<p align="center"><img src="docs/images/admin-console.png" alt="Administration console" width="760"></p>
 
 ## 6. Technology stack
 
@@ -367,11 +386,11 @@ All numbers below were counted or measured from this repository and the runs sto
 |---|---|
 | AI agents | **3** (Intake, Vision, Knowledge) |
 | Policy gates | **3** (each PASS, REVIEW or REJECT) |
-| n8n workflow | **62 nodes**, 72 connections (30 Code, 15 IF, 11 HTTP, 2 webhooks, 2 responses, 2 PostgreSQL) |
+| n8n workflows | Citizen: **64 nodes**, 74 connections (31 Code, 15 IF, 12 HTTP, 2 webhooks, 2 responses, 2 PostgreSQL); staff: **9 nodes** |
 | Incident types recognised | **4** |
-| Source code | about **12,000 lines** in 147 tracked files (Python 87, JavaScript 26, PowerShell 24, HTML 4, others) |
+| Source code | about **14,700 lines** in 149 source files (Python, JavaScript, PowerShell, SQL, HTML, CSS) |
 | Prompt experiments (Vision) | **115 runs**, 11 prompt versions (109 on `qwen2.5vl:3b`, 6 on `qwen3-vl:2b`) |
-| Automated checks | 4 unit-test files, 14 verification scripts and 1 credential-check script |
+| Automated checks | 7 unit-test files, 15 verification scripts (including a 36-check staff-schema rehearsal) and 1 credential-check script |
 
 ### 7.2 Quality of each stage
 
@@ -394,11 +413,13 @@ All numbers below were counted or measured from this repository and the runs sto
 | Tickets committed to PostgreSQL | **8 of 8** |
 | Reasons for REVIEW in the full runs | `VISION_UNCERTAINTY_REQUIRES_REVIEW` and `KNOWLEDGE_NO_SUPPORTED_ANSWER` in all 3 |
 
+> Since these 8 runs, 3 more tickets were saved on 28 October 2026 (also all `REVIEW`), and 2 tickets were completed by staff through the console.
+
 > The original documentation reports **3 to 9 minutes** per run on the source PC. The 43 to 48 seconds above were measured on this machine, which runs the local models faster. Expect the time to depend heavily on your hardware.
 
 ### 7.4 What a ticket stores (and what a dashboard could track)
 
-Every ticket records: category, severity, department, priority, a summary, the three gates' decisions with reason codes, the verified procedure and sources (if any), a full execution trace, and timestamps with a version number. From this data a reporting dashboard (**not built yet**; the staff console shows counts per status) could report, for example: the PASS / REVIEW / REJECT rate, the most common review reasons, time from submission to first human action, and tickets per department and status.
+Every ticket records: category, severity, department, priority, a summary, the three gates' decisions with reason codes, the verified procedure and sources (if any), a full execution trace, and timestamps with a version number. From this data a reporting dashboard (**not built yet**; the staff and admin consoles show counts per status) could report, for example: the PASS / REVIEW / REJECT rate, the most common review reasons, time from submission to first human action, and tickets per department and status.
 
 ---
 
@@ -423,7 +444,8 @@ Every ticket records: category, severity, department, priority, a summary, the t
 - **No secrets in the repository:** `.runtime/` and `vendor/` are ignored. The NVIDIA key is encrypted with Windows DPAPI. The packaging script uses an allow-list and scans for key-like text.
 - **Reproducible images:** Docker images are pinned by SHA-256 digest.
 - **Privacy by design:** faces are blurred during intake; the location is never inferred; citizens are asked not to include personal data.
-- **Known limits:** there is **no login**, the tracking ID acts like a password, and the Intake Agent sends text and audio to NVIDIA's hosted models. Do not expose the demo to the internet.
+- **Accounts:** citizens sign in with a CIN (kept only as a keyed hash), staff with local accounts approved by the administrator; scrypt passwords, HttpOnly session cookies and a CSRF header on the staff side. Who may see or change a ticket is enforced in SQL.
+- **Known limits:** sessions are kept in memory, the CIN rule only checks the format (no real identity check), and the Intake Agent sends text and audio to NVIDIA's hosted models. Do not expose the demo to the internet.
 
 ---
 
@@ -438,7 +460,7 @@ PublicFlow/
 ├── PACKAGE_MANIFEST.json      file hashes checked at launch (see warning below)
 │
 ├── docs/images/               screenshots and the workflow diagram used in this README
-├── demo/                      sample photo + description to try the system
+├── demo/                      sample photo, plus 10 demo cases (photos, videos, voice note)
 ├── distribution/              launcher scripts, Docker compose, packaging tools
 │
 ├── intake-agent/              Intake Agent (media handling, privacy, text cleaning)
@@ -449,10 +471,13 @@ PublicFlow/
 │   ├── intake-integration/
 │   ├── vision-integration/
 │   ├── knowledge-integration/
-│   └── completion-integration/   <- the full, final workflow
+│   ├── completion-integration/   <- the full citizen workflow
+│   └── staff-integration/        staff console workflow
 │
 ├── integration/               glue code that connects each agent to n8n
-│   ├── portal/                citizen web interface
+│   ├── portal/                citizen web interface and shared sign-in
+│   ├── staff/                 staff and administration console
+│   ├── translation/           summary translation bridge (French to English)
 │   ├── intake-local/          NVIDIA key setup and benchmarks
 │   ├── vision/                media bridge for video and audio
 │   ├── knowledge/             Knowledge API launcher and evidence bridge
@@ -481,8 +506,8 @@ PublicFlow/
 1. Extract the **whole ZIP package** into a **short folder path** such as `C:\Municipal`.
 2. Start **Docker Desktop** and **Ollama**.
 3. Double-click **`Start_MunicipaliteAuto.cmd`** and leave the window open. The first launch builds the search indexes and imports the workflow, which can take several minutes.
-4. Open <http://127.0.0.1:8090/setup> and enter your NVIDIA key once. It is encrypted for your Windows account and never stored in plain text.
-5. Open <http://127.0.0.1:8090/>, upload `demo/road-damage.jpg`, paste the text from `demo/description.txt` and click **Send complaint** once.
+4. Open <http://127.0.0.1:8090/setup>: it leads to the administration console, where you create the administrator account and enter your NVIDIA key once. It is encrypted for your Windows account and never stored in plain text.
+5. Open <http://127.0.0.1:8090/>, create a citizen account with a CIN, upload `demo/road-damage.jpg` (or a case from `demo/cases/`), paste its description and click **Send complaint** once. Staff accounts (municipality, STEG, SONEDE) are created or approved in the administration console and used on <http://127.0.0.1:8091/>.
 6. Wait for processing (under a minute on a fast machine, up to several minutes on a laptop). The page then shows the ticket, the decision and the tracking ID.
 
 To watch the workflow run, open n8n at <http://127.0.0.1:5679/>, create your local owner account the first time, and go to **Executions**.
@@ -499,12 +524,13 @@ To watch the workflow run, open n8n at <http://127.0.0.1:5679/>, create your loc
 
 | Port | Service |
 |---|---|
-| 8090 | Citizen web portal |
+| 8090 | Citizen web portal and shared sign-in |
 | 8091 | Staff console (municipality, STEG, SONEDE, maintenance admin) |
 | 5679 | n8n workflow editor and webhooks |
 | 5434 | PostgreSQL ticket database |
 | 8010 | Vision Agent API |
 | 8012, 8013 | Intake and media services |
+| 8014 | Summary translation bridge (French to English, display only) |
 | 8020 | Knowledge Agent API |
 | 8021 | Evidence verification bridge |
 | 11434 / 11435 | Ollama (Vision / RAG) |
@@ -540,18 +566,18 @@ Behaviour confirmed with **real runs** (not mocks):
 **Working (verified with real runs):** see the list in section 13, plus the 8 recorded runs in section 7.3.
 
 **Known limitations:**
-- **Staff console not yet verified live.** The console, the n8n staff workflow and the SQL migration are built and covered by contract tests (`integration/staff/test_staff.py`, `integration/portal/test_portal_commune.py`) and by a throwaway-database rehearsal (`integration/persistence/verify_staff_schema.py`). A full run through the live n8n and PostgreSQL containers still has to be recorded.
+- **Staff side verified on few tickets.** One full lifecycle (municipality review, assignment to STEG, work started and resolved) was run live on 28 October 2026; the rest is covered by unit tests with mocked services (`integration/staff/test_staff.py`, `integration/portal/test_portal_commune.py`, `integration/translation/test_translation_bridge.py`) and a throwaway-database rehearsal (`integration/persistence/verify_staff_schema.py`).
 - **Photos are not shown to staff.** Only the media fingerprint is stored in the database, so the console shows the AI's description and evidence, not the photo itself.
 - **Only four incident types are implemented.** Damage to public property is not classified and is sent to review.
-- **No all-PASS demo case recorded.** All 8 recorded runs ended as `REVIEW` or earlier: Vision was uncertain and the RAG corpus had no supported procedure.
+- **No all-PASS demo case recorded.** All 11 saved tickets left the AI pipeline as `REVIEW`: Vision was uncertain and the RAG corpus had no supported procedure.
 - **RAG is still modest.** Retained Hit@3 is 5/9 and 6/9 in development tests, on a small corpus (9 enabled documents).
 - **No independent test set** for Vision, so severity and confidence are not validated.
 - **Three unconnected nodes** remain in the exported workflow (for example `Mock Ticket Creation`, a leftover from the earlier simulated version).
-- **Local demo only.** No login, and the tracking ID acts like a password. One complaint at a time.
+- **Local demo only.** Demo-grade accounts (in-memory sessions, cookies shared by host between ports 8090 and 8091). One complaint at a time.
 - **Needs a cloud key.** Intake uses NVIDIA's hosted models, so it is not fully offline.
 - **Some test suites and the original design documents are not in this repository.** Some READMEs mention them.
 
-**Natural next steps:** a recorded live run of the staff console, an Arabic version of the citizen portal, a labelled evaluation set to measure accuracy and calibrate confidence, a larger corpus with better retrieval, more incident types, authentication and a job queue.
+**Natural next steps:** show the anonymised photo in the staff console, a labelled evaluation set to measure accuracy and calibrate confidence, a larger corpus with better retrieval, more incident types, a real identity provider and a job queue.
 
 ---
 
